@@ -1,0 +1,3 @@
+yacc: Invalid precedence table.
+yacc: Generating LALR parsing table...
+yacc: 8 shift/reduce conflicts

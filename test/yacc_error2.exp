@@ -1,0 +1,1 @@
+ply.yacc.YaccError: ./yacc_error2.py:62: p_error() requires 1 argument.

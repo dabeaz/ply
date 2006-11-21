@@ -1,0 +1,7 @@
+(NUMBER,'3',1,0)
+(PLUS,'+',1,2)
+(NUMBER,'4',1,4)
+Entering comment state
+comment body LexToken(comment_body_part,'This is a comment */',1,9)
+(PLUS,'+',1,30)
+(NUMBER,'10',1,32)

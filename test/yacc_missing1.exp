@@ -1,0 +1,2 @@
+./yacc_missing1.py:25: Symbol 'location' used, but not defined as a token or a rule.
+ply.yacc.YaccError: Unable to construct parser.

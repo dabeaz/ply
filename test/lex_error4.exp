@@ -1,0 +1,2 @@
+./lex_error4.py:20: Rule 't_error' has too many arguments.
+SyntaxError: lex: Unable to build lexer.

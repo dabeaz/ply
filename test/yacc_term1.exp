@@ -1,0 +1,2 @@
+./yacc_term1.py:25: Illegal rule name 'NUMBER'. Already defined as a token.
+ply.yacc.YaccError: Unable to construct parser.

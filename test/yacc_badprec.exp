@@ -1,0 +1,1 @@
+ply.yacc.YaccError: precedence must be a list or tuple.

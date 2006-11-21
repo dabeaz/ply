@@ -1,0 +1,11 @@
+This directory mostly contains tests for various types of error
+conditions.  To run:
+
+  $ python testlex.py .
+  $ python testyacc.py .
+
+The tests can also be run using the Python unittest module.
+
+   $ python rununit.py
+
+The script 'cleanup.sh' cleans up this directory to its original state.

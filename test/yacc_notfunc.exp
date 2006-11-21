@@ -1,0 +1,4 @@
+yacc: Warning. 'p_statement_assign' not defined as a function
+yacc: Warning. Token 'EQUALS' defined, but not used.
+yacc: Warning. There is 1 unused token.
+yacc: Generating LALR parsing table...

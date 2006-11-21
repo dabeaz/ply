@@ -1,0 +1,2 @@
+lex: Rule 't_MINUS' defined for an unspecified token MINUS.
+SyntaxError: lex: Unable to build lexer.

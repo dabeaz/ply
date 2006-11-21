@@ -1,0 +1,7 @@
+lex: state 'comment' already defined.
+Traceback (most recent call last):
+  File "./lex_state5.py", line 40, in ?
+    lex.lex()
+  File "../ply/lex.py", line 758, in lex
+    raise SyntaxError,"lex: Unable to build lexer."
+SyntaxError: lex: Unable to build lexer.

@@ -1,0 +1,14 @@
+The PLY to-do list:
+
+1. More interesting parsing examples.
+
+2. Work on the ANSI C grammar so that it can actually parse C programs.  To do this,
+   some extra code needs to be added to the lexer to deal with typedef names and enumeration
+   constants.
+
+3. More tests in the test directory.
+
+4. Performance improvements and cleanup in yacc.py.
+
+5. More documentation (?).
+
