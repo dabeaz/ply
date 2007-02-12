@@ -1,3 +1,9 @@
+Version 2.3
+-----------------------------
+02/12/07: beazley
+          Fixed a bug in the handling of token names when combined with
+          start conditions.   Bug reported by Todd O'Bryan.
+
 Version 2.2
 ------------------------------
 11/01/06: beazley

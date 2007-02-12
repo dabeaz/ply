@@ -22,7 +22,7 @@
 # See the file COPYING for a complete copy of the LGPL.
 #-----------------------------------------------------------------------------
 
-__version__ = "2.2"
+__version__ = "2.3"
 
 import re, sys, types
 
@@ -422,7 +422,7 @@ def _names_to_funcs(namelist,fdict):
 # module, it may be necessary to break the master regex into separate expressions.
 # -----------------------------------------------------------------------------
 
-def _form_master_re(relist,reflags,ldict):
+def _form_master_re(relist,reflags,ldict,toknames):
     if not relist: return []
     regex = "|".join(relist)
     try:
@@ -433,7 +433,7 @@ def _form_master_re(relist,reflags,ldict):
         for f,i in lexre.groupindex.items():
             handle = ldict.get(f,None)
             if type(handle) in (types.FunctionType, types.MethodType):
-                lexindexfunc[i] = (handle,handle.__name__[2:])
+                lexindexfunc[i] = (handle,toknames[handle.__name__])
             elif handle is not None:
                 # If rule was specified as a string, we build an anonymous
                 # callback function to carry out the action
@@ -441,14 +441,14 @@ def _form_master_re(relist,reflags,ldict):
                     lexindexfunc[i] = (None,None)
                     print "IGNORE", f
                 else:
-                    lexindexfunc[i] = (None, f[2:])
+                    lexindexfunc[i] = (None, toknames[f])
          
         return [(lexre,lexindexfunc)],[regex]
     except Exception,e:
         m = int(len(relist)/2)
         if m == 0: m = 1
-        llist, lre = _form_master_re(relist[:m],reflags,ldict)
-        rlist, rre = _form_master_re(relist[m:],reflags,ldict)
+        llist, lre = _form_master_re(relist[:m],reflags,ldict,toknames)
+        rlist, rre = _form_master_re(relist[m:],reflags,ldict,toknames)
         return llist+rlist, lre+rre
 
 # -----------------------------------------------------------------------------
@@ -763,7 +763,7 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
     # Build the master regular expressions
 
     for state in regexs.keys():
-        lexre, re_text = _form_master_re(regexs[state],reflags,ldict)
+        lexre, re_text = _form_master_re(regexs[state],reflags,ldict,toknames)
         lexobj.lexstatere[state] = lexre
         lexobj.lexstateretext[state] = re_text
         if debug:
