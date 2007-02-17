@@ -1,7 +1,7 @@
 lex: Invalid regular expression for rule 't_POUND'. unbalanced parenthesis
 lex: Make sure '#' in rule 't_POUND' is escaped with '\#'.
 Traceback (most recent call last):
-  File "./lex_re3.py", line 27, in ?
+  File "./lex_re3.py", line 27, in <module>
     lex.lex()
   File "../ply/lex.py", line 758, in lex
     raise SyntaxError,"lex: Unable to build lexer."

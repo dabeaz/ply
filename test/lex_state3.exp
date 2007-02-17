@@ -1,7 +1,7 @@
 lex: state name 1 must be a string
 lex: No rules defined for state 'example'
 Traceback (most recent call last):
-  File "./lex_state3.py", line 40, in ?
+  File "./lex_state3.py", line 40, in <module>
     lex.lex()
   File "../ply/lex.py", line 758, in lex
     raise SyntaxError,"lex: Unable to build lexer."
