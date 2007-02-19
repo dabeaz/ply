@@ -2434,8 +2434,17 @@ to discard huge portions of the input text to find a valid restart point.
 <H3><a name="ply_nn33"></a>5.9 Line Number and Position Tracking</H3>
 
 
-<tt>yacc.py</tt> automatically tracks line numbers and positions for all of the grammar symbols and tokens it processes.  To retrieve the line
-numbers, two functions are used in grammar rules:
+<tt>yacc.py</tt> can automatically track line numbers and positions for all of the grammar symbols and tokens it processes.  However, this
+extra tracking requires extra processing and can significantly slow down parsing.  Therefore, it must be enabled by passing the 
+<tt>tracking=True</tt> option to <tt>yacc.parse()</tt>.  For example:
+
+<blockquote>
+<pre>
+yacc.parse(data,tracking=True)
+</pre>
+</blockquote>
+
+Once enabled, line numbers can be retrieved using the following two functions in grammar rules:
 
 <ul>
 <li><tt>p.lineno(num)</tt>.  Return the starting line number for symbol <em>num</em>
@@ -2484,6 +2493,11 @@ def p_expression(p):
 </blockquote>
 
 Note: The <tt>lexspan()</tt> function only returns the range of values up the start of the last grammar symbol. 
+
+<p>
+Note: The <tt>lineno()</tt> and <tt>lexpos()</tt> methods can always be called to get positional information
+on raw tokens or terminals.   This information is available regardless of whether or not the parser is tracking
+positional information for other grammar symbols.
 
 <H3><a name="ply_nn34"></a>5.10 AST Construction</H3>
 

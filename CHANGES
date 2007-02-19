@@ -1,5 +1,36 @@
 Version 2.3
 -----------------------------
+02/18/07: beazley
+          Performance improvements.  Made some changes to the internal
+          table organization and LR parser to improve parsing performance.
+
+02/18/07: beazley
+          Automatic tracking of line number and position information must now be 
+          enabled by a special flag to parse().  For example:
+
+              yacc.parse(data,tracking=True)
+
+          In many applications, it's just not that important to have the
+          parser automatically track all line numbers.  By making this an 
+          optional feature, it allows the parser to run significantly faster
+          (more than a 20% speed increase in many cases).    Note: positional
+          information is always available for raw tokens---this change only
+          applies to positional information associated with nonterminal
+          grammar symbols.
+          *** POTENTIAL INCOMPATIBILITY ***
+	  
+02/18/07: beazley
+          Yacc no longer supports extended slices of grammar productions.
+          However, it does support regular slices.  For example:
+
+          def p_foo(p):
+              '''foo: a b c d e'''
+              p[0] = p[1:3]
+
+          This change is a performance improvement to the parser--it streamlines
+          normal access to the grammar values since slices are now handled in
+          a __getslice__() method as opposed to __getitem__().
+
 02/12/07: beazley
           Fixed a bug in the handling of token names when combined with
           start conditions.   Bug reported by Todd O'Bryan.
