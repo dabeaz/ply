@@ -1,5 +1,21 @@
 Version 2.3
 -----------------------------
+02/19/07: beazley
+          Warning messages are now redirected to stderr instead of being printed
+          to standard output.
+
+02/19/07: beazley
+          Added a warning message to lex.py if it detects a literal backslash
+          character inside the t_ignore declaration.  This is to help
+          problems that might occur if someone accidentally defines t_ignore
+          as a Python raw string.  For example:
+
+              t_ignore = r' \t'
+
+          The idea for this is from an email I received from David Cimimi who
+          reported bizarre behavior in lexing as a result of defining t_ignore
+          as a raw string by accident.
+
 02/18/07: beazley
           Performance improvements.  Made some changes to the internal
           table organization and LR parser to improve parsing performance.

@@ -96,9 +96,10 @@ A simple example is found at the end of this document
 
 Requirements
 ============
-PLY requires the use of Python 2.0 or greater.  It should work on
-just about any platform.  PLY has been tested with both CPython and
-Jython.  However, it does not work with IronPython.
+PLY requires the use of Python 2.1 or greater.  However, you should
+use the latest Python release if possible.  It should work on just
+about any platform.  PLY has been tested with both CPython and Jython.
+However, it does not seem to work with IronPython.
 
 Resources
 =========

@@ -2433,8 +2433,27 @@ to discard huge portions of the input text to find a valid restart point.
 
 <H3><a name="ply_nn33"></a>5.9 Line Number and Position Tracking</H3>
 
+Position tracking is often a tricky problem when writing compilers.  By default, PLY tracks the line number and position of
+all tokens.    This information is available using the following functions:
 
-<tt>yacc.py</tt> can automatically track line numbers and positions for all of the grammar symbols and tokens it processes.  However, this
+<ul>
+<li><tt>p.lineno(num)</tt>. Return the line number for symbol <em>num</em>
+<li><tt>p.lexpos(num)</tt>. Return the lexing position for symbol <em>num</em>
+</ul>
+
+For example:
+
+<blockquote>
+<pre>
+def p_expression(p):
+    'expression : expression PLUS expression'
+    line   = p.lineno(2)        # line number of the PLUS token
+    index  = p.lexpos(2)        # Position of the PLUS token
+</pre>
+</blockquote>
+
+As an optional feature, <tt>yacc.py</tt> can automatically track line numbers and positions for all of the grammar symbols 
+as well.  However, this
 extra tracking requires extra processing and can significantly slow down parsing.  Therefore, it must be enabled by passing the 
 <tt>tracking=True</tt> option to <tt>yacc.parse()</tt>.  For example:
 
@@ -2444,11 +2463,12 @@ yacc.parse(data,tracking=True)
 </pre>
 </blockquote>
 
-Once enabled, line numbers can be retrieved using the following two functions in grammar rules:
+Once enabled, the <tt>lineno()</tt> and <tt>lexpos()</tt> methods work for all grammar symbols.  In addition, two
+additional methods can be used:
 
 <ul>
-<li><tt>p.lineno(num)</tt>.  Return the starting line number for symbol <em>num</em>
 <li><tt>p.linespan(num)</tt>. Return a tuple (startline,endline) with the starting and ending line number for symbol <em>num</em>.
+<li><tt>p.lexspan(num)</tt>. Return a tuple (start,end) with the starting and ending positions for symbol <em>num</em>.
 </ul>
 
 For example:
@@ -2462,42 +2482,44 @@ def p_expression(p):
     p.lineno(3)        # line number of the right expression
     ...
     start,end = p.linespan(3)    # Start,end lines of the right expression
+    starti,endi = p.lexspan(3)   # Start,end positions of right expression
 
 </pre>
 </blockquote>
 
-Since line numbers are managed internally by the parser, there is usually no need to modify the line
-numbers.  However, if you want to save the line numbers in a parse-tree node, you will need to make your own
-private copy.
+Note: The <tt>lexspan()</tt> function only returns the range of values up to the start of the last grammar symbol.  
 
 <p>
-To get positional information about where tokens were lexed, the following two functions are used:
-
-<ul>
-<li><tt>p.lexpos(num)</tt>.  Return the starting lexing position for symbol <em>num</em>
-<li><tt>p.lexspan(num)</tt>. Return a tuple (start,end) with the starting and ending positions for symbol <em>num</em>.
-</ul>
-
-For example:
+Although it may be convenient for PLY to track position information on
+all grammar symbols, this is often unnecessary.  For example, if you
+are merely using line number information in an error message, you can
+often just key off of a specific token in the grammar rule.  For
+example:
 
 <blockquote>
 <pre>
-def p_expression(p):
-    'expression : expression PLUS expression'
-    p.lexpos(1)        # Lexing position of the left expression
-    p.lexpos(2)        # Lexing position of the PLUS operator
-    p.lexpos(3)        # Lexing position of the right expression
-    ...
-    start,end = p.lexspan(3)    # Start,end positions of the right expression
+def p_bad_func(p):
+    'funccall : fname LPAREN error RPAREN'
+    # Line number reported from LPAREN token
+    print "Bad function call at line", p.lineno(2)
 </pre>
 </blockquote>
 
-Note: The <tt>lexspan()</tt> function only returns the range of values up the start of the last grammar symbol. 
-
 <p>
-Note: The <tt>lineno()</tt> and <tt>lexpos()</tt> methods can always be called to get positional information
-on raw tokens or terminals.   This information is available regardless of whether or not the parser is tracking
-positional information for other grammar symbols.
+Similarly, you may get better parsing performance if you only propagate line number
+information where it's needed.   For example:
+
+<blockquote>
+<pre>
+def p_fname(p):
+    'fname : ID'
+    p[0] = (p[1],p.lineno(1))
+</pre>
+</blockquote>
+
+Finally, it should be noted that PLY does not store position information after a rule has been
+processed.  If it is important for you to retain this information in an abstract syntax tree, you
+must make your own copy.
 
 <H3><a name="ply_nn34"></a>5.10 AST Construction</H3>
 

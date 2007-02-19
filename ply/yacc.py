@@ -293,7 +293,9 @@ class Parser:
                         del symstack[-plen:]
                         del statestack[-plen:]
                     else:
-                        sym.lineno = 0
+                        if tracking:
+                           sym.lineno = lexer.lineno
+                           sym.lexpos = lexer.lexpos
                         targ = [ sym ]
                     pslice.slice = targ
 
@@ -1936,8 +1938,8 @@ del _lr_goto_items
         f.close()
 
     except IOError,e:
-        print "Unable to create '%s'" % filename
-        print e
+        print >>sys.stderr, "Unable to create '%s'" % filename
+        print >>sys.stderr, e
         return
 
 def lr_read_tables(module=tab_module,optimize=0):
@@ -2052,7 +2054,7 @@ def yacc(method=default_lr, debug=yaccdebug, module=None, tabmodule=tab_module, 
                     v1 = [x.split(".") for x in v]
                     Requires[r] = v1
                 except StandardError:
-                    print "Invalid specification for rule '%s' in require. Expected a list of strings" % r            
+                    print >>sys.stderr, "Invalid specification for rule '%s' in require. Expected a list of strings" % r            
 
         
         # Build the dictionary of terminals.  We a record a 0 in the
@@ -2060,12 +2062,12 @@ def yacc(method=default_lr, debug=yaccdebug, module=None, tabmodule=tab_module, 
         # used in the grammar
 
         if 'error' in tokens:
-            print "yacc: Illegal token 'error'.  Is a reserved word."
+            print >>sys.stderr, "yacc: Illegal token 'error'.  Is a reserved word."
             raise YaccError,"Illegal token name"
 
         for n in tokens:
             if Terminals.has_key(n):
-                print "yacc: Warning. Token '%s' multiply defined." % n
+                print >>sys.stderr, "yacc: Warning. Token '%s' multiply defined." % n
             Terminals[n] = [ ]
 
         Terminals['error'] = [ ]
@@ -2100,7 +2102,7 @@ def yacc(method=default_lr, debug=yaccdebug, module=None, tabmodule=tab_module, 
             global Errorfunc
             Errorfunc = ef
         else:
-            print "yacc: Warning. no p_error() function is defined."
+            print >>sys.stderr, "yacc: Warning. no p_error() function is defined."
             
         # Get the list of built-in functions with p_ prefix
         symbols = [ldict[f] for f in ldict.keys()
@@ -2172,7 +2174,7 @@ def yacc(method=default_lr, debug=yaccdebug, module=None, tabmodule=tab_module, 
                     f.write(_vf.getvalue())
                     f.close()
                 except IOError,e:
-                    print "yacc: can't create '%s'" % debugfile,e
+                    print >>sys.stderr, "yacc: can't create '%s'" % debugfile,e
         
     # Made it here.   Create a parser object and set up its internal state.
     # Set global parse() method to bound method of parser object.
