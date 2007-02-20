@@ -1666,7 +1666,7 @@ def lr_parse_table(method):
 
         for p in I:
             try:
-                if p.prod[-1] == ".":
+                if p.len == p.lr_index + 1:
                     if p.name == "S'":
                         # Start symbol. Accept!
                         st_action["$end"] = 0
@@ -1767,7 +1767,8 @@ def lr_parse_table(method):
                                 st_actionp[a] = p
                                 
             except StandardError,e:
-                raise YaccError, "Hosed in lr_parse_table", e
+               print sys.exc_info()
+               raise YaccError, "Hosed in lr_parse_table"
 
         # Print the actions associated with each terminal
         if yaccdebug:

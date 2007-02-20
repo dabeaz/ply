@@ -1,5 +1,9 @@
 Version 2.3
 -----------------------------
+02/20/07: beazley
+          Fixed a bug with character literals if the literal '.' appeared as the
+          last symbol of a grammar rule.  Reported by Ales Smrcka.
+
 02/19/07: beazley
           Warning messages are now redirected to stderr instead of being printed
           to standard output.
