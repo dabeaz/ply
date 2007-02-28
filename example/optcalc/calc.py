@@ -99,7 +99,10 @@ def p_expression_name(t):
         t[0] = 0
 
 def p_error(t):
-    print "Syntax error at '%s'" % t.value
+    if t:
+        print "Syntax error at '%s'" % t.value
+    else:
+        print "Syntax error at EOF"
 
 import ply.yacc as yacc
 yacc.yacc(optimize=1)

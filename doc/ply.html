@@ -2273,7 +2273,9 @@ When a syntax error occurs, <tt>yacc.py</tt> performs the following steps:
 
 <ol>
 <li>On the first occurrence of an error, the user-defined <tt>p_error()</tt> function
-is called with the offending token as an argument.  Afterwards, the parser enters
+is called with the offending token as an argument.  However, if the syntax error is due to
+reaching the end-of-file, <tt>p_error()</tt> is called with an argument of <tt>None</tt>.
+Afterwards, the parser enters
 an "error-recovery" mode in which it will not make future calls to <tt>p_error()</tt> until it
 has successfully shifted at least 3 tokens onto the parsing stack.
 

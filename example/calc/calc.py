@@ -91,7 +91,10 @@ def p_expression_name(p):
         p[0] = 0
 
 def p_error(p):
-    print "Syntax error at '%s'" % p.value
+    if p:
+        print "Syntax error at '%s'" % p.value
+    else:
+        print "Syntax error at EOF"
 
 import ply.yacc as yacc
 yacc.yacc()
