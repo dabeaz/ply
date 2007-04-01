@@ -1,3 +1,28 @@
+Version 2.4
+-----------------------------
+03/13/07: beazley
+          Modified the LexToken objects returned by the lexer so that they support
+          comparisons.  Comparisons can be performed against simple strings like
+          this:
+
+               if tok == 'NUMBER':
+                  ...
+
+          In this case, the token type field is compared against the string. You
+          can also compare against a tuple, like this:
+
+              if tok == ('ID','foo')
+
+          In this case, the tuple is taken to be the token type and token value.
+          Last, but not least, two different tokens can be compared.  Tokens are
+          equal if they have the same type and value.
+
+          One useful aspect of this addition is that token sequences can be easily
+          compared.  For example:
+
+              if toks == ['NUMBER','+','NUMBER']:
+                  ...
+
 Version 2.3
 -----------------------------
 02/20/07: beazley

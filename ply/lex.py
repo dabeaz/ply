@@ -22,7 +22,7 @@
 # See the file COPYING for a complete copy of the LGPL.
 #-----------------------------------------------------------------------------
 
-__version__ = "2.3"
+__version__ = "2.4"
 
 import re, sys, types
 
@@ -54,6 +54,13 @@ class LexToken(object):
         return str(self)
     def skip(self,n):
         self.lexer.skip(n)
+    def __cmp__(self,other):
+       if isinstance(other,(types.StringType,types.UnicodeType)):
+          return cmp(self.type,other)
+       elif isinstance(other,types.TupleType):
+          return cmp((self.type,self.value),other)
+       else:
+          return cmp((self.type,self.value),(other.type,other.value))
 
 # -----------------------------------------------------------------------------
 # Lexer class
