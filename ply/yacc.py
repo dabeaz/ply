@@ -112,7 +112,7 @@ class YaccSymbol(object):
 # for a symbol.  The lexspan() method returns a tuple (lexpos,endlexpos)
 # representing the range of positional information for a symbol.
 
-class YaccProduction:
+class YaccProduction(object):
     def __init__(self,s,stack=None):
         self.slice = s
         self.pbstack = []
@@ -205,7 +205,7 @@ class Parser:
         pslice.parser = self
 
         # If input was supplied, pass to lexer
-        if input:
+        if input is not None:
             lexer.input(input)
             
         # Tokenize function
@@ -375,6 +375,7 @@ class Parser:
                 if len(statestack) <= 1 and lookahead.type != '$end':
                     lookahead = None
                     errtoken = None
+                    state = 0
                     # Nuke the pushback stack
                     del lookaheadstack[:]
                     continue
@@ -404,6 +405,7 @@ class Parser:
                 else:
                     symstack.pop()
                     statestack.pop()
+                    state = statestack[-1]       # Potential bug fix
 
                 continue
 
