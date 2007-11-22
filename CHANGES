@@ -1,5 +1,16 @@
 Version 2.4
 -----------------------------
+11/09/07: beazely
+          Fixed a bug in error handling in yacc.  If a syntax error occurred and the
+          parser rolled the entire parse stack back, the parser would be left in in
+          inconsistent state that would cause it to trigger incorrect actions on
+          subsequent input.  Reported by Ton Biegstraaten.
+
+11/09/07: beazley
+          Fixed a bug when passing empty input strings to yacc.parse().   This 
+          would result in an error message about "No input given".  Reported
+          by Andrew Dalke.
+
 03/13/07: beazley
           Modified the LexToken objects returned by the lexer so that they support
           comparisons.  Comparisons can be performed against simple strings like
