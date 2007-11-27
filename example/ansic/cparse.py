@@ -155,7 +155,7 @@ def p_struct_declaration_list_1(t):
     pass
 
 def p_struct_declaration_list_2(t):
-    'struct_declaration_list : struct_declarator_list struct_declaration'
+    'struct_declaration_list : struct_declaration_list struct_declaration'
     pass
 
 # init-declarator-list:
