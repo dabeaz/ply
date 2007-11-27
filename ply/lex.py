@@ -117,7 +117,7 @@ class Lexer:
         c.lexoptimize = self.lexoptimize
         c.lexliterals = self.lexliterals
         c.lexmodule   = self.lexmodule
-
+        
         # If the object parameter has been supplied, it means we are attaching the
         # lexer to a new object.  In this case, we have to rebind all methods in
         # the lexstatere and lexstateerrorf tables.
@@ -302,6 +302,7 @@ class Lexer:
                 # Every function must return a token, if nothing, we just move to next token
                 if not newtok: 
                     lexpos = self.lexpos        # This is here in case user has updated lexpos.
+                    lexignore = self.lexignore  # This is here in case there was a state change
                     break
                 
                 # Verify type of the token.  If not in the token map, raise an error
