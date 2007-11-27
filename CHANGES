@@ -1,5 +1,9 @@
 Version 2.4
 -----------------------------
+11/27/07: beazley
+          Modified setup.py to support Python Eggs.   Patch contributed by
+          Simon Cross.
+
 11/09/07: beazely
           Fixed a bug in error handling in yacc.  If a syntax error occurred and the
           parser rolled the entire parse stack back, the parser would be left in in
@@ -32,7 +36,6 @@ Version 2.4
           compared.  For example:
 
               if toks == ['NUMBER','+','NUMBER']:
-                  ...
 
 Version 2.3
 -----------------------------
