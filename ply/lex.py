@@ -1,9 +1,9 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # ply: lex.py
 #
 # Author: David M. Beazley (dave@dabeaz.com)
 #
-# Copyright (C) 2001-2007, David M. Beazley
+# Copyright (C) 2001-2008, David M. Beazley
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,18 +20,19 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
 # See the file COPYING for a complete copy of the LGPL.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 __version__ = "2.4"
 
 import re, sys, types
 
-# Regular expression used to match valid token names
+# This regular expression is used to match valid token names
 _is_identifier = re.compile(r'^[a-zA-Z0-9_]+$')
 
-# Available instance types.  This is used when lexers are defined by a class.
-# It's a little funky because I want to preserve backwards compatibility
-# with Python 2.0 where types.ObjectType is undefined.
+# _INSTANCETYPE sets the valid set of instance types recognized
+# by PLY when lexers are defined by a class. In order to maintain
+# backwards compatibility with Python-2.0, we have to check for
+# the existence of ObjectType.
 
 try:
    _INSTANCETYPE = (types.InstanceType, types.ObjectType)
@@ -41,12 +42,26 @@ except AttributeError:
 
 # Exception thrown when invalid token encountered and no default error
 # handler is defined.
+
 class LexError(Exception):
     def __init__(self,message,s):
          self.args = (message,)
          self.text = s
 
-# Token class
+# An object used to issue one-time warning messages for various features
+
+class LexWarning(object):
+   def __init__(self):
+      self.warned = 0
+   def __call__(self,msg):
+      if not self.warned:
+         sys.stderr.write("ply.lex: Warning: " + msg+"\n")
+         self.warned = 1
+
+_SkipWarning = LexWarning()         # Warning for use of t.skip() on tokens
+
+# Token class.  This class is used to represent the tokens produced.
+
 class LexToken(object):
     def __str__(self):
         return "LexToken(%s,%r,%d,%d)" % (self.type,self.value,self.lineno,self.lexpos)
@@ -54,6 +69,7 @@ class LexToken(object):
         return str(self)
     def skip(self,n):
         self.lexer.skip(n)
+        _SkipWarning("Calling t.skip() on a token is deprecated.  Please use t.lexer.skip()")
     def __cmp__(self,other):
        if isinstance(other,(types.StringType,types.UnicodeType)):
           return cmp(self.type,other)
@@ -71,7 +87,7 @@ class LexToken(object):
 #    token()          -  Get the next token
 # -----------------------------------------------------------------------------
 
-class Lexer:
+class Lexer(object):
     def __init__(self):
         self.lexre = None             # Master regular expression. This is a list of 
                                       # tuples (re,findex) where re is a compiled
@@ -272,15 +288,11 @@ class Lexer:
                 m = lexre.match(lexdata,lexpos)
                 if not m: continue
 
-                # Set last match in lexer so that rules can access it if they want
-                self.lexmatch = m
-
                 # Create a token for return
                 tok = LexToken()
                 tok.value = m.group()
                 tok.lineno = self.lineno
                 tok.lexpos = lexpos
-                tok.lexer = self
 
                 lexpos = m.end()
                 i = m.lastindex
@@ -297,6 +309,9 @@ class Lexer:
                    break 
 
                 # If token is processed by a function, call it
+
+                tok.lexer = self      # Set additional attributes useful in token rules
+                self.lexmatch = m
                 newtok = func(tok)
                 
                 # Every function must return a token, if nothing, we just move to next token
@@ -319,7 +334,6 @@ class Lexer:
                     tok = LexToken()
                     tok.value = lexdata[lexpos]
                     tok.lineno = self.lineno
-                    tok.lexer = self
                     tok.type = tok.value
                     tok.lexpos = lexpos
                     self.lexpos = lexpos + 1
@@ -355,7 +369,8 @@ class Lexer:
 #
 # This checks to see if there are duplicated t_rulename() functions or strings
 # in the parser input file.  This is done using a simple regular expression
-# match on each line in the filename.
+# match on each line in the given file.  If the file can't be located or opened,
+# a true result is returned by default.
 # -----------------------------------------------------------------------------
 
 def _validate_file(filename):
@@ -368,10 +383,11 @@ def _validate_file(filename):
         lines = f.readlines()
         f.close()
     except IOError:
-        return 1                       # Oh well
+        return 1                     # Couldn't find the file.  Don't worry about it
 
     fre = re.compile(r'\s*def\s+(t_[a-zA-Z_0-9]*)\(')
     sre = re.compile(r'\s*(t_[a-zA-Z_0-9]*)\s*=')
+
     counthash = { }
     linen = 1
     noerror = 1
@@ -524,8 +540,12 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
         except RuntimeError:
             e,b,t = sys.exc_info()
             f = t.tb_frame
-            f = f.f_back           # Walk out to our calling function
-            ldict = f.f_globals    # Grab its globals dictionary
+            f = f.f_back                    # Walk out to our calling function
+            if f.f_globals is f.f_locals:   # Collect global and local variations from caller
+               ldict = f.f_globals
+            else:
+               ldict = f.f_globals.copy()
+               ldict.update(f.f_locals)
 
     if optimize and lextab:
         try:
@@ -539,17 +559,14 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
             pass
         
     # Get the tokens, states, and literals variables (if any)
-    if (module and isinstance(module,_INSTANCETYPE)):
-        tokens   = getattr(module,"tokens",None)
-        states   = getattr(module,"states",None)
-        literals = getattr(module,"literals","")
-    else:
-        tokens   = ldict.get("tokens",None)
-        states   = ldict.get("states",None)
-        literals = ldict.get("literals","")
-        
+
+    tokens = ldict.get("tokens",None)
+    states = ldict.get("states",None)
+    literals = ldict.get("literals","")
+
     if not tokens:
         raise SyntaxError,"lex: module does not define 'tokens'"
+
     if not (isinstance(tokens,types.ListType) or isinstance(tokens,types.TupleType)):
         raise SyntaxError,"lex: tokens must be a list or tuple."
 
