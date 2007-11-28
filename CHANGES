@@ -1,5 +1,23 @@
 Version 2.4
 -----------------------------
+11/28/07: beazley
+          Slight modification to lex and yacc to grab symbols from both
+          the local and global dictionaries of the caller.   This
+          modification allows lexers and parsers to be defined using
+          inner functions and closures.
+
+11/28/07: beazley
+          Performance optimization:  The lexer.lexmatch and t.lexer
+          attributes are no longer set for lexer tokens that are not
+          defined by functions.   The only normal use of these attributes
+          would be in lexer rules that need to perform some kind of 
+          special processing.  Thus, it doesn't make any sense to set
+          them on every token.
+
+          *** POTENTIAL INCOMPATIBILITY ***  This might break code
+          that is mucking around with internal lexer state in some
+          sort of magical way.
+
 11/27/07: beazley
           Added the ability to put the parser into error-handling mode
           from within a normal production.   To do this, simply call
