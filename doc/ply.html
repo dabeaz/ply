@@ -2425,7 +2425,36 @@ def p_error(p):
 </pre>
 </blockquote>
 
-<H4><a name="ply_nn32"></a>5.8.3 General comments on error handling</H4>
+<H4>5.8.3 Signaling an error from a production</H4>
+
+If necessary, a production rule can manually force the parser to enter error recovery.  This
+is done by calling the <tt>p.error()</tt> method like this:
+
+<blockquote>
+<pre>
+def p_production(p):
+    'production : some production ...'
+    p.error()
+</pre>
+</blockquote>
+
+The effect of calling <tt>error()</tt> is the same as if the last symbol shifted onto the
+parsing stack was actually a syntax error.  Thus, when you do this, the last symbol shifted is popped off
+of the parsing stack and the current lookahead token is set to an <tt>error</tt> token.   The parser
+then enters error-recovery mode where it tries to reduce rules that can accept <tt>error</tt> tokens.  
+The steps that follow from this point are exactly the same as if a syntax error were detected and 
+<tt>p_error()</tt> were called.
+
+<P>
+One important aspect of manually setting an error is that the <tt>p_error()</tt> function will <b>NOT</b> be
+called in this case.   If you need to issue an error message, make sure you do it in the production that
+calls <tt>p.error()</tt>.
+
+<P>
+Note: This feature of PLY is meant to mimic the behavior of the YYERROR macro in yacc.
+
+
+<H4><a name="ply_nn32"></a>5.8.4 General comments on error handling</H4>
 
 
 For normal types of languages, error recovery with error rules and resynchronization characters is probably the most reliable
