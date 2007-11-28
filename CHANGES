@@ -1,6 +1,34 @@
 Version 2.4
 -----------------------------
 11/27/07: beazley
+          Added the ability to put the parser into error-handling mode
+          from within a normal production.   To do this, simply call
+          the .error() method like this:
+
+          def p_some_production(p):
+              'some_production : prod1 prod2'
+              ...
+              p.error()      # Signal an error
+
+          A number of things happen after error() has been called.
+
+          - The last symbol shifted onto the symbol stack is discarded
+            and parser state backed up to what it was before the
+            the rule reduction.
+
+          - The current lookahead symbol is saved and replaced by
+            the 'error' symbol.
+
+          - The parser enters error recovery mode where it tries
+            to either reduce the 'error' rule or it starts 
+            discarding items off of the stack until the parser
+            resets.
+
+          When an error is manually set, the parser does *not* call 
+          the p_error() function (if any is defined).
+          *** NEW FEATURE *** Suggested on the mailing list
+
+11/27/07: beazley
           Fixed structure bug in examples/ansic.  Reported by Dion Blazakis.
 
 11/27/07: beazley
