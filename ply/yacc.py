@@ -2024,7 +2024,11 @@ def yacc(method=default_lr, debug=yaccdebug, module=None, tabmodule=tab_module, 
             e,b,t = sys.exc_info()
             f = t.tb_frame
             f = f.f_back           # Walk out to our calling function
-            ldict = f.f_globals    # Grab its globals dictionary
+            if f.f_globals is f.f_locals:   # Collect global and local variations from caller
+               ldict = f.f_globals
+            else:
+               ldict = f.f_globals.copy()
+               ldict.update(f.f_locals)
 
     # Add starting symbol to signature
     if not start:
