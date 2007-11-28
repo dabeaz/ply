@@ -117,6 +117,7 @@ class YaccProduction(object):
         self.slice = s
         self.pbstack = []
         self.stack = stack
+        self.errorset = False
     def __getitem__(self,n):
         if n >= 0: return self.slice[n].value
         else: return self.stack[n].value
@@ -153,6 +154,9 @@ class YaccProduction(object):
             raise ValueError, "Can't push %d tokens. Only %d are available." % (n,len(self.slice)-1)
         for i in range(0,n):
             self.pbstack.append(self.slice[-i-1])
+    def error(self):
+       self.errorset = True
+    
 
 # The LR Parsing engine.   This is defined as a class so that multiple parsers
 # can exist in the same process.  A user never instantiates this directly.
@@ -290,8 +294,6 @@ class Parser:
                            t1 = targ[-1]
                            sym.endlineno = getattr(t1,"endlineno",t1.lineno)
                            sym.endlexpos = getattr(t1,"endlexpos",t1.lexpos)
-                        del symstack[-plen:]
-                        del statestack[-plen:]
                     else:
                         if tracking:
                            sym.lineno = lexer.lineno
@@ -304,15 +306,31 @@ class Parser:
 
                     # If there was a pushback, put that on the stack
                     if pslice.pbstack:
-                        lookaheadstack.append(lookahead)
-                        for _t in pslice.pbstack:
-                            lookaheadstack.append(_t)
-                        lookahead = None
-                        pslice.pbstack = []
+                       lookaheadstack.append(lookahead)
+                       for _t in pslice.pbstack:
+                           lookaheadstack.append(_t)
+                       lookahead = None
+                       pslice.pbstack = []
+                    
+                    # If an error was set. Enter error recovery state
+                    if pslice.errorset:
+                       pslice.errorset = False
+                       lookaheadstack.append(lookahead)
+                       symstack.pop()
+                       statestack.pop()
+                       state = statestack[-1]
+                       sym.type = 'error'
+                       lookahead = sym
+                       errorcount = error_count
+                       self.errorok = 0
+                    else:
+                       if plen:
+                           del symstack[-plen:]
+                           del statestack[-plen:]
+                       symstack.append(sym)
+                       state = goto[statestack[-1]][pname]
+                       statestack.append(state)
 
-                    symstack.append(sym)
-                    state = goto[statestack[-1]][pname]
-                    statestack.append(state)
                     continue
 
                 if t == 0:
