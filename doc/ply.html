@@ -1090,6 +1090,7 @@ would probably be a bad idea to modify this unless you really know what you're d
 <blockquote>
 This is the raw <tt>Match</tt> object returned by the Python <tt>re.match()</tt> function (used internally by PLY) for the
 current token.  If you have written a regular expression that contains named groups, you can use this to retrieve those values.
+Note: This attribute is only updated when tokens are defined and processed by functions.  
 </blockquote>
 
 <H3><a name="ply_nn21"></a>3.18 Conditional lexing and start conditions</H3>
