@@ -24,7 +24,7 @@
 
 __version__ = "2.4"
 
-import re, sys, types
+import re, sys, types, copy
 
 # This regular expression is used to match valid token names
 _is_identifier = re.compile(r'^[a-zA-Z0-9_]+$')
@@ -115,24 +115,7 @@ class Lexer(object):
         self.lexoptimize = 0          # Optimized mode
 
     def clone(self,object=None):
-        c = Lexer()
-        c.lexstatere = self.lexstatere
-        c.lexstateinfo = self.lexstateinfo
-        c.lexstateretext = self.lexstateretext
-        c.lexstate = self.lexstate
-        c.lexstatestack = self.lexstatestack
-        c.lexstateignore = self.lexstateignore
-        c.lexstateerrorf = self.lexstateerrorf
-        c.lexreflags = self.lexreflags
-        c.lexdata = self.lexdata
-        c.lexpos = self.lexpos
-        c.lexlen = self.lexlen
-        c.lextokens = self.lextokens
-        c.lexdebug = self.lexdebug
-        c.lineno = self.lineno
-        c.lexoptimize = self.lexoptimize
-        c.lexliterals = self.lexliterals
-        c.lexmodule   = self.lexmodule
+        c = copy.copy(self)
         
         # If the object parameter has been supplied, it means we are attaching the
         # lexer to a new object.  In this case, we have to rebind all methods in
@@ -156,9 +139,6 @@ class Lexer(object):
             for key, ef in self.lexstateerrorf.items():
                 c.lexstateerrorf[key] = getattr(object,ef.__name__)
             c.lexmodule = object
-
-        # Set up other attributes
-        c.begin(c.lexstate)
         return c
 
     # ------------------------------------------------------------
@@ -316,8 +296,8 @@ class Lexer(object):
                 
                 # Every function must return a token, if nothing, we just move to next token
                 if not newtok: 
-                    lexpos = self.lexpos        # This is here in case user has updated lexpos.
-                    lexignore = self.lexignore  # This is here in case there was a state change
+                    lexpos    = self.lexpos         # This is here in case user has updated lexpos.
+                    lexignore = self.lexignore      # This is here in case there was a state change
                     break
                 
                 # Verify type of the token.  If not in the token map, raise an error
@@ -417,7 +397,7 @@ def _funcs_to_names(funclist):
     result = []
     for f in funclist:
          if f and f[0]:
-             result.append((f[0].__name__,f[1]))
+             result.append(('t_'+f[1],f[1]))
          else:
              result.append(f)
     return result
@@ -451,13 +431,13 @@ def _form_master_re(relist,reflags,ldict,toknames):
     regex = "|".join(relist)
     try:
         lexre = re.compile(regex,re.VERBOSE | reflags)
-
+        
         # Build the index to function map for the matching engine
         lexindexfunc = [ None ] * (max(lexre.groupindex.values())+1)
         for f,i in lexre.groupindex.items():
             handle = ldict.get(f,None)
             if type(handle) in (types.FunctionType, types.MethodType):
-                lexindexfunc[i] = (handle,toknames[handle.__name__])
+                lexindexfunc[i] = (handle,toknames[f])
             elif handle is not None:
                 # If rule was specified as a string, we build an anonymous
                 # callback function to carry out the action
@@ -708,7 +688,7 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
             if f.__doc__:
                 if not optimize:
                     try:
-                        c = re.compile("(?P<%s>%s)" % (f.__name__,f.__doc__), re.VERBOSE | reflags)
+                        c = re.compile("(?P<%s>%s)" % (fname,f.__doc__), re.VERBOSE | reflags)
                         if c.match(""):
                              print >>sys.stderr, "%s:%d: Regular expression for rule '%s' matches empty string." % (file,line,f.__name__)
                              error = 1
@@ -726,7 +706,7 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
                 # Okay. The regular expression seemed okay.  Let's append it to the master regular
                 # expression we're building
   
-                regex_list.append("(?P<%s>%s)" % (f.__name__,f.__doc__))
+                regex_list.append("(?P<%s>%s)" % (fname,f.__doc__))
             else:
                 print >>sys.stderr, "%s:%d: No regular expression defined for rule '%s'" % (file,line,f.__name__)
 
