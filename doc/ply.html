@@ -427,6 +427,8 @@ reserved = {
    ...
 }
 
+tokens = ['LPAREN','RPAREN',...,'ID'] + reserved.values()
+
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value,'ID')    # Check for reserved words
@@ -976,10 +978,7 @@ lexer = lex.lex(object=m)
 The class approach may be the easiest to manage if your application is going to be creating multiple instances of the same lexer and
 you need to manage a lot of state.  
 
-<H3><a name="ply_nn19"></a>3.16 Duplicating lexers</H3>
-
-
-<b>NOTE: I am thinking about deprecating this feature.  Post comments on <a href="http://groups.google.com/group/ply-hack">ply-hack@googlegroups.com</a> or send me a private email at dave@dabeaz.com.</b>
+<H3><a name="ply_nn19"></a>3.16 Lexer cloning</H3>
 
 <p>
 If necessary, a lexer object can be quickly duplicated by invoking its <tt>clone()</tt> method.  For example:
@@ -992,23 +991,19 @@ newlexer = lexer.clone()
 </pre>
 </blockquote>
 
-When a lexer is cloned, the copy is identical to the original lexer,
-including any input text. However, once created, different text can be
-fed to the clone which can be used independently.  This capability may
-be useful in situations when you are writing a parser/compiler that
+When a lexer is cloned, the copy is exactly identical to the original lexer
+including any input text and internal state. However, the clone allows a
+different set of input text to be supplied which may be processed separately.
+This may be useful in situations when you are writing a parser/compiler that
 involves recursive or reentrant processing.  For instance, if you
 needed to scan ahead in the input for some reason, you could create a
-clone and use it to look ahead.
+clone and use it to look ahead.  Or, if you were implementing some kind of preprocessor,
+cloned lexers could be used to handle different input files.
 
 <p>
-The advantage of using <tt>clone()</tt> instead of reinvoking <tt>lex()</tt> is
-that it is significantly faster.  Namely, it is not necessary to re-examine all of the 
-token rules, build a regular expression, and construct internal tables.  All of this
-information can simply be reused in the new lexer.
-
-<p>
-Special considerations need to be made when cloning a lexer that is defined as a class.  Previous sections
-showed an example of a class <tt>MyLexer</tt>.  If you have the following code:
+Special considerations need to be made when cloning lexers that also maintain their own
+internal state.   Namely, you need to be aware that the newly created lexers will share all
+of this state with the original lexer.   For example, if you defined a lexer as a class and did this:
 
 <blockquote>
 <pre>
@@ -1020,41 +1015,9 @@ b = a.clone()              # Clone the lexer
 </blockquote>
 
 Then both <tt>a</tt> and <tt>b</tt> are going to be bound to the same
-object <tt>m</tt>.  If the object <tt>m</tt> contains internal state
-related to lexing, this sharing may lead to quite a bit of confusion. To fix this,
-the <tt>clone()</tt> method accepts an optional argument that can be used to supply a new object.  This
-can be used to clone the lexer and bind it to a new instance.  For example:
-
-<blockquote>
-<pre>
-m = MyLexer()              # Create a lexer
-a = lex.lex(object=m)
-
-# Create a clone 
-n = MyLexer()              # New instance of MyLexer
-b = a.clone(n)             # New lexer bound to n
-</pre>
-</blockquote>
-
-It may make sense to encapsulate all of this inside a method:
-
-<blockquote>
-<pre>
-class MyLexer:
-     ...
-     def clone(self):
-         c = MyLexer()        # Create a new instance of myself
-         # Copy attributes from self to c as appropriate
-         ...
-         # Clone the lexer
-         c.lexer = self.lexer.clone(c)
-         return c
-</pre>
-</blockquote>
-
-The fact that a new instance of <tt>MyLexer</tt> may be created while cloning a lexer is the reason why you should never
-invoke <tt>lex.lex()</tt> inside <tt>__init__()</tt>.  If you do, the lexer will be rebuilt from scratch and you lose
-all of the performance benefits of using <tt>clone()</tt> in the first place.
+object <tt>m</tt> and any changes to <tt>m</tt> will be reflected in both lexers.  It's
+important to emphasize that <tt>clone()</tt> is not meant to make a totally new copy of a
+lexer.  If you want to do that, call <tt>lex()</tt> again to create a new lexer.
 
 <H3><a name="ply_nn20"></a>3.17 Internal lexer state</H3>
 
