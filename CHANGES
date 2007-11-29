@@ -1,5 +1,22 @@
 Version 2.4
 -----------------------------
+11/29/07: beazley
+          Modification of ply.lex to allow token functions to aliased.
+          This is subtle, but it makes it easier to create libraries and
+          to reuse token specifications.  For example, suppose you defined
+          a function like this:
+
+               def number(t):
+                    r'\d+'
+                    t.value = int(t.value)
+                    return t
+
+          This change would allow you to define a token rule as follows:
+
+              t_NUMBER = number
+
+          In this case, the token type will be set to 'NUMBER'.   
+           
 11/28/07: beazley
           Slight modification to lex and yacc to grab symbols from both
           the local and global dictionaries of the caller.   This
