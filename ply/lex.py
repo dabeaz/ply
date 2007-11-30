@@ -274,15 +274,19 @@ class Lexer(object):
                 tok.lineno = self.lineno
                 tok.lexpos = lexpos
 
-                lexpos = m.end()
                 i = m.lastindex
                 func,tok.type = lexindexfunc[i]
-                self.lexpos = lexpos
 
                 if not func:
                    # If no token type was set, it's an ignored token
-                   if tok.type: return tok      
-                   break
+                   if tok.type: 
+                      self.lexpos = m.end()
+                      return tok
+                   else:
+                      lexpos = m.end()
+                      break
+
+                lexpos = m.end()
 
                 # if func not callable, it means it's an ignored token                
                 if not callable(func):
@@ -292,6 +296,8 @@ class Lexer(object):
 
                 tok.lexer = self      # Set additional attributes useful in token rules
                 self.lexmatch = m
+                self.lexpos = lexpos
+
                 newtok = func(tok)
                 
                 # Every function must return a token, if nothing, we just move to next token
