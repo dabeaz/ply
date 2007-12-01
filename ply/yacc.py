@@ -191,7 +191,7 @@ class Parser:
         self.symstack.append(sym)
         self.statestack.append(0)
 
-    def parse(self,input=None,lexer=None,debug=0,tracking=0):
+    def parse(self,input=None,lexer=None,debug=0,tracking=0,tokenfunc=None):
         lookahead = None                 # Current lookahead symbol
         lookaheadstack = [ ]             # Stack of lookahead symbols
         actions = self.action            # Local reference to action table
@@ -212,8 +212,11 @@ class Parser:
         if input is not None:
             lexer.input(input)
             
-        # Tokenize function
-        get_token = lexer.token
+        if tokenfunc is None:
+           # Tokenize function
+           get_token = lexer.token
+        else:
+           get_token = tokenfunc
 
         statestack = [ ]                # Stack of parsing states
         self.statestack = statestack
