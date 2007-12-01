@@ -15,7 +15,8 @@ Version 2.4
 
               t_NUMBER = number
 
-          In this case, the token type will be set to 'NUMBER'.   
+          In this case, the token type will be set to 'NUMBER' and use
+          the associated number() function to process tokens.   
            
 11/28/07: beazley
           Slight modification to lex and yacc to grab symbols from both
