@@ -1,5 +1,20 @@
 Version 2.4
 -----------------------------
+02/16/07: beazley
+          Slight relaxation of what the input() method to a lexer will
+          accept as a string.   Instead of testing the input to see
+          if the input is a string or unicode string, it checks to see
+          if the input object looks like it contains string data.
+          This change makes it possible to pass string-like objects
+          in as input.  For example, the object returned by mmap.
+
+              import mmap, os
+              data = mmap.mmap(os.open(filename,os.O_RDONLY),
+                               os.path.getsize(filename),
+                               access=mmap.ACCESS_READ)
+              lexer.input(data)
+           
+
 11/29/07: beazley
           Modification of ply.lex to allow token functions to aliased.
           This is subtle, but it makes it easier to create libraries and
@@ -72,7 +87,6 @@ Version 2.4
           token rules.  If a rule was defined that changed state, but
           returned no token, the lexer could be left in an inconsistent
           state.  Reported by 
- 
           
 11/27/07: beazley
           Modified setup.py to support Python Eggs.   Patch contributed by
