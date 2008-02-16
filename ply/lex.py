@@ -200,7 +200,9 @@ class Lexer(object):
     # input() - Push a new string into the lexer
     # ------------------------------------------------------------
     def input(self,s):
-        if not (isinstance(s,types.StringType) or isinstance(s,types.UnicodeType)):
+        # Pull off the first character to see if s looks like a string
+        c = s[:1]          
+        if not (isinstance(c,types.StringType) or isinstance(c,types.UnicodeType)):
             raise ValueError, "Expected a string"
         self.lexdata = s
         self.lexpos = 0
