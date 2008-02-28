@@ -12,12 +12,7 @@ import basinterp
 # If a runtime error occurs, we bail out and enter
 # interactive mode below
 if len(sys.argv) == 2:
-    import os,mmap
-    data = mmap.mmap(os.open(sys.argv[1],os.O_RDONLY),
-                     os.path.getsize(sys.argv[1]),
-                     access=mmap.ACCESS_READ)
-
-#    data = open(sys.argv[1]).read()
+    data = open(sys.argv[1]).read()
     prog = basparse.parse(data)
     if not prog: raise SystemExit
     b = basinterp.BasicInterpreter(prog)
