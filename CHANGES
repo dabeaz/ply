@@ -1,6 +1,11 @@
 Version 2.4
 -----------------------------
-02/16/07: beazley
+02/28/08: beazley
+          Fixed a bug with 'nonassoc' precedence rules.   Basically the
+          non-precedence was being ignored and not producing the correct
+          run-time behavior in the parser.
+
+02/16/08: beazley
           Slight relaxation of what the input() method to a lexer will
           accept as a string.   Instead of testing the input to see
           if the input is a string or unicode string, it checks to see

@@ -1766,7 +1766,7 @@ def lr_parse_table(method):
                                     #   -  otherwise we shift
                                     rprec,rlevel = Productions[st_actionp[a].number].prec
                                     sprec,slevel = Precedence.get(a,('right',0))
-                                    if (slevel > rlevel) or ((slevel == rlevel) and (rprec != 'left')):
+                                    if (slevel > rlevel) or ((slevel == rlevel) and (rprec == 'right')):
                                         # We decide to shift here... highest precedence to shift
                                         st_action[a] = j
                                         st_actionp[a] = p
