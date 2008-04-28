@@ -5,58 +5,57 @@
 # Copyright (C) 2007
 # All rights reserved
 #
+# This module implements an ANSI-C style lexical preprocessor for PLY. 
 # -----------------------------------------------------------------------------
-
-import re
-import ply.lex as lex
-import copy
-import time
-import os.path
+from __future__ import generators
 
 # -----------------------------------------------------------------------------
-# Preprocessor lexer definitions
+# Default preprocessor lexer definitions.   These tokens are enough to get
+# a basic preprocessor working.   Other modules may import these if they want
 # -----------------------------------------------------------------------------
 
 tokens = (
-    'ID','ICONST', 'FCONST', 'SCONST', 'CCONST', 'WS', 'COMMENT', 'POUND','DPOUND'
+   'CPP_ID','CPP_INTEGER', 'CPP_FLOAT', 'CPP_STRING', 'CPP_CHAR', 'CPP_WS', 'CPP_COMMENT', 'CPP_POUND','CPP_DPOUND'
 )
 
 literals = "+-*/%|&~^<>=!?()[]{}.,;:\\\'\""
 
 # Whitespace
-def t_WS(t):
+def t_CPP_WS(t):
     r'\s+'
     t.lexer.lineno += t.value.count("\n")
     return t
 
-t_POUND = r'\#'
-t_DPOUND = r'\#\#'
+t_CPP_POUND = r'\#'
+t_CPP_DPOUND = r'\#\#'
 
 # Identifier
-t_ID = r'[A-Za-z_][\w_]*'
+t_CPP_ID = r'[A-Za-z_][\w_]*'
 
 # Integer literal
-def t_ICONST(t):
+def CPP_INTEGER(t):
     r'(((((0x)|(0X))[0-9a-fA-F]+)|(\d+))([uU]|[lL]|[uU][lL]|[lL][uU])?)'
     return t
 
+t_CPP_INTEGER = CPP_INTEGER
+
 # Floating literal
-t_FCONST = r'((\d+)(\.\d+)(e(\+|-)?(\d+))? | (\d+)e(\+|-)?(\d+))([lL]|[fF])?'
+t_CPP_FLOAT = r'((\d+)(\.\d+)(e(\+|-)?(\d+))? | (\d+)e(\+|-)?(\d+))([lL]|[fF])?'
 
 # String literal
-def t_SCONST(t):
+def t_CPP_STRING(t):
     r'\"([^\\\n]|(\\(.|\n)))*?\"'
     t.lexer.lineno += t.value.count("\n")
     return t
 
 # Character constant 'c' or L'c'
-def t_CCONST(t):
+def t_CPP_CHAR(t):
     r'(L)?\'([^\\\n]|(\\(.|\n)))*?\''
     t.lexer.lineno += t.value.count("\n")
     return t
 
 # Comment
-def t_COMMENT(t):
+def t_CPP_COMMENT(t):
     r'(/\*(.|\n)*?\*/)|(//.*?\n)'
     t.lexer.lineno += t.value.count("\n")
     return t
@@ -67,7 +66,10 @@ def t_error(t):
     t.lexer.skip(1)
     return t
 
-lexer = lex.lex()
+import re
+import copy
+import time
+import os.path
 
 # -----------------------------------------------------------------------------
 # trigraph()
@@ -101,21 +103,6 @@ _trigraph_rep = {
 
 def trigraph(input):
     return _trigraph_pat.sub(lambda g: _trigraph_rep[g.group()[-1]],input)
-
-# -----------------------------------------------------------------------------
-# tokenize()
-#
-# Utility function. Given a string of text, tokenize into a list of tokens
-# -----------------------------------------------------------------------------
-
-def tokenize(text):
-    tokens = []
-    lexer.input(text)
-    while True:
-        tok = lexer.token()
-        if not tok: break
-        tokens.append(tok)
-    return tokens
 
 # ------------------------------------------------------------------
 # Macro object
@@ -151,7 +138,9 @@ class Macro(object):
 # ------------------------------------------------------------------
 
 class Preprocessor(object):
-    def __init__(self,lexer):
+    def __init__(self,lexer=None):
+        if lexer is None:
+            lexer = lex.lexer
         self.lexer = lexer
         self.macros = { }
         self.path = []
@@ -163,6 +152,22 @@ class Preprocessor(object):
         tm = time.localtime()
         self.define("__DATE__ \"%s\"" % time.strftime("%b %d %Y",tm))
         self.define("__TIME__ \"%s\"" % time.strftime("%H:%M:%S",tm))
+        self.parser = None
+
+    # -----------------------------------------------------------------------------
+    # tokenize()
+    #
+    # Utility function. Given a string of text, tokenize into a list of tokens
+    # -----------------------------------------------------------------------------
+
+    def tokenize(self,text):
+        tokens = []
+        self.lexer.input(text)
+        while True:
+            tok = self.lexer.token()
+            if not tok: break
+            tokens.append(tok)
+        return tokens
 
     # ---------------------------------------------------------------------
     # error()
@@ -582,11 +587,11 @@ class Preprocessor(object):
         return result
 
     # ----------------------------------------------------------------------
-    # parse()
+    # parsegen()
     #
     # Parse an input string/
     # ----------------------------------------------------------------------
-    def parse(self,input,source=None):
+    def parsegen(self,input,source=None):
 
         # Replace trigraph sequences
         t = trigraph(input)
@@ -749,7 +754,7 @@ class Preprocessor(object):
                 dname = os.path.dirname(iname)
                 if dname:
                     self.temp_path.insert(0,dname)
-                for tok in self.parse(data,filename):
+                for tok in self.parsegen(data,filename):
                     yield tok
                 if dname:
                     del self.temp_path[0]
@@ -767,7 +772,7 @@ class Preprocessor(object):
 
     def define(self,tokens):
         if isinstance(tokens,(str,unicode)):
-            tokens = tokenize(tokens)
+            tokens = self.tokenize(tokens)
 
         linetok = tokens
         try:
@@ -842,17 +847,44 @@ class Preprocessor(object):
         except LookupError:
             pass
 
+    # ----------------------------------------------------------------------
+    # parse()
+    #
+    # Parse input text.
+    # ----------------------------------------------------------------------
+    def parse(self,input,source=None,ignore={}):
+        self.ignore = ignore
+        self.parser = self.parsegen(input,source)
+        
+    # ----------------------------------------------------------------------
+    # token()
+    #
+    # Method to return individual tokens
+    # ----------------------------------------------------------------------
+    def token(self):
+        try:
+            while True:
+                tok = self.parser.next()
+                if tok.type not in self.ignore: return tok
+        except StopIteration:
+            self.parser = None
+            return None
+
 if __name__ == '__main__':
+    import ply.lex as lex
+    lexer = lex.lex()
+
+    # Run a preprocessor
     import sys
     f = open(sys.argv[1])
     input = f.read()
 
     p = Preprocessor(lexer)
-    for tok in p.parse(input,sys.argv[1]):
+    p.parse(input,sys.argv[1])
+    while True:
+        tok = p.token()
+        if not tok: break
         print p.source, tok
-        
-#        print tok
-#        sys.stdout.write(tok.value)
 
 
 

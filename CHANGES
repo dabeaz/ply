@@ -1,5 +1,10 @@
 Version 2.4
 -----------------------------
+04/28/08: beazley
+          Fixed a big with p_erro() functions being picked up correctly
+          when running in yacc(optimize=1) mode.  Patch contributed by
+          Bart Whiteley.
+
 02/28/08: beazley
           Fixed a bug with 'nonassoc' precedence rules.   Basically the
           non-precedence was being ignored and not producing the correct

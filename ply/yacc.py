@@ -2039,7 +2039,27 @@ def yacc(method=default_lr, debug=yaccdebug, module=None, tabmodule=tab_module, 
     if start:
         Signature.update(start)
 
-    # If running in optimized mode.  We're going to
+    # Look for error handler
+    ef = ldict.get('p_error',None)
+    if ef:
+        if isinstance(ef,types.FunctionType):
+            ismethod = 0
+        elif isinstance(ef, types.MethodType):
+            ismethod = 1
+        else:
+            raise YaccError,"'p_error' defined, but is not a function or method."                
+        eline = ef.func_code.co_firstlineno
+        efile = ef.func_code.co_filename
+        files[efile] = None
+
+        if (ef.func_code.co_argcount != 1+ismethod):
+            raise YaccError,"%s:%d: p_error() requires 1 argument." % (efile,eline)
+        global Errorfunc
+        Errorfunc = ef
+    else:
+        print >>sys.stderr, "yacc: Warning. no p_error() function is defined."
+
+    # If running in optimized mode.  We're going to read tables instead
 
     if (optimize and lr_read_tables(tabmodule,1)):
         # Read parse table
@@ -2111,26 +2131,6 @@ def yacc(method=default_lr, debug=yaccdebug, module=None, tabmodule=tab_module, 
         for n in tokens:
             if not Precedence.has_key(n):
                 Precedence[n] = ('right',0)         # Default, right associative, 0 precedence
-
-        # Look for error handler
-        ef = ldict.get('p_error',None)
-        if ef:
-            if isinstance(ef,types.FunctionType):
-                ismethod = 0
-            elif isinstance(ef, types.MethodType):
-                ismethod = 1
-            else:
-                raise YaccError,"'p_error' defined, but is not a function or method."                
-            eline = ef.func_code.co_firstlineno
-            efile = ef.func_code.co_filename
-            files[efile] = None
-
-            if (ef.func_code.co_argcount != 1+ismethod):
-                raise YaccError,"%s:%d: p_error() requires 1 argument." % (efile,eline)
-            global Errorfunc
-            Errorfunc = ef
-        else:
-            print >>sys.stderr, "yacc: Warning. no p_error() function is defined."
             
         # Get the list of built-in functions with p_ prefix
         symbols = [ldict[f] for f in ldict.keys()
