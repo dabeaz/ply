@@ -1,6 +1,12 @@
 Version 2.4
 -----------------------------
 05/04/08: beazley
+          Added extra error checking to yacc() to detect precedence rules defined
+          for undefined terminal symbols.   This allows yacc() to detect a potential
+          problem that can be really tricky to debug if no warning message or error
+          message is generated about it.
+
+05/04/08: beazley
           lex() now has an outputdir that can specify the output directory for
           tables when running in optimize mode.  For example:
 
