@@ -24,7 +24,7 @@
 
 __version__ = "2.4"
 
-import re, sys, types, copy
+import re, sys, types, copy, os
 
 # This regular expression is used to match valid token names
 _is_identifier = re.compile(r'^[a-zA-Z0-9_]+$')
@@ -35,10 +35,10 @@ _is_identifier = re.compile(r'^[a-zA-Z0-9_]+$')
 # the existence of ObjectType.
 
 try:
-   _INSTANCETYPE = (types.InstanceType, types.ObjectType)
+    _INSTANCETYPE = (types.InstanceType, types.ObjectType)
 except AttributeError:
-   _INSTANCETYPE = types.InstanceType
-   class object: pass       # Note: needed if no new-style classes present
+    _INSTANCETYPE = types.InstanceType
+    class object: pass       # Note: needed if no new-style classes present
 
 # Exception thrown when invalid token encountered and no default error
 # handler is defined.
@@ -70,13 +70,6 @@ class LexToken(object):
     def skip(self,n):
         self.lexer.skip(n)
         _SkipWarning("Calling t.skip() on a token is deprecated.  Please use t.lexer.skip()")
-    def __cmp__(self,other):
-       if isinstance(other,(types.StringType,types.UnicodeType)):
-          return cmp(self.type,other)
-       elif isinstance(other,types.TupleType):
-          return cmp((self.type,self.value),other)
-       else:
-          return cmp((self.type,self.value),(other.type,other.value))
 
 # -----------------------------------------------------------------------------
 # Lexer class
@@ -144,8 +137,12 @@ class Lexer(object):
     # ------------------------------------------------------------
     # writetab() - Write lexer information to a table file
     # ------------------------------------------------------------
-    def writetab(self,tabfile):
-        tf = open(tabfile+".py","w")
+    def writetab(self,tabfile,outputdir=""):
+        if isinstance(tabfile,types.ModuleType):
+            return
+        basetabfilename = tabfile.rsplit(".",1)[-1]
+        filename = os.path.join(outputdir,basetabfilename)+".py"
+        tf = open(filename,"w")
         tf.write("# %s.py. This file automatically created by PLY (version %s). Don't edit!\n" % (tabfile,__version__))
         tf.write("_lextokens    = %s\n" % repr(self.lextokens))
         tf.write("_lexreflags   = %s\n" % repr(self.lexreflags))
@@ -175,7 +172,10 @@ class Lexer(object):
     # readtab() - Read lexer information from a tab file
     # ------------------------------------------------------------
     def readtab(self,tabfile,fdict):
-        exec "import %s as lextab" % tabfile
+        if isinstance(tabfile,types.ModuleType):
+            lextab = tabfile
+        else:
+            exec "import %s as lextab" % tabfile
         self.lextokens      = lextab._lextokens
         self.lexreflags     = lextab._lexreflags
         self.lexliterals    = lextab._lexliterals
@@ -492,7 +492,7 @@ def _statetoken(s,names):
 #
 # Build all of the regular expression rules from definitions in the supplied module
 # -----------------------------------------------------------------------------
-def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,nowarn=0):
+def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,nowarn=0,outputdir=""):
     global lexer
     ldict = None
     stateinfo  = { 'INITIAL' : 'inclusive'}
@@ -825,7 +825,7 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
 
     # If in optimize mode, we write the lextab   
     if lextab and optimize:
-        lexobj.writetab(lextab)
+        lexobj.writetab(lextab,outputdir)
 
     return lexobj
 

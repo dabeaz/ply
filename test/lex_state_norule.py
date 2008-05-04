@@ -1,4 +1,4 @@
-# lex_state2.py
+# lex_state_norule.py
 #
 # Declaration of a state for which no rules are defined
 

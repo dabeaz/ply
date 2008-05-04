@@ -1,7 +1,41 @@
 Version 2.4
 -----------------------------
+05/04/08: beazley
+          lex() now has an outputdir that can specify the output directory for
+          tables when running in optimize mode.  For example:
+
+             lexer = lex.lex(optimize=True, lextab="ltab", outputdir="foo/bar")
+ 
+          The behavior of specifying a table module and output directory are
+          more aligned with the behavior of yacc().
+          
+05/04/08: beazley
+          [Issue 9]
+          Fixed filename bug in when specifying the modulename in lex() and yacc(). 
+          If you specified options such as the following:
+
+             parser = yacc.yacc(tabmodule="foo.bar.parsetab",outputdir="foo/bar")
+
+          yacc would create a file "foo.bar.parsetab.py" in the given directory.
+          Now, it simply generates a file "parsetab.py" in that directory. 
+          Bug reported by cptbinho.
+
+05/04/08: beazley
+          Slight modification to lex() and yacc() to allow their table files
+	  to be loaded from a previously loaded module.   This might make
+	  it easier to load the parsing tables from a complicated package
+          structure.  For example:
+
+	       import foo.bar.spam.parsetab as parsetab
+               parser = yacc.yacc(tabmodule=parsetab)
+
+          Note:  lex and yacc will never regenerate the table file if used
+          in the form---you will get a warning message instead. 
+          This idea suggested by Brian Clapper.
+
+
 04/28/08: beazley
-          Fixed a big with p_erro() functions being picked up correctly
+          Fixed a big with p_error() functions being picked up correctly
           when running in yacc(optimize=1) mode.  Patch contributed by
           Bart Whiteley.
 
@@ -112,28 +146,6 @@ Version 2.4
           Fixed a bug when passing empty input strings to yacc.parse().   This 
           would result in an error message about "No input given".  Reported
           by Andrew Dalke.
-
-03/13/07: beazley
-          Modified the LexToken objects returned by the lexer so that they support
-          comparisons.  Comparisons can be performed against simple strings like
-          this:
-
-               if tok == 'NUMBER':
-                  ...
-
-          In this case, the token type field is compared against the string. You
-          can also compare against a tuple, like this:
-
-              if tok == ('ID','foo')
-
-          In this case, the tuple is taken to be the token type and token value.
-          Last, but not least, two different tokens can be compared.  Tokens are
-          equal if they have the same type and value.
-
-          One useful aspect of this addition is that token sequences can be easily
-          compared.  For example:
-
-              if toks == ['NUMBER','+','NUMBER']:
 
 Version 2.3
 -----------------------------

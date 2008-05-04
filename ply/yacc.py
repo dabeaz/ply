@@ -77,10 +77,10 @@ class YaccError(Exception):   pass
 # with Python 2.0 where types.ObjectType is undefined.
 
 try:
-   _INSTANCETYPE = (types.InstanceType, types.ObjectType)
+    _INSTANCETYPE = (types.InstanceType, types.ObjectType)
 except AttributeError:
-   _INSTANCETYPE = types.InstanceType
-   class object: pass     # Note: needed if no new-style classes present
+    _INSTANCETYPE = types.InstanceType
+    class object: pass     # Note: needed if no new-style classes present
 
 #-----------------------------------------------------------------------------
 #                        ===  LR Parsing Engine ===
@@ -510,7 +510,7 @@ def validate_dict(d):
 # Initialize all of the global variables used during grammar construction
 def initialize_vars():
     global Productions, Prodnames, Prodmap, Terminals 
-    global Nonterminals, First, Follow, Precedence, LRitems
+    global Nonterminals, First, Follow, Precedence, UsedPrecedence, LRitems
     global Errorfunc, Signature, Requires
 
     Productions  = [None]  # A list of all of the productions.  The first
@@ -535,6 +535,10 @@ def initialize_vars():
 
     Precedence   = { }     # Precedence rules for each terminal. Contains tuples of the
                            # form ('right',level) or ('nonassoc', level) or ('left',level)
+
+    UsedPrecedence = { }   # Precedence rules that were actually used by the grammer.
+                           # This is only used to provide error checking and to generate
+                           # a warning about unused precedence rules.
 
     LRitems      = [ ]     # A list of all LR items for the grammar.  These are the
                            # productions with the "dot" like E -> E . PLUS E
@@ -718,6 +722,7 @@ def add_production(f,file,line,prodname,syms):
                 return -1
             else:
                 p.prec = prec
+                UsedPrecedence[precname] = 1
             del p.prod[i]
             del p.prod[i]
             continue
@@ -1049,6 +1054,21 @@ def add_precedence(plist):
 
     return error
 
+# -----------------------------------------------------------------------------
+# check_precedence()
+#
+# Checks the use of the Precedence tables.  This makes sure all of the symbols
+# are terminals or were used with %prec
+# -----------------------------------------------------------------------------
+
+def check_precedence():
+    error = 0
+    for precname in Precedence.keys():
+        if not (Terminals.has_key(precname) or UsedPrecedence.has_key(precname)):
+            sys.stderr.write("yacc: Precedence rule '%s' defined for unknown symbol '%s'\n" % (Precedence[precname][0],precname))
+            error += 1
+    return error
+            
 # -----------------------------------------------------------------------------
 # augment_grammar()
 #
@@ -1852,7 +1872,12 @@ def lr_parse_table(method):
 # -----------------------------------------------------------------------------
 
 def lr_write_tables(modulename=tab_module,outputdir=''):
-    filename = os.path.join(outputdir,modulename) + ".py"
+    if isinstance(modulename, types.ModuleType):
+        print >>sys.stderr, "Warning module %s is inconsistent with the grammar (ignored)" % modulename
+        return
+
+    basemodulename = modulename.rsplit(".",1)[-1]
+    filename = os.path.join(outputdir,basemodulename) + ".py"
     try:
         f = open(filename,"w")
 
@@ -1969,8 +1994,11 @@ del _lr_goto_items
 def lr_read_tables(module=tab_module,optimize=0):
     global _lr_action, _lr_goto, _lr_productions, _lr_method
     try:
-        exec "import %s as parsetab" % module
-        
+        if isinstance(module,types.ModuleType):
+            parsetab = module
+        else:
+            exec "import %s as parsetab" % module
+
         if (optimize) or (Signature.digest() == parsetab._lr_signature):
             _lr_action = parsetab._lr_action
             _lr_goto   = parsetab._lr_goto
@@ -2179,6 +2207,10 @@ def yacc(method=default_lr, debug=yaccdebug, module=None, tabmodule=tab_module, 
             otherfunc = [ldict[f] for f in ldict.keys()
                if (type(f) in (types.FunctionType,types.MethodType) and ldict[f].__name__[:2] != 'p_')]
 
+            # Check precedence rules
+            if check_precedence():
+                error = 1
+
             if error:
                 raise YaccError,"Unable to construct parser."
             
@@ -2234,11 +2266,11 @@ def yacc_cleanup():
     del _lr_action, _lr_goto, _lr_method, _lr_goto_cache
 
     global Productions, Prodnames, Prodmap, Terminals 
-    global Nonterminals, First, Follow, Precedence, LRitems
+    global Nonterminals, First, Follow, Precedence, UsedPrecedence, LRitems
     global Errorfunc, Signature, Requires
     
     del Productions, Prodnames, Prodmap, Terminals
-    del Nonterminals, First, Follow, Precedence, LRitems
+    del Nonterminals, First, Follow, Precedence, UsedPrecedence, LRitems
     del Errorfunc, Signature, Requires
     
     global _vf, _vfc
