@@ -37,7 +37,7 @@ dave@dabeaz.com<br>
 <li><a href="#ply_nn16">Debugging</a>
 <li><a href="#ply_nn17">Alternative specification of lexers</a>
 <li><a href="#ply_nn18">Maintaining state</a>
-<li><a href="#ply_nn19">Duplicating lexers</a>
+<li><a href="#ply_nn19">Lexer cloning</a>
 <li><a href="#ply_nn20">Internal lexer state</a>
 <li><a href="#ply_nn21">Conditional lexing and start conditions</a>
 <li><a href="#ply_nn21">Miscellaneous Issues</a>
@@ -56,6 +56,7 @@ dave@dabeaz.com<br>
 <ul>
 <li><a href="#ply_nn30">Recovery and resynchronization with error rules</a>
 <li><a href="#ply_nn31">Panic mode recovery</a>
+<li><a href="#ply_nn35">Signaling an error from a production</a>
 <li><a href="#ply_nn32">General comments on error handling</a>
 </ul>
 <li><a href="#ply_nn33">Line Number and Position Tracking</a>
@@ -69,6 +70,7 @@ dave@dabeaz.com<br>
 </ul>
 </div>
 <!-- INDEX -->
+
 
 
 
@@ -979,6 +981,7 @@ The class approach may be the easiest to manage if your application is going to 
 you need to manage a lot of state.  
 
 <H3><a name="ply_nn19"></a>3.16 Lexer cloning</H3>
+
 
 <p>
 If necessary, a lexer object can be quickly duplicated by invoking its <tt>clone()</tt> method.  For example:
@@ -2389,7 +2392,8 @@ def p_error(p):
 </pre>
 </blockquote>
 
-<H4>5.8.3 Signaling an error from a production</H4>
+<H4><a name="ply_nn35"></a>5.8.3 Signaling an error from a production</H4>
+
 
 If necessary, a production rule can manually force the parser to enter error recovery.  This
 is done by calling the <tt>p.error()</tt> method like this:
@@ -2427,6 +2431,7 @@ to recover and continue parsing.  Panic mode recovery is really only useful in c
 to discard huge portions of the input text to find a valid restart point.
 
 <H3><a name="ply_nn33"></a>5.9 Line Number and Position Tracking</H3>
+
 
 Position tracking is often a tricky problem when writing compilers.  By default, PLY tracks the line number and position of
 all tokens.    This information is available using the following functions:

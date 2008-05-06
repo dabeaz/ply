@@ -3,6 +3,6 @@ lex: Make sure '#' in rule 't_POUND' is escaped with '\#'.
 Traceback (most recent call last):
   File "./lex_re3.py", line 27, in <module>
     lex.lex()
-  File "../ply/lex.py", line 759, in lex
+  File "../ply/lex.py", line 772, in lex
     raise SyntaxError,"lex: Unable to build lexer."
 SyntaxError: lex: Unable to build lexer.
