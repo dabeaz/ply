@@ -1,6 +1,18 @@
 Version 2.4
 -----------------------------
 05/04/08: beazley
+          A version number is now embedded in the table file signature so that 
+          yacc can more gracefully accomodate changes to the output format
+          in the future.
+
+05/04/08: beazley
+          Removed undocumented .pushback() method on grammar productions.  I'm
+          not sure this ever worked and can't recall ever using it.  Might have
+          been an abandoned idea that never really got fleshed out.  This
+          feature was never described or tested so removing it is hopefully
+          harmless.
+
+05/04/08: beazley
           Added extra error checking to yacc() to detect precedence rules defined
           for undefined terminal symbols.   This allows yacc() to detect a potential
           problem that can be really tricky to debug if no warning message or error
@@ -103,15 +115,15 @@ Version 2.4
 
 11/27/07: beazley
           Added the ability to put the parser into error-handling mode
-          from within a normal production.   To do this, simply call
-          the .error() method like this:
+          from within a normal production.   To do this, simply raise
+          a yacc.SyntaxError exception like this:
 
           def p_some_production(p):
               'some_production : prod1 prod2'
               ...
-              p.error()      # Signal an error
+              raise yacc.SyntaxError      # Signal an error
 
-          A number of things happen after error() has been called.
+          A number of things happen after this occurs:
 
           - The last symbol shifted onto the symbol stack is discarded
             and parser state backed up to what it was before the

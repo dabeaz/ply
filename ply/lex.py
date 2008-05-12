@@ -22,7 +22,8 @@
 # See the file COPYING for a complete copy of the LGPL.
 # -----------------------------------------------------------------------------
 
-__version__ = "2.4"
+__version__    = "2.4"
+__tabversion__ = "2.4"       # Version of table file used
 
 import re, sys, types, copy, os
 
@@ -61,7 +62,6 @@ class LexWarning(object):
 _SkipWarning = LexWarning()         # Warning for use of t.skip() on tokens
 
 # Token class.  This class is used to represent the tokens produced.
-
 class LexToken(object):
     def __str__(self):
         return "LexToken(%s,%r,%d,%d)" % (self.type,self.value,self.lineno,self.lexpos)
@@ -80,7 +80,7 @@ class LexToken(object):
 #    token()          -  Get the next token
 # -----------------------------------------------------------------------------
 
-class Lexer(object):
+class Lexer:
     def __init__(self):
         self.lexre = None             # Master regular expression. This is a list of
                                       # tuples (re,findex) where re is a compiled

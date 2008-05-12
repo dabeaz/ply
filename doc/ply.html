@@ -2396,17 +2396,17 @@ def p_error(p):
 
 
 If necessary, a production rule can manually force the parser to enter error recovery.  This
-is done by calling the <tt>p.error()</tt> method like this:
+is done by raising the <tt>SyntaxError</tt> exception like this:
 
 <blockquote>
 <pre>
 def p_production(p):
     'production : some production ...'
-    p.error()
+    raise yacc.SyntaxError
 </pre>
 </blockquote>
 
-The effect of calling <tt>error()</tt> is the same as if the last symbol shifted onto the
+The effect of raising <tt>SyntaxError</tt> is the same as if the last symbol shifted onto the
 parsing stack was actually a syntax error.  Thus, when you do this, the last symbol shifted is popped off
 of the parsing stack and the current lookahead token is set to an <tt>error</tt> token.   The parser
 then enters error-recovery mode where it tries to reduce rules that can accept <tt>error</tt> tokens.  
@@ -2416,7 +2416,7 @@ The steps that follow from this point are exactly the same as if a syntax error 
 <P>
 One important aspect of manually setting an error is that the <tt>p_error()</tt> function will <b>NOT</b> be
 called in this case.   If you need to issue an error message, make sure you do it in the production that
-calls <tt>p.error()</tt>.
+raises <tt>SyntaxError</tt>.
 
 <P>
 Note: This feature of PLY is meant to mimic the behavior of the YYERROR macro in yacc.

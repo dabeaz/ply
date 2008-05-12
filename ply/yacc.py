@@ -3,7 +3,7 @@
 #
 # Author(s): David M. Beazley (dave@dabeaz.com)
 #
-# Copyright (C) 2001-2007, David M. Beazley
+# Copyright (C) 2001-2008, David M. Beazley
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -50,7 +50,8 @@
 # own risk!
 # ----------------------------------------------------------------------------
 
-__version__ = "2.4"
+__version__    = "2.4"
+__tabversion__ = "2.4"       # Table version
 
 #-----------------------------------------------------------------------------
 #                     === User configurable parameters ===
@@ -67,10 +68,17 @@ default_lr  = 'LALR'           # Default LR table generation method
 
 error_count = 3                # Number of symbols that must be shifted to leave recovery mode
 
+yaccdevel   = 0                # Set to True if developing yacc.  This turns off optimized
+                               # implementations of certain functions.
+
 import re, types, sys, cStringIO, md5, os.path
 
 # Exception raised for yacc-related errors
 class YaccError(Exception):   pass
+
+# Exception raised for errors raised in production rules
+class SyntaxError(Exception): pass
+
 
 # Available instance types.  This is used when parsers are defined by a class.
 # it's a little funky because I want to preserve backwards compatibility
@@ -99,7 +107,7 @@ except AttributeError:
 #        .lexpos     = Starting lex position
 #        .endlexpos  = Ending lex position (optional, set automatically)
 
-class YaccSymbol(object):
+class YaccSymbol:
     def __str__(self):    return self.type
     def __repr__(self):   return str(self)
 
@@ -112,12 +120,12 @@ class YaccSymbol(object):
 # for a symbol.  The lexspan() method returns a tuple (lexpos,endlexpos)
 # representing the range of positional information for a symbol.
 
-class YaccProduction(object):
+class YaccProduction:
     def __init__(self,s,stack=None):
         self.slice = s
-        self.pbstack = []
         self.stack = stack
-        self.errorset = False
+        self.lexer = None
+        self.parser= None
     def __getitem__(self,n):
         if n >= 0: return self.slice[n].value
         else: return self.stack[n].value
@@ -147,15 +155,8 @@ class YaccProduction(object):
         endpos = getattr(self.slice[n],"endlexpos",startpos)
         return startpos,endpos
 
-    def pushback(self,n):
-        if n <= 0:
-            raise ValueError, "Expected a positive value"
-        if n > (len(self.slice)-1):
-            raise ValueError, "Can't push %d tokens. Only %d are available." % (n,len(self.slice)-1)
-        for i in range(0,n):
-            self.pbstack.append(self.slice[-i-1])
     def error(self):
-       self.errorset = True
+       raise SyntaxError
 
 
 # The LR Parsing engine.   This is defined as a class so that multiple parsers
@@ -170,7 +171,7 @@ class Parser:
         # object directly.
 
         if magic != "xyzzy":
-            raise YaccError, "Can't instantiate Parser. Use yacc() instead."
+            raise YaccError, "Can't directly instantiate Parser. Use yacc() instead."
 
         # Reset internal state
         self.productions = None          # List of productions
@@ -192,19 +193,43 @@ class Parser:
         self.statestack.append(0)
 
     def parse(self,input=None,lexer=None,debug=0,tracking=0,tokenfunc=None):
+        if debug or yaccdevel:
+            return self.parsedebug(input,lexer,debug,tracking,tokenfunc)
+        elif tracking:
+            return self.parseopt(input,lexer,debug,tracking,tokenfunc)
+        else:
+            return self.parseopt_notrack(input,lexer,debug,tracking,tokenfunc)
+        
+
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # parsedebug().
+    #
+    # This is the debugging enabled version of parse().  All changes made to the
+    # parsing engine should be made here.   For the non-debugging version,
+    # copy this code to a method parseopt() and delete all of the sections
+    # enclosed in:
+    #
+    #      #--! DEBUG
+    #      statements
+    #      #--! DEBUG
+    #
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    def parsedebug(self,input=None,lexer=None,debug=0,tracking=0,tokenfunc=None):
         lookahead = None                 # Current lookahead symbol
         lookaheadstack = [ ]             # Stack of lookahead symbols
-        actions = self.action            # Local reference to action table
-        goto    = self.goto              # Local reference to goto table
-        prod    = self.productions       # Local reference to production list
+        actions = self.action            # Local reference to action table (to avoid lookup on self.)
+        goto    = self.goto              # Local reference to goto table (to avoid lookup on self.)
+        prod    = self.productions       # Local reference to production list (to avoid lookup on self.)
         pslice  = YaccProduction(None)   # Production object passed to grammar rules
-        errorcount = 0                   # Used during error recovery
-
+        errorcount = 0                   # Used during error recovery 
+        endsym  = "$end"                 # End symbol
         # If no lexer was given, we will try to use the lex module
         if not lexer:
             import lex
             lexer = lex.lexer
-
+        
+        # Set up the lexer and parser objects on pslice
         pslice.lexer = lexer
         pslice.parser = self
 
@@ -217,6 +242,313 @@ class Parser:
            get_token = lexer.token
         else:
            get_token = tokenfunc
+
+        # Set up the state and symbol stacks
+
+        statestack = [ ]                # Stack of parsing states
+        self.statestack = statestack
+        symstack   = [ ]                # Stack of grammar symbols
+        self.symstack = symstack
+
+        pslice.stack = symstack         # Put in the production
+        errtoken   = None               # Err token
+
+        # The start state is assumed to be (0,$end)
+
+        statestack.append(0)
+        sym = YaccSymbol()
+        sym.type = endsym
+        symstack.append(sym)
+        state = 0
+        while 1:
+            # Get the next symbol on the input.  If a lookahead symbol
+            # is already set, we just use that. Otherwise, we'll pull
+            # the next token off of the lookaheadstack or from the lexer
+
+            # --! DEBUG
+            if debug > 1:
+                print 'state', state
+            # --! DEBUG
+
+            if not lookahead:
+                if not lookaheadstack:
+                    lookahead = get_token()     # Get the next token
+                else:
+                    lookahead = lookaheadstack.pop()
+                if not lookahead:
+                    lookahead = YaccSymbol()
+                    lookahead.type = endsym
+
+            # --! DEBUG
+            if debug:
+                errorlead = ("%s . %s" % (" ".join([xx.type for xx in symstack][1:]), str(lookahead))).lstrip()
+            # --! DEBUG
+
+            # Check the action table
+            ltype = lookahead.type
+            t = actions[state].get(ltype)
+
+            # --! DEBUG
+            if debug > 1:
+                print 'action', t
+            # --! DEBUG
+
+            if t is not None:
+                if t > 0:
+                    # shift a symbol on the stack
+                    if ltype is endsym:
+                        # Error, end of input
+                        sys.stderr.write("yacc: Parse error. EOF\n")
+                        return
+                    statestack.append(t)
+                    state = t
+                    
+                    # --! DEBUG
+                    if debug > 1:
+                        sys.stderr.write("%-60s shift state %s\n" % (errorlead, t))
+                    # --! DEBUG
+
+                    symstack.append(lookahead)
+                    lookahead = None
+
+                    # Decrease error count on successful shift
+                    if errorcount: errorcount -=1
+                    continue
+
+                if t < 0:
+                    # reduce a symbol on the stack, emit a production
+                    p = prod[-t]
+                    pname = p.name
+                    plen  = p.len
+
+                    # Get production function
+                    sym = YaccSymbol()
+                    sym.type = pname       # Production name
+                    sym.value = None
+
+                    # --! DEBUG
+                    if debug > 1:
+                        sys.stderr.write("%-60s reduce %d\n" % (errorlead, -t))
+                    # --! DEBUG
+
+                    if plen:
+                        targ = symstack[-plen-1:]
+                        targ[0] = sym
+
+                        # --! TRACKING
+                        if tracking:
+                           t1 = targ[1]
+                           sym.lineno = t1.lineno
+                           sym.lexpos = t1.lexpos
+                           t1 = targ[-1]
+                           sym.endlineno = getattr(t1,"endlineno",t1.lineno)
+                           sym.endlexpos = getattr(t1,"endlexpos",t1.lexpos)
+
+                        # --! TRACKING
+
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        # The code enclosed in this section is duplicated 
+                        # below as a performance optimization.  Make sure
+                        # changes get made in both locations.
+
+                        pslice.slice = targ
+                        
+                        try:
+                            # Call the grammar rule with our special slice object
+                            p.func(pslice)
+                            del symstack[-plen:]
+                            del statestack[-plen:]
+                            symstack.append(sym)
+                            state = goto[statestack[-1]][pname]
+                            statestack.append(state)
+                        except SyntaxError:
+                            # If an error was set. Enter error recovery state
+                            lookaheadstack.append(lookahead)
+                            symstack.pop()
+                            statestack.pop()
+                            state = statestack[-1]
+                            sym.type = 'error'
+                            lookahead = sym
+                            errorcount = error_count
+                            self.errorok = 0
+                        continue
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+                    else:
+
+                        # --! TRACKING
+                        if tracking:
+                           sym.lineno = lexer.lineno
+                           sym.lexpos = lexer.lexpos
+                        # --! TRACKING
+
+                        targ = [ sym ]
+
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        # The code enclosed in this section is duplicated 
+                        # above as a performance optimization.  Make sure
+                        # changes get made in both locations.
+
+                        pslice.slice = targ
+
+                        try:
+                            # Call the grammar rule with our special slice object
+                            p.func(pslice)
+                            symstack.append(sym)
+                            state = goto[statestack[-1]][pname]
+                            statestack.append(state)
+                        except SyntaxError:
+                            # If an error was set. Enter error recovery state
+                            lookaheadstack.append(lookahead)
+                            symstack.pop()
+                            statestack.pop()
+                            state = statestack[-1]
+                            sym.type = 'error'
+                            lookahead = sym
+                            errorcount = error_count
+                            self.errorok = 0
+                        continue
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                if t == 0:
+                    n = symstack[-1]
+                    return getattr(n,"value",None)
+
+            if t == None:
+
+                # --! DEBUG
+                if debug:
+                    sys.stderr.write(errorlead + "\n")
+                # --! DEBUG
+
+                # We have some kind of parsing error here.  To handle
+                # this, we are going to push the current token onto
+                # the tokenstack and replace it with an 'error' token.
+                # If there are any synchronization rules, they may
+                # catch it.
+                #
+                # In addition to pushing the error token, we call call
+                # the user defined p_error() function if this is the
+                # first syntax error.  This function is only called if
+                # errorcount == 0.
+                if errorcount == 0 or self.errorok:
+                    errorcount = error_count
+                    self.errorok = 0
+                    errtoken = lookahead
+                    if errtoken.type is endsym:
+                        errtoken = None               # End of file!
+                    if self.errorfunc:
+                        global errok,token,restart
+                        errok = self.errok        # Set some special functions available in error recovery
+                        token = get_token
+                        restart = self.restart
+                        tok = self.errorfunc(errtoken)
+                        del errok, token, restart   # Delete special functions
+
+                        if self.errorok:
+                            # User must have done some kind of panic
+                            # mode recovery on their own.  The
+                            # returned token is the next lookahead
+                            lookahead = tok
+                            errtoken = None
+                            continue
+                    else:
+                        if errtoken:
+                            if hasattr(errtoken,"lineno"): lineno = lookahead.lineno
+                            else: lineno = 0
+                            if lineno:
+                                sys.stderr.write("yacc: Syntax error at line %d, token=%s\n" % (lineno, errtoken.type))
+                            else:
+                                sys.stderr.write("yacc: Syntax error, token=%s" % errtoken.type)
+                        else:
+                            sys.stderr.write("yacc: Parse error in input. EOF\n")
+                            return
+
+                else:
+                    errorcount = error_count
+
+                # case 1:  the statestack only has 1 entry on it.  If we're in this state, the
+                # entire parse has been rolled back and we're completely hosed.   The token is
+                # discarded and we just keep going.
+
+                if len(statestack) <= 1 and lookahead.type is not endsym:
+                    lookahead = None
+                    errtoken = None
+                    state = 0
+                    # Nuke the pushback stack
+                    del lookaheadstack[:]
+                    continue
+
+                # case 2: the statestack has a couple of entries on it, but we're
+                # at the end of the file. nuke the top entry and generate an error token
+
+                # Start nuking entries on the stack
+                if lookahead.type is endsym:
+                    # Whoa. We're really hosed here. Bail out
+                    return
+
+                if lookahead.type != 'error':
+                    sym = symstack[-1]
+                    if sym.type == 'error':
+                        # Hmmm. Error is on top of stack, we'll just nuke input
+                        # symbol and continue
+                        lookahead = None
+                        continue
+                    t = YaccSymbol()
+                    t.type = 'error'
+                    if hasattr(lookahead,"lineno"):
+                        t.lineno = lookahead.lineno
+                    t.value = lookahead
+                    lookaheadstack.append(lookahead)
+                    lookahead = t
+                else:
+                    symstack.pop()
+                    statestack.pop()
+                    state = statestack[-1]       # Potential bug fix
+
+                continue
+
+            # Call an error function here
+            raise RuntimeError, "yacc: internal parser error!!!\n"
+
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # parseopt().
+    #
+    # Optimized version of parse() method.  DO NOT EDIT THIS CODE DIRECTLY.
+    # Edit the debug version above, then copy any modifications to the method
+    # below while removing #--! DEBUG sections.
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+    def parseopt(self,input=None,lexer=None,debug=0,tracking=0,tokenfunc=None):
+        lookahead = None                 # Current lookahead symbol
+        lookaheadstack = [ ]             # Stack of lookahead symbols
+        actions = self.action            # Local reference to action table (to avoid lookup on self.)
+        goto    = self.goto              # Local reference to goto table (to avoid lookup on self.)
+        prod    = self.productions       # Local reference to production list (to avoid lookup on self.)
+        pslice  = YaccProduction(None)   # Production object passed to grammar rules
+        errorcount = 0                   # Used during error recovery 
+
+        # If no lexer was given, we will try to use the lex module
+        if not lexer:
+            import lex
+            lexer = lex.lexer
+        
+        # Set up the lexer and parser objects on pslice
+        pslice.lexer = lexer
+        pslice.parser = self
+
+        # If input was supplied, pass to lexer
+        if input is not None:
+            lexer.input(input)
+
+        if tokenfunc is None:
+           # Tokenize function
+           get_token = lexer.token
+        else:
+           get_token = tokenfunc
+
+        # Set up the state and symbol stacks
 
         statestack = [ ]                # Stack of parsing states
         self.statestack = statestack
@@ -237,8 +569,7 @@ class Parser:
             # Get the next symbol on the input.  If a lookahead symbol
             # is already set, we just use that. Otherwise, we'll pull
             # the next token off of the lookaheadstack or from the lexer
-            if debug > 1:
-                print 'state', state
+
             if not lookahead:
                 if not lookaheadstack:
                     lookahead = get_token()     # Get the next token
@@ -247,15 +578,11 @@ class Parser:
                 if not lookahead:
                     lookahead = YaccSymbol()
                     lookahead.type = '$end'
-            if debug:
-                errorlead = ("%s . %s" % (" ".join([xx.type for xx in symstack][1:]), str(lookahead))).lstrip()
 
             # Check the action table
             ltype = lookahead.type
             t = actions[state].get(ltype)
 
-            if debug > 1:
-                print 'action', t
             if t is not None:
                 if t > 0:
                     # shift a symbol on the stack
@@ -265,8 +592,7 @@ class Parser:
                         return
                     statestack.append(t)
                     state = t
-                    if debug > 1:
-                        sys.stderr.write("%-60s shift state %s\n" % (errorlead, t))
+
                     symstack.append(lookahead)
                     lookahead = None
 
@@ -284,12 +610,12 @@ class Parser:
                     sym = YaccSymbol()
                     sym.type = pname       # Production name
                     sym.value = None
-                    if debug > 1:
-                        sys.stderr.write("%-60s reduce %d\n" % (errorlead, -t))
 
                     if plen:
                         targ = symstack[-plen-1:]
                         targ[0] = sym
+
+                        # --! TRACKING
                         if tracking:
                            t1 = targ[1]
                            sym.lineno = t1.lineno
@@ -297,52 +623,79 @@ class Parser:
                            t1 = targ[-1]
                            sym.endlineno = getattr(t1,"endlineno",t1.lineno)
                            sym.endlexpos = getattr(t1,"endlexpos",t1.lexpos)
+
+                        # --! TRACKING
+
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        # The code enclosed in this section is duplicated 
+                        # below as a performance optimization.  Make sure
+                        # changes get made in both locations.
+
+                        pslice.slice = targ
+                        
+                        try:
+                            # Call the grammar rule with our special slice object
+                            p.func(pslice)
+                            del symstack[-plen:]
+                            del statestack[-plen:]
+                            symstack.append(sym)
+                            state = goto[statestack[-1]][pname]
+                            statestack.append(state)
+                        except SyntaxError:
+                            # If an error was set. Enter error recovery state
+                            lookaheadstack.append(lookahead)
+                            symstack.pop()
+                            statestack.pop()
+                            state = statestack[-1]
+                            sym.type = 'error'
+                            lookahead = sym
+                            errorcount = error_count
+                            self.errorok = 0
+                        continue
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
                     else:
+
+                        # --! TRACKING
                         if tracking:
                            sym.lineno = lexer.lineno
                            sym.lexpos = lexer.lexpos
+                        # --! TRACKING
+
                         targ = [ sym ]
-                    pslice.slice = targ
 
-                    # Call the grammar rule with our special slice object
-                    p.func(pslice)
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        # The code enclosed in this section is duplicated 
+                        # above as a performance optimization.  Make sure
+                        # changes get made in both locations.
 
-                    # If there was a pushback, put that on the stack
-                    if pslice.pbstack:
-                       lookaheadstack.append(lookahead)
-                       for _t in pslice.pbstack:
-                           lookaheadstack.append(_t)
-                       lookahead = None
-                       pslice.pbstack = []
+                        pslice.slice = targ
 
-                    # If an error was set. Enter error recovery state
-                    if pslice.errorset:
-                       pslice.errorset = False
-                       lookaheadstack.append(lookahead)
-                       symstack.pop()
-                       statestack.pop()
-                       state = statestack[-1]
-                       sym.type = 'error'
-                       lookahead = sym
-                       errorcount = error_count
-                       self.errorok = 0
-                    else:
-                       if plen:
-                           del symstack[-plen:]
-                           del statestack[-plen:]
-                       symstack.append(sym)
-                       state = goto[statestack[-1]][pname]
-                       statestack.append(state)
-
-                    continue
+                        try:
+                            # Call the grammar rule with our special slice object
+                            p.func(pslice)
+                            symstack.append(sym)
+                            state = goto[statestack[-1]][pname]
+                            statestack.append(state)
+                        except SyntaxError:
+                            # If an error was set. Enter error recovery state
+                            lookaheadstack.append(lookahead)
+                            symstack.pop()
+                            statestack.pop()
+                            state = statestack[-1]
+                            sym.type = 'error'
+                            lookahead = sym
+                            errorcount = error_count
+                            self.errorok = 0
+                        continue
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 if t == 0:
                     n = symstack[-1]
                     return getattr(n,"value",None)
 
             if t == None:
-                if debug:
-                    sys.stderr.write(errorlead + "\n")
+
                 # We have some kind of parsing error here.  To handle
                 # this, we are going to push the current token onto
                 # the tokenstack and replace it with an 'error' token.
@@ -432,6 +785,264 @@ class Parser:
 
             # Call an error function here
             raise RuntimeError, "yacc: internal parser error!!!\n"
+
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # parseopt_notrack().
+    #
+    # Optimized version of parseopt() with line number tracking removed. 
+    # DO NOT EDIT THIS CODE DIRECTLY. Copy the optimized version and remove
+    # code in the #--! TRACKING sections
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    def parseopt_notrack(self,input=None,lexer=None,debug=0,tracking=0,tokenfunc=None):
+        lookahead = None                 # Current lookahead symbol
+        lookaheadstack = [ ]             # Stack of lookahead symbols
+        actions = self.action            # Local reference to action table (to avoid lookup on self.)
+        goto    = self.goto              # Local reference to goto table (to avoid lookup on self.)
+        prod    = self.productions       # Local reference to production list (to avoid lookup on self.)
+        pslice  = YaccProduction(None)   # Production object passed to grammar rules
+        errorcount = 0                   # Used during error recovery 
+
+        # If no lexer was given, we will try to use the lex module
+        if not lexer:
+            import lex
+            lexer = lex.lexer
+        
+        # Set up the lexer and parser objects on pslice
+        pslice.lexer = lexer
+        pslice.parser = self
+
+        # If input was supplied, pass to lexer
+        if input is not None:
+            lexer.input(input)
+
+        if tokenfunc is None:
+           # Tokenize function
+           get_token = lexer.token
+        else:
+           get_token = tokenfunc
+
+        # Set up the state and symbol stacks
+
+        statestack = [ ]                # Stack of parsing states
+        self.statestack = statestack
+        symstack   = [ ]                # Stack of grammar symbols
+        self.symstack = symstack
+
+        pslice.stack = symstack         # Put in the production
+        errtoken   = None               # Err token
+
+        # The start state is assumed to be (0,$end)
+
+        statestack.append(0)
+        sym = YaccSymbol()
+        sym.type = '$end'
+        symstack.append(sym)
+        state = 0
+        while 1:
+            # Get the next symbol on the input.  If a lookahead symbol
+            # is already set, we just use that. Otherwise, we'll pull
+            # the next token off of the lookaheadstack or from the lexer
+
+            if not lookahead:
+                if not lookaheadstack:
+                    lookahead = get_token()     # Get the next token
+                else:
+                    lookahead = lookaheadstack.pop()
+                if not lookahead:
+                    lookahead = YaccSymbol()
+                    lookahead.type = '$end'
+
+            # Check the action table
+            ltype = lookahead.type
+            t = actions[state].get(ltype)
+
+            if t is not None:
+                if t > 0:
+                    # shift a symbol on the stack
+                    if ltype == '$end':
+                        # Error, end of input
+                        sys.stderr.write("yacc: Parse error. EOF\n")
+                        return
+                    statestack.append(t)
+                    state = t
+
+                    symstack.append(lookahead)
+                    lookahead = None
+
+                    # Decrease error count on successful shift
+                    if errorcount: errorcount -=1
+                    continue
+
+                if t < 0:
+                    # reduce a symbol on the stack, emit a production
+                    p = prod[-t]
+                    pname = p.name
+                    plen  = p.len
+
+                    # Get production function
+                    sym = YaccSymbol()
+                    sym.type = pname       # Production name
+                    sym.value = None
+
+                    if plen:
+                        targ = symstack[-plen-1:]
+                        targ[0] = sym
+
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        # The code enclosed in this section is duplicated 
+                        # below as a performance optimization.  Make sure
+                        # changes get made in both locations.
+
+                        pslice.slice = targ
+                        
+                        try:
+                            # Call the grammar rule with our special slice object
+                            p.func(pslice)
+                            del symstack[-plen:]
+                            del statestack[-plen:]
+                            symstack.append(sym)
+                            state = goto[statestack[-1]][pname]
+                            statestack.append(state)
+                        except SyntaxError:
+                            # If an error was set. Enter error recovery state
+                            lookaheadstack.append(lookahead)
+                            symstack.pop()
+                            statestack.pop()
+                            state = statestack[-1]
+                            sym.type = 'error'
+                            lookahead = sym
+                            errorcount = error_count
+                            self.errorok = 0
+                        continue
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+                    else:
+
+                        targ = [ sym ]
+
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        # The code enclosed in this section is duplicated 
+                        # above as a performance optimization.  Make sure
+                        # changes get made in both locations.
+
+                        pslice.slice = targ
+
+                        try:
+                            # Call the grammar rule with our special slice object
+                            p.func(pslice)
+                            symstack.append(sym)
+                            state = goto[statestack[-1]][pname]
+                            statestack.append(state)
+                        except SyntaxError:
+                            # If an error was set. Enter error recovery state
+                            lookaheadstack.append(lookahead)
+                            symstack.pop()
+                            statestack.pop()
+                            state = statestack[-1]
+                            sym.type = 'error'
+                            lookahead = sym
+                            errorcount = error_count
+                            self.errorok = 0
+                        continue
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                if t == 0:
+                    n = symstack[-1]
+                    return getattr(n,"value",None)
+
+            if t == None:
+
+                # We have some kind of parsing error here.  To handle
+                # this, we are going to push the current token onto
+                # the tokenstack and replace it with an 'error' token.
+                # If there are any synchronization rules, they may
+                # catch it.
+                #
+                # In addition to pushing the error token, we call call
+                # the user defined p_error() function if this is the
+                # first syntax error.  This function is only called if
+                # errorcount == 0.
+                if errorcount == 0 or self.errorok:
+                    errorcount = error_count
+                    self.errorok = 0
+                    errtoken = lookahead
+                    if errtoken.type == '$end':
+                        errtoken = None               # End of file!
+                    if self.errorfunc:
+                        global errok,token,restart
+                        errok = self.errok        # Set some special functions available in error recovery
+                        token = get_token
+                        restart = self.restart
+                        tok = self.errorfunc(errtoken)
+                        del errok, token, restart   # Delete special functions
+
+                        if self.errorok:
+                            # User must have done some kind of panic
+                            # mode recovery on their own.  The
+                            # returned token is the next lookahead
+                            lookahead = tok
+                            errtoken = None
+                            continue
+                    else:
+                        if errtoken:
+                            if hasattr(errtoken,"lineno"): lineno = lookahead.lineno
+                            else: lineno = 0
+                            if lineno:
+                                sys.stderr.write("yacc: Syntax error at line %d, token=%s\n" % (lineno, errtoken.type))
+                            else:
+                                sys.stderr.write("yacc: Syntax error, token=%s" % errtoken.type)
+                        else:
+                            sys.stderr.write("yacc: Parse error in input. EOF\n")
+                            return
+
+                else:
+                    errorcount = error_count
+
+                # case 1:  the statestack only has 1 entry on it.  If we're in this state, the
+                # entire parse has been rolled back and we're completely hosed.   The token is
+                # discarded and we just keep going.
+
+                if len(statestack) <= 1 and lookahead.type != '$end':
+                    lookahead = None
+                    errtoken = None
+                    state = 0
+                    # Nuke the pushback stack
+                    del lookaheadstack[:]
+                    continue
+
+                # case 2: the statestack has a couple of entries on it, but we're
+                # at the end of the file. nuke the top entry and generate an error token
+
+                # Start nuking entries on the stack
+                if lookahead.type == '$end':
+                    # Whoa. We're really hosed here. Bail out
+                    return
+
+                if lookahead.type != 'error':
+                    sym = symstack[-1]
+                    if sym.type == 'error':
+                        # Hmmm. Error is on top of stack, we'll just nuke input
+                        # symbol and continue
+                        lookahead = None
+                        continue
+                    t = YaccSymbol()
+                    t.type = 'error'
+                    if hasattr(lookahead,"lineno"):
+                        t.lineno = lookahead.lineno
+                    t.value = lookahead
+                    lookaheadstack.append(lookahead)
+                    lookahead = t
+                else:
+                    symstack.pop()
+                    statestack.pop()
+                    state = statestack[-1]       # Potential bug fix
+
+                continue
+
+            # Call an error function here
+            raise RuntimeError, "yacc: internal parser error!!!\n"
+
 
 # -----------------------------------------------------------------------------
 #                          === Parser Construction ===
@@ -548,6 +1159,8 @@ def initialize_vars():
     Signature    = md5.new()   # Digital signature of the grammar rules, precedence
                                # and other information.  Used to determined when a
                                # parsing table needs to be regenerated.
+    
+    Signature.update(__tabversion__)
 
     Requires     = { }     # Requires list
 
