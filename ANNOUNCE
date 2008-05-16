@@ -1,12 +1,12 @@
-February 19, 2007
+May 17, 2008
 
-                  Announcing :  PLY-2.3 (Python Lex-Yacc)
+                  Announcing :  PLY-2.4 (Python Lex-Yacc)
 
                         http://www.dabeaz.com/ply
 
 I'm pleased to announce a significant new update to PLY---a 100% Python
-implementation of the common parsing tools lex and yacc.  PLY-2.3 is
-a minor bug fix release, but also features improved performance.
+implementation of the common parsing tools lex and yacc.  PLY-2.4 fixes
+some bugs in error handling and provides some performance improvements.
 
 If you are new to PLY, here are a few highlights:
 

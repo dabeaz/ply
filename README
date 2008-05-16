@@ -1,4 +1,4 @@
-PLY (Python Lex-Yacc)                   Version 2.4  (December, 2007)
+PLY (Python Lex-Yacc)                   Version 2.4  (May, 2008)
 
 David M. Beazley (dave@dabeaz.com)
 
@@ -99,7 +99,7 @@ Requirements
 PLY requires the use of Python 2.1 or greater.  However, you should
 use the latest Python release if possible.  It should work on just
 about any platform.  PLY has been tested with both CPython and Jython.
-However, it does not seem to work with IronPython.
+It also seems to work with IronPython.
 
 Resources
 =========
