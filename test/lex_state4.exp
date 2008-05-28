@@ -2,6 +2,5 @@ lex: state type for state comment must be 'inclusive' or 'exclusive'
 Traceback (most recent call last):
   File "./lex_state4.py", line 39, in <module>
     lex.lex()
-  File "../ply/lex.py", line 772, in lex
-    raise SyntaxError,"lex: Unable to build lexer."
+  File "../../ply/lex.py", line 783, in lex
 SyntaxError: lex: Unable to build lexer.

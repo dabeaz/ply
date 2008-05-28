@@ -22,7 +22,7 @@
 # See the file COPYING for a complete copy of the LGPL.
 # -----------------------------------------------------------------------------
 
-__version__    = "2.4"
+__version__    = "2.5"
 __tabversion__ = "2.4"       # Version of table file used
 
 import re, sys, types, copy, os
@@ -89,6 +89,7 @@ class Lexer:
         self.lexretext = None         # Current regular expression strings
         self.lexstatere = {}          # Dictionary mapping lexer states to master regexs
         self.lexstateretext = {}      # Dictionary mapping lexer states to regex strings
+        self.lexstaterenames = {}     # Dictionary mapping lexer states to symbol names
         self.lexstate = "INITIAL"     # Current lexer state
         self.lexstatestack = []       # Stack of lexer states
         self.lexstateinfo = None      # State information
@@ -161,7 +162,7 @@ class Lexer:
         for key, lre in self.lexstatere.items():
              titem = []
              for i in range(len(lre)):
-                  titem.append((self.lexstateretext[key][i],_funcs_to_names(lre[i][1],key,initialfuncs)))
+                  titem.append((self.lexstateretext[key][i],_funcs_to_names(lre[i][1],self.lexstaterenames[key][i])))
              tabre[key] = titem
 
         tf.write("_lexstatere   = %s\n" % repr(tabre))
@@ -409,20 +410,11 @@ def _validate_file(filename):
 # suitable for output to a table file
 # -----------------------------------------------------------------------------
 
-def _funcs_to_names(funclist,state,initial):
-    # If this is the initial state, we clear the state and initial list
-    if state == 'INITIAL': 
-        state = ""
-        initial = []
+def _funcs_to_names(funclist,namelist):
     result = []
-    for f in funclist:
+    for f,name in zip(funclist,namelist):
          if f and f[0]:
-             # If a function is defined,  make sure it's name corresponds to the correct state
-             if not initial or f in initial:
-                 statestr = "t_"
-             else:
-                 statestr = "t_"+state+"_"
-             result.append((statestr+ f[1],f[1]))
+             result.append((name, f[1]))
          else:
              result.append(f)
     return result
@@ -459,25 +451,27 @@ def _form_master_re(relist,reflags,ldict,toknames):
 
         # Build the index to function map for the matching engine
         lexindexfunc = [ None ] * (max(lexre.groupindex.values())+1)
+        lexindexnames = lexindexfunc[:]
+
         for f,i in lexre.groupindex.items():
             handle = ldict.get(f,None)
             if type(handle) in (types.FunctionType, types.MethodType):
                 lexindexfunc[i] = (handle,toknames[f])
+                lexindexnames[i] = f
             elif handle is not None:
-                # If rule was specified as a string, we build an anonymous
-                # callback function to carry out the action
+                lexindexnames[i] = f
                 if f.find("ignore_") > 0:
                     lexindexfunc[i] = (None,None)
                 else:
                     lexindexfunc[i] = (None, toknames[f])
-
-        return [(lexre,lexindexfunc)],[regex]
+        
+        return [(lexre,lexindexfunc)],[regex],[lexindexnames]
     except Exception,e:
         m = int(len(relist)/2)
         if m == 0: m = 1
-        llist, lre = _form_master_re(relist[:m],reflags,ldict,toknames)
-        rlist, rre = _form_master_re(relist[m:],reflags,ldict,toknames)
-        return llist+rlist, lre+rre
+        llist, lre, lnames = _form_master_re(relist[:m],reflags,ldict,toknames)
+        rlist, rre, rnames = _form_master_re(relist[m:],reflags,ldict,toknames)
+        return llist+rlist, lre+rre, lnames+rnames
 
 # -----------------------------------------------------------------------------
 # def _statetoken(s,names)
@@ -794,9 +788,10 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
     # Build the master regular expressions
 
     for state in regexs.keys():
-        lexre, re_text = _form_master_re(regexs[state],reflags,ldict,toknames)
+        lexre, re_text, re_names = _form_master_re(regexs[state],reflags,ldict,toknames)
         lexobj.lexstatere[state] = lexre
         lexobj.lexstateretext[state] = re_text
+        lexobj.lexstaterenames[state] = re_names
         if debug:
             for i in range(len(re_text)):
                  print "lex: state '%s'. regex[%d] = '%s'" % (state, i, re_text[i])
@@ -806,6 +801,7 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
         if state != "INITIAL" and type == 'inclusive':
              lexobj.lexstatere[state].extend(lexobj.lexstatere['INITIAL'])
              lexobj.lexstateretext[state].extend(lexobj.lexstateretext['INITIAL'])
+             lexobj.lexstaterenames[state].extend(lexobj.lexstaterenames['INITIAL'])
 
     lexobj.lexstateinfo = stateinfo
     lexobj.lexre = lexobj.lexstatere["INITIAL"]
@@ -888,7 +884,10 @@ def runmain(lexer=None,data=None):
 
 def TOKEN(r):
     def set_doc(f):
-        f.__doc__ = r
+        if callable(r):
+            f.__doc__ = r.__doc__
+        else:
+            f.__doc__ = r
         return f
     return set_doc
 

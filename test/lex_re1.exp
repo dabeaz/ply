@@ -2,6 +2,5 @@ lex: Invalid regular expression for rule 't_NUMBER'. unbalanced parenthesis
 Traceback (most recent call last):
   File "./lex_re1.py", line 25, in <module>
     lex.lex()
-  File "../ply/lex.py", line 772, in lex
-    raise SyntaxError,"lex: Unable to build lexer."
+  File "../../ply/lex.py", line 783, in lex
 SyntaxError: lex: Unable to build lexer.

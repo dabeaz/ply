@@ -12,7 +12,7 @@ dave@dabeaz.com<br>
 </b>
 
 <p>
-<b>PLY Version: 2.4</b>
+<b>PLY Version: 2.5</b>
 <p>
 
 <!-- INDEX -->
@@ -472,7 +472,8 @@ def t_ID(t):
 </blockquote>
 
 It is important to note that storing data in other attribute names is <em>not</em> recommended.  The <tt>yacc.py</tt> module only exposes the
-contents of the <tt>value</tt> attribute.  Thus, accessing other attributes may  be unnecessarily awkward.
+contents of the <tt>value</tt> attribute.  Thus, accessing other attributes may  be unnecessarily awkward.   If you
+need to store multiple values on a token, assign a tuple, dictionary, or instance to <tt>value</tt>.
 
 <H3><a name="ply_nn8"></a>3.5 Discarded tokens</H3>
 
@@ -894,14 +895,18 @@ m.test("3 + 4")     # Test it
 </pre>
 </blockquote>
 
-For reasons that are subtle, you should <em>NOT</em> invoke <tt>lex.lex()</tt> inside the <tt>__init__()</tt> method of your class.  If you
-do, it may cause bizarre behavior if someone tries to duplicate a lexer object.  Keep reading.
+When building a lexer from class, you should construct the lexer from
+an instance of the class, not the class object itself.  Also, for
+reasons that are subtle, you should <em>NOT</em>
+invoke <tt>lex.lex()</tt> inside the <tt>__init__()</tt> method of
+your class.  If you do, it may cause bizarre behavior if someone tries
+to duplicate a lexer object. 
 
 <H3><a name="ply_nn18"></a>3.15 Maintaining state</H3>
 
-
 In your lexer, you may want to maintain a variety of state information.  This might include mode settings, symbol tables, and other details.  There are a few
-different ways to handle this situation.  First, you could just keep some global variables:
+different ways to handle this situation.  One way to do this is to keep a set of global variables in the module
+where you created the lexer.   For example:
 
 <blockquote>
 <pre>
@@ -940,9 +945,9 @@ lexer.num_count = 0            # Set the initial count
 </blockquote>
 
 This latter approach has the advantage of storing information inside
-the lexer itself---something that may be useful if multiple instances
+the lexer object itself---something that may be useful if multiple instances
 of the same lexer have been created.  However, it may also feel kind
-of "hacky" to the purists.  Just to put their mind at some ease, all
+of "hacky" to the OO purists.  Just to put their mind at some ease, all
 internal attributes of the lexer (with the exception of <tt>lineno</tt>) have names that are prefixed
 by <tt>lex</tt> (e.g., <tt>lexdata</tt>,<tt>lexpos</tt>, etc.).  Thus,
 it should be perfectly safe to store attributes in the lexer that
@@ -977,11 +982,11 @@ lexer = lex.lex(object=m)
 </pre>
 </blockquote>
 
-The class approach may be the easiest to manage if your application is going to be creating multiple instances of the same lexer and
-you need to manage a lot of state.  
+The class approach may be the easiest to manage if your application is
+going to be creating multiple instances of the same lexer and you need
+to manage a lot of state.
 
 <H3><a name="ply_nn19"></a>3.16 Lexer cloning</H3>
-
 
 <p>
 If necessary, a lexer object can be quickly duplicated by invoking its <tt>clone()</tt> method.  For example:

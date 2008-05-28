@@ -1,8 +1,8 @@
-PLY (Python Lex-Yacc)                   Version 2.4  (May, 2008)
+PLY (Python Lex-Yacc)                   Version 2.5  (May 28, 2008)
 
 David M. Beazley (dave@dabeaz.com)
 
-Copyright (C) 2001-2007   David M. Beazley
+Copyright (C) 2001-2008   David M. Beazley
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

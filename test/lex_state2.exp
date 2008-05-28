@@ -3,6 +3,5 @@ lex: invalid state specifier 'example'. Must be a tuple (statename,'exclusive|in
 Traceback (most recent call last):
   File "./lex_state2.py", line 38, in <module>
     lex.lex()
-  File "../ply/lex.py", line 772, in lex
-    raise SyntaxError,"lex: Unable to build lexer."
+  File "../../ply/lex.py", line 783, in lex
 SyntaxError: lex: Unable to build lexer.

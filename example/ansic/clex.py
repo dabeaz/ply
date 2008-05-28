@@ -143,12 +143,12 @@ t_CCONST = r'(L)?\'([^\\\n]|(\\.))*?\''
 # Comments
 def t_comment(t):
     r'/\*(.|\n)*?\*/'
-    t.lineno += t.value.count('\n')
+    t.lexer.lineno += t.value.count('\n')
 
 # Preprocessor directive (ignored)
 def t_preprocessor(t):
     r'\#(.)*?\n'
-    t.lineno += 1
+    t.lexer.lineno += 1
     
 def t_error(t):
     print "Illegal character %s" % repr(t.value[0])

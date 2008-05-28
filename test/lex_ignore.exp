@@ -2,6 +2,5 @@
 Traceback (most recent call last):
   File "./lex_ignore.py", line 29, in <module>
     lex.lex()
-  File "../ply/lex.py", line 772, in lex
-    raise SyntaxError,"lex: Unable to build lexer."
+  File "../../ply/lex.py", line 783, in lex
 SyntaxError: lex: Unable to build lexer.
