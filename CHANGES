@@ -1,3 +1,9 @@
+Version 2.5
+-----------------------------
+05/28/08: beazley
+          Fixed a bug with writing lex-tables in optimized mode and start states.
+          Reported by Kevin Henry.
+
 Version 2.4
 -----------------------------
 05/04/08: beazley

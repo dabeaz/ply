@@ -150,10 +150,18 @@ class Lexer:
         tf.write("_lexstateinfo = %s\n" % repr(self.lexstateinfo))
 
         tabre = { }
+        # Collect all functions in the initial state
+        initial = self.lexstatere["INITIAL"]
+        initialfuncs = []
+        for part in initial:
+            for f in part[1]:
+                if f and f[0]:
+                    initialfuncs.append(f)
+
         for key, lre in self.lexstatere.items():
              titem = []
              for i in range(len(lre)):
-                  titem.append((self.lexstateretext[key][i],_funcs_to_names(lre[i][1])))
+                  titem.append((self.lexstateretext[key][i],_funcs_to_names(lre[i][1],key,initialfuncs)))
              tabre[key] = titem
 
         tf.write("_lexstatere   = %s\n" % repr(tabre))
@@ -401,11 +409,20 @@ def _validate_file(filename):
 # suitable for output to a table file
 # -----------------------------------------------------------------------------
 
-def _funcs_to_names(funclist):
+def _funcs_to_names(funclist,state,initial):
+    # If this is the initial state, we clear the state and initial list
+    if state == 'INITIAL': 
+        state = ""
+        initial = []
     result = []
     for f in funclist:
          if f and f[0]:
-             result.append(('t_'+f[1],f[1]))
+             # If a function is defined,  make sure it's name corresponds to the correct state
+             if not initial or f in initial:
+                 statestr = "t_"
+             else:
+                 statestr = "t_"+state+"_"
+             result.append((statestr+ f[1],f[1]))
          else:
              result.append(f)
     return result
