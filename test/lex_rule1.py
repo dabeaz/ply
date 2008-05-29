@@ -1,9 +1,9 @@
-# lex_token.py
+# lex_rule1.py
 #
-# Rule defined as some other type
+# Rule function with incorrect number of arguments
 
 import sys
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 
 import ply.lex as lex
 
@@ -20,7 +20,7 @@ t_NUMBER = 1
 def t_error(t):
     pass
 
-sys.tracebacklimit = 0
+
 
 lex.lex()
 

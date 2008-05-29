@@ -1,6 +1,0 @@
-./lex_ignore.py:20: Rule 't_ignore' must be defined as a string.
-Traceback (most recent call last):
-  File "./lex_ignore.py", line 29, in <module>
-    lex.lex()
-  File "../../ply/lex.py", line 783, in lex
-SyntaxError: lex: Unable to build lexer.

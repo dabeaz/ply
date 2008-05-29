@@ -1,9 +1,9 @@
-# lex_token.py
+# lex_ignore2.py
 #
 # ignore declaration as a raw string
 
 import sys
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 
 import ply.lex as lex
 
@@ -22,7 +22,7 @@ t_ignore = r' \t'
 def t_error(t):
     pass
 
-import sys
+
 
 lex.lex()
 

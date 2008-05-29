@@ -1,9 +1,9 @@
-# lex_token.py
+# lex_re2.py
 #
 # Regular expression rule matches empty string
 
 import sys
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 
 import ply.lex as lex
 
@@ -20,7 +20,7 @@ t_NUMBER = r'(\d+)'
 def t_error(t):
     pass
 
-import sys
+
 
 lex.lex()
 

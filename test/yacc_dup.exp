@@ -1,4 +1,0 @@
-./yacc_dup.py:28: Function p_statement redefined. Previously defined on line 24
-yacc: Warning. Token 'EQUALS' defined, but not used.
-yacc: Warning. There is 1 unused token.
-yacc: Generating LALR parsing table...

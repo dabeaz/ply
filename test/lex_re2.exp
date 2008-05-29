@@ -1,6 +1,0 @@
-lex: Regular expression for rule 't_PLUS' matches empty string.
-Traceback (most recent call last):
-  File "./lex_re2.py", line 25, in <module>
-    lex.lex()
-  File "../../ply/lex.py", line 783, in lex
-SyntaxError: lex: Unable to build lexer.

@@ -1,3 +1,9 @@
+Version 2.6
+-----------------------------
+05/29/08: beazley
+          Completely revamped the testing system to use the unittest module for everything.
+          Added additional tests to cover new errors/warnings.
+
 Version 2.5
 -----------------------------
 05/28/08: beazley

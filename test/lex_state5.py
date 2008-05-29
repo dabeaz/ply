@@ -1,9 +1,9 @@
-# lex_state2.py
+# lex_state5.py
 #
 # Bad state declaration
 
 import sys
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 
 import ply.lex as lex
 
@@ -13,7 +13,6 @@ tokens = [
     "NUMBER",
     ]
 
-comment = 1
 states = (('comment', 'exclusive'),
           ('comment', 'exclusive'))
 
@@ -35,7 +34,6 @@ def t_comment_body_part(t):
 def t_error(t):
     pass
 
-import sys
 
 lex.lex()
 

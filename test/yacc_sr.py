@@ -4,9 +4,8 @@
 # A grammar with shift-reduce conflicts
 # -----------------------------------------------------------------------------
 import sys
-sys.tracebacklimit = 0
 
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 import ply.yacc as yacc
 
 from calclex import tokens
@@ -32,7 +31,7 @@ def p_expression_binop(t):
     if t[2] == '+'  : t[0] = t[1] + t[3]
     elif t[2] == '-': t[0] = t[1] - t[3]
     elif t[2] == '*': t[0] = t[1] * t[3]
-    elif t[3] == '/': t[0] = t[1] / t[3]
+    elif t[2] == '/': t[0] = t[1] / t[3]
 
 def p_expression_uminus(t):
     'expression : MINUS expression'

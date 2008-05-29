@@ -1,5 +1,0 @@
-yacc: Warning. Token 'NUMBER' defined, but not used.
-yacc: Warning. There is 1 unused token.
-yacc: Infinite recursion detected for symbol 'statement'.
-yacc: Infinite recursion detected for symbol 'expression'.
-ply.yacc.YaccError: Unable to construct parser.

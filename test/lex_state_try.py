@@ -1,9 +1,9 @@
-# lex_state2.py
+# lex_state_try.py
 #
 # Declaration of a state for which no rules are defined
 
 import sys
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 
 import ply.lex as lex
 
@@ -13,7 +13,6 @@ tokens = [
     "NUMBER",
     ]
 
-comment = 1
 states = (('comment', 'exclusive'),)
 
 t_PLUS = r'\+'
@@ -38,8 +37,6 @@ def t_error(t):
 
 t_comment_error = t_error
 t_comment_ignore = t_ignore
-
-import sys
 
 lex.lex()
 

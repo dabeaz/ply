@@ -1,9 +1,9 @@
-# lex_token.py
+# lex_doc1.py
 #
 # Missing documentation string
 
 import sys
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 
 import ply.lex as lex
 
@@ -20,10 +20,6 @@ def t_NUMBER(t):
 
 def t_error(t):
     pass
-
-
-import sys
-sys.tracebacklimit = 0
 
 lex.lex()
 

@@ -1,4 +1,4 @@
 #!/bin/sh
 
-rm -f *~ *.pyc *.dif *.out 
+rm -f *~ *.pyc *.pyo *.dif *.out 
 

@@ -1,7 +1,0 @@
-lex: invalid state specifier 'comment'. Must be a tuple (statename,'exclusive|inclusive')
-lex: invalid state specifier 'example'. Must be a tuple (statename,'exclusive|inclusive')
-Traceback (most recent call last):
-  File "./lex_state2.py", line 38, in <module>
-    lex.lex()
-  File "../../ply/lex.py", line 783, in lex
-SyntaxError: lex: Unable to build lexer.

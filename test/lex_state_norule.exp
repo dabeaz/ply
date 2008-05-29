@@ -1,6 +1,0 @@
-lex: No rules defined for state 'example'
-Traceback (most recent call last):
-  File "./lex_state_norule.py", line 40, in <module>
-    lex.lex()
-  File "../../ply/lex.py", line 783, in lex
-SyntaxError: lex: Unable to build lexer.

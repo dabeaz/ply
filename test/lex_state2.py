@@ -3,7 +3,7 @@
 # Bad state declaration
 
 import sys
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 
 import ply.lex as lex
 
@@ -33,7 +33,7 @@ def t_comment_body_part(t):
 def t_error(t):
     pass
 
-import sys
+
 
 lex.lex()
 

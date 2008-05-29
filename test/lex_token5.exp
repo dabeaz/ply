@@ -1,1 +1,0 @@
-ply.lex.LexError: ./lex_token5.py:19: Rule 't_NUMBER' returned an unknown token type 'NUM'

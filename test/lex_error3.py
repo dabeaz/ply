@@ -1,9 +1,9 @@
-# lex_token.py
+# lex_error3.py
 #
 # t_error defined as function, but with wrong # args
 
 import sys
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 
 import ply.lex as lex
 
@@ -20,7 +20,7 @@ t_NUMBER = r'\d+'
 def t_error():
     pass
 
-sys.tracebacklimit = 0
+
 
 lex.lex()
 

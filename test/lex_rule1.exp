@@ -1,2 +1,0 @@
-lex: t_NUMBER not defined as a function or string
-SyntaxError: lex: Unable to build lexer.

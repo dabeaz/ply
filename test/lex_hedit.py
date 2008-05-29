@@ -14,7 +14,7 @@
 # such tokens
 # -----------------------------------------------------------------------------
 import sys
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 
 import ply.lex as lex
 

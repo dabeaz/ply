@@ -36,7 +36,7 @@ def p_expression_binop(t):
     if t[2] == '+'  : t[0] = t[1] + t[3]
     elif t[2] == '-': t[0] = t[1] - t[3]
     elif t[2] == '*': t[0] = t[1] * t[3]
-    elif t[3] == '/': t[0] = t[1] / t[3]
+    elif t[2] == '/': t[0] = t[1] / t[3]
 
 def p_expression_uminus(t):
     'expression : MINUS expression %prec UMINUS'

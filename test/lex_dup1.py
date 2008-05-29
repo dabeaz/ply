@@ -1,9 +1,9 @@
-# lex_token.py
+# lex_dup1.py
 #
 # Duplicated rule specifiers
 
 import sys
-sys.path.insert(0,"..")
+if ".." not in sys.path: sys.path.insert(0,"..")
 
 import ply.lex as lex
 
@@ -22,7 +22,7 @@ t_NUMBER = r'\d+'
 def t_error(t):
     pass
 
-sys.tracebacklimit = 0
+
 
 lex.lex()
 

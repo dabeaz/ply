@@ -1,3 +1,0 @@
-./yacc_badargs.py:23: Rule 'p_statement_assign' has too many arguments.
-./yacc_badargs.py:27: Rule 'p_statement_expr' requires an argument.
-ply.yacc.YaccError: Unable to construct parser.

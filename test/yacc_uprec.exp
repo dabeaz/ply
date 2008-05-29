@@ -1,2 +1,0 @@
-./yacc_uprec.py:38: Nothing known about the precedence of 'UMINUS'
-ply.yacc.YaccError: Unable to construct parser.
