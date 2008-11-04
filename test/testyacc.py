@@ -160,6 +160,15 @@ class YaccErrorWarningTests(unittest.TestCase):
                                     "yacc_missing1.py:24: Symbol 'location' used, but not defined as a token or a rule.\n"
                                     ))
 
+    def test_yacc_nested(self):
+        run_import("yacc_nested")
+        result = sys.stdout.getvalue()
+        self.assert_(check_expected(result,
+                                    "A\n"
+                                    "A\n"
+                                    "A\n",
+                                    ))
+
     def test_yacc_nodoc(self):
         run_import("yacc_nodoc")
         result = sys.stderr.getvalue()

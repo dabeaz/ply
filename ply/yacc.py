@@ -355,9 +355,9 @@ class Parser:
                         
                         try:
                             # Call the grammar rule with our special slice object
-                            p.func(pslice)
                             del symstack[-plen:]
                             del statestack[-plen:]
+                            p.func(pslice)
                             symstack.append(sym)
                             state = goto[statestack[-1]][pname]
                             statestack.append(state)
@@ -635,9 +635,9 @@ class Parser:
                         
                         try:
                             # Call the grammar rule with our special slice object
-                            p.func(pslice)
                             del symstack[-plen:]
                             del statestack[-plen:]
+                            p.func(pslice)
                             symstack.append(sym)
                             state = goto[statestack[-1]][pname]
                             statestack.append(state)
@@ -898,9 +898,9 @@ class Parser:
                         
                         try:
                             # Call the grammar rule with our special slice object
-                            p.func(pslice)
                             del symstack[-plen:]
                             del statestack[-plen:]
+                            p.func(pslice)
                             symstack.append(sym)
                             state = goto[statestack[-1]][pname]
                             statestack.append(state)

@@ -1,5 +1,9 @@
 Version 2.6
 -----------------------------
+11/04/08: beazley
+          Fixed a bug with referring to symbols on the the parsing stack using negative
+          indices.
+
 05/29/08: beazley
           Completely revamped the testing system to use the unittest module for everything.
           Added additional tests to cover new errors/warnings.
