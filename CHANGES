@@ -1,5 +1,29 @@
 Version 2.6
 -----------------------------
+11/27/08: beazley
+          Numerous changes to support Python 3.0 including removal of deprecated 
+          statements (e.g., has_key) and the additional of compatibility code
+          to emulate features from Python 2 that have been removed, but which
+          are needed.   Fixed the unit testing suite to work with Python 3.0.
+          The code should be backwards compatible with Python 2.
+
+11/26/08: beazley
+          Loosened the rules on what kind of objects can be passed in as the
+          "module" parameter to lex() and yacc().  Previously, you could only use
+          a module or an instance.  Now, PLY just uses dir() to get a list of
+          symbols on whatever the object is without regard for its type.
+
+11/26/08: beazley
+          Changed all except: statements to be compatible with Python2.x/3.x syntax.
+
+11/26/08: beazley
+          Changed all raise Exception, value statements to raise Exception(value) for
+          forward compatibility.
+
+11/26/08: beazley
+          Removed all print statements from lex and yacc, using sys.stdout and sys.stderr
+          directly.  Preparation for Python 3.0 support.
+
 11/04/08: beazley
           Fixed a bug with referring to symbols on the the parsing stack using negative
           indices.

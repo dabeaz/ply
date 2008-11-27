@@ -1,7 +1,11 @@
 # testlex.py
 
 import unittest
-import StringIO
+try:
+    import StringIO
+except ImportError:
+    import io as StringIO
+
 import sys
 sys.path.insert(0,"..")
 sys.tracebacklimit = 0
@@ -9,10 +13,18 @@ sys.tracebacklimit = 0
 import ply.lex
 
 def check_expected(result,expected):
+    if sys.version_info[0] >= 3:
+        if isinstance(result,str):
+            result = result.encode('ascii')
+        if isinstance(expected,str):
+            expected = expected.encode('ascii')
     resultlines = result.splitlines()
     expectedlines = expected.splitlines()
+
+
     if len(resultlines) != len(expectedlines):
         return False
+
     for rline,eline in zip(resultlines,expectedlines):
         if not rline.endswith(eline):
             return False
@@ -20,7 +32,7 @@ def check_expected(result,expected):
 
 def run_import(module):
     code = "import "+module
-    exec code
+    exec(code)
     del sys.modules[module]
     
 # Tests related to errors and warnings when building lexers
@@ -57,8 +69,8 @@ class LexErrorWarningTests(unittest.TestCase):
     def test_lex_empty(self):
         try:
             run_import("lex_empty")
-        except SyntaxError,e:
-            pass
+        except SyntaxError:
+            e = sys.exc_info()[1]
         self.assertEquals(str(e),"lex: no rules of the form t_rulename are defined.")
 
     def test_lex_error1(self):
@@ -70,8 +82,8 @@ class LexErrorWarningTests(unittest.TestCase):
     def test_lex_error2(self):
         try:
             run_import("lex_error2")
-        except SyntaxError,e:
-            pass
+        except SyntaxError:
+            e = sys.exc_info()[1]
         self.assertEquals(str(e),"lex: Rule 't_error' must be defined as a function")
 
     def test_lex_error3(self):
@@ -189,16 +201,16 @@ class LexErrorWarningTests(unittest.TestCase):
     def test_lex_token1(self):
         try:
             run_import("lex_token1")
-        except SyntaxError,e:
-            pass
+        except SyntaxError:
+            e = sys.exc_info()[1]
         self.assertEquals(str(e),"lex: module does not define 'tokens'")
 
 
     def test_lex_token2(self):
         try:
             run_import("lex_token2")
-        except SyntaxError,e:
-            pass
+        except SyntaxError:
+            e = sys.exc_info()[1]
         self.assertEquals(str(e),"lex: tokens must be a list or tuple.")
 
     
@@ -219,8 +231,8 @@ class LexErrorWarningTests(unittest.TestCase):
     def test_lex_token5(self):
         try:
             run_import("lex_token5")
-        except ply.lex.LexError,e:
-            pass
+        except ply.lex.LexError:
+            e = sys.exc_info()[1]
         self.assert_(check_expected(str(e),"lex_token5.py:19: Rule 't_NUMBER' returned an unknown token type 'NUM'"))
 
     def test_lex_token_dup(self):
@@ -296,6 +308,7 @@ class LexBuildOptionTests(unittest.TestCase):
         except OSError:
             pass
         run_import("lex_optimize")
+
         result = sys.stdout.getvalue()
         self.assert_(check_expected(result,
                                     "(NUMBER,3,1,0)\n"
@@ -303,16 +316,19 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,4,1,2)\n"))
         self.assert_(os.path.exists("lextab.py"))
 
-        p = subprocess.Popen(['python','-O','lex_optimize.py'],
+
+        p = subprocess.Popen([sys.executable,'-O','lex_optimize.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
+
         self.assert_(check_expected(result,
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
         self.assert_(os.path.exists("lextab.pyo"))
+
         os.remove("lextab.pyo")
-        p = subprocess.Popen(['python','-OO','lex_optimize.py'],
+        p = subprocess.Popen([sys.executable,'-OO','lex_optimize.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
         self.assert_(check_expected(result,
@@ -354,7 +370,7 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,4,1,2)\n"))
         self.assert_(os.path.exists("opt2tab.py"))
 
-        p = subprocess.Popen(['python','-O','lex_optimize2.py'],
+        p = subprocess.Popen([sys.executable,'-O','lex_optimize2.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
         self.assert_(check_expected(result,
@@ -363,7 +379,7 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,4,1,2)\n"))
         self.assert_(os.path.exists("opt2tab.pyo"))
         os.remove("opt2tab.pyo")
-        p = subprocess.Popen(['python','-OO','lex_optimize2.py'],
+        p = subprocess.Popen([sys.executable,'-OO','lex_optimize2.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
         self.assert_(check_expected(result,
@@ -402,7 +418,7 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,4,1,2)\n"))
         self.assert_(os.path.exists("lexdir/sub/calctab.py"))
 
-        p = subprocess.Popen(['python','-O','lex_optimize3.py'],
+        p = subprocess.Popen([sys.executable,'-O','lex_optimize3.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
         self.assert_(check_expected(result,
@@ -411,7 +427,7 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,4,1,2)\n"))
         self.assert_(os.path.exists("lexdir/sub/calctab.pyo"))
         os.remove("lexdir/sub/calctab.pyo")
-        p = subprocess.Popen(['python','-OO','lex_optimize3.py'],
+        p = subprocess.Popen([sys.executable,'-OO','lex_optimize3.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
         self.assert_(check_expected(result,
@@ -445,7 +461,7 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,4,1,2)\n"))
         self.assert_(os.path.exists("aliastab.py"))
 
-        p = subprocess.Popen(['python','-O','lex_opt_alias.py'],
+        p = subprocess.Popen([sys.executable,'-O','lex_opt_alias.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
         self.assert_(check_expected(result,
@@ -454,7 +470,7 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,4,1,2)\n"))
         self.assert_(os.path.exists("aliastab.pyo"))
         os.remove("aliastab.pyo")
-        p = subprocess.Popen(['python','-OO','lex_opt_alias.py'],
+        p = subprocess.Popen([sys.executable,'-OO','lex_opt_alias.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
         self.assert_(check_expected(result,
@@ -502,7 +518,7 @@ class LexBuildOptionTests(unittest.TestCase):
 
         self.assert_(os.path.exists("manytab.py"))
 
-        p = subprocess.Popen(['python','-O','lex_many_tokens.py'],
+        p = subprocess.Popen([sys.executable,'-O','lex_many_tokens.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
         self.assert_(check_expected(result,

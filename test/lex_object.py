@@ -29,7 +29,7 @@ class CalcLexer:
         try:
             t.value = int(t.value)
         except ValueError:
-            print "Integer value too large", t.value
+            print("Integer value too large %s" % t.value)
             t.value = 0
         return t
 
@@ -40,7 +40,7 @@ class CalcLexer:
         t.lineno += t.value.count("\n")
         
     def t_error(self,t):
-        print "Illegal character '%s'" % t.value[0]
+        print("Illegal character '%s'" % t.value[0])
         t.lexer.skip(1)
         
 

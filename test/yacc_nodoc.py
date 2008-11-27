@@ -25,7 +25,7 @@ def p_statement_assign(t):
     names[t[1]] = t[3]
 
 def p_statement_expr(t):
-    print t[1]
+    print(t[1])
 
 def p_expression_binop(t):
     '''expression : expression PLUS expression
@@ -54,11 +54,11 @@ def p_expression_name(t):
     try:
         t[0] = names[t[1]]
     except LookupError:
-        print "Undefined name '%s'" % t[1]
+        print("Undefined name '%s'" % t[1])
         t[0] = 0
 
 def p_error(t):
-    print "Syntax error at '%s'" % t.value
+    print("Syntax error at '%s'" % t.value)
 
 yacc.yacc()
 

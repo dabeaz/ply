@@ -849,7 +849,7 @@ def p_empty(t):
     pass
 
 def p_error(t):
-    print "Whoa. We're hosed"
+    print("Whoa. We're hosed")
 
 import profile
 # Build the grammar

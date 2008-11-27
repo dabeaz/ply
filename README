@@ -1,4 +1,4 @@
-PLY (Python Lex-Yacc)                   Version 2.5  (May 28, 2008)
+PLY (Python Lex-Yacc)                   Version 2.6  (Alpha1)
 
 David M. Beazley (dave@dabeaz.com)
 
@@ -96,7 +96,7 @@ A simple example is found at the end of this document
 
 Requirements
 ============
-PLY requires the use of Python 2.1 or greater.  However, you should
+PLY requires the use of Python 2.2 or greater.  However, you should
 use the latest Python release if possible.  It should work on just
 about any platform.  PLY has been tested with both CPython and Jython.
 It also seems to work with IronPython.

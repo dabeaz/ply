@@ -26,7 +26,7 @@ def p_statement_assign(t):
 
 def p_statement_expr(t):
     'statement : expression'
-    print t[1]
+    print(t[1])
 
 def p_statement_expr(t):
     'statement : bad&rule'
@@ -64,7 +64,7 @@ def p_expression_name(t):
     try:
         t[0] = names[t[1]]
     except LookupError:
-        print "Undefined name '%s'" % t[1]
+        print("Undefined name '%s'" % t[1])
         t[0] = 0
 
 def p_error(t):

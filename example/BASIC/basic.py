@@ -4,6 +4,9 @@
 import sys
 sys.path.insert(0,"../..")
 
+if sys.version_info[0] >= 3:
+    raw_input = input
+
 import basiclex
 import basparse
 import basinterp
@@ -41,7 +44,7 @@ while 1:
     prog = basparse.parse(line)
     if not prog: continue
 
-    keys = prog.keys()
+    keys = list(prog)
     if keys[0] > 0:
          b.add_statements(prog)
     else:

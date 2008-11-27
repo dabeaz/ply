@@ -44,7 +44,7 @@ def p_program_error(p):
 def p_statement(p):
     '''statement : INTEGER command NEWLINE'''
     if isinstance(p[2],str):
-        print p[2],"AT LINE", p[1]
+        print("%s %s %s" % (p[2],"AT LINE", p[1]))
         p[0] = None
         p.parser.error = 1
     else:
@@ -68,7 +68,7 @@ def p_statement_blank(p):
 
 def p_statement_bad(p):
     '''statement : INTEGER error NEWLINE'''
-    print "MALFORMED STATEMENT AT LINE", p[1]
+    print("MALFORMED STATEMENT AT LINE %s" % p[1])
     p[0] = None
     p.parser.error = 1
 
@@ -399,7 +399,7 @@ def p_empty(p):
 #### Catastrophic error handler
 def p_error(p):
     if not p:
-        print "SYNTAX ERROR AT EOF"
+        print("SYNTAX ERROR AT EOF")
 
 bparser = yacc.yacc()
 

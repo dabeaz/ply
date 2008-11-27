@@ -24,7 +24,7 @@ def p_start(t):
 
 def p_nest(t):
    '''nest : B'''
-   print t[-1]
+   print(t[-1])
 
 the_parser = yacc.yacc(debug = False, write_tables = False)
 

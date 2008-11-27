@@ -11,7 +11,10 @@ import ply.lex as lex
 tokens = ["TOK%d" % i for i in range(1000)]
 
 for tok in tokens:
-    exec "t_%s = '%s:'" % (tok,tok)
+    if sys.version_info[0] < 3:
+        exec("t_%s = '%s:'" % (tok,tok))
+    else:
+        exec("t_%s = '%s:'" % (tok,tok), globals())
 
 t_ignore = " \t"
 

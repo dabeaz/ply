@@ -12,7 +12,9 @@
 import sys
 sys.path.insert(0,"../..")
 
-import readline
+if sys.version_info[0] >= 3:
+    raw_input = input
+
 import ply.lex as lex
 import ply.yacc as yacc
 import os
@@ -77,7 +79,7 @@ class Calc(Parser):
         try:
             t.value = int(t.value)
         except ValueError:
-            print "Integer value too large", t.value
+            print("Integer value too large %s" % t.value)
             t.value = 0
         #print "parsed number %s" % repr(t.value)
         return t
@@ -89,7 +91,7 @@ class Calc(Parser):
         t.lexer.lineno += t.value.count("\n")
     
     def t_error(self, t):
-        print "Illegal character '%s'" % t.value[0]
+        print("Illegal character '%s'" % t.value[0])
         t.lexer.skip(1)
 
     # Parsing rules
@@ -107,7 +109,7 @@ class Calc(Parser):
 
     def p_statement_expr(self, p):
         'statement : expression'
-        print p[1]
+        print(p[1])
 
     def p_expression_binop(self, p):
         """
@@ -141,14 +143,14 @@ class Calc(Parser):
         try:
             p[0] = self.names[p[1]]
         except LookupError:
-            print "Undefined name '%s'" % p[1]
+            print("Undefined name '%s'" % p[1])
             p[0] = 0
 
     def p_error(self, p):
         if p:
-            print "Syntax error at '%s'" % p.value
+            print("Syntax error at '%s'" % p.value)
         else:
-            print "Syntax error at EOF"
+            print("Syntax error at EOF")
 
 if __name__ == '__main__':
     calc = Calc()

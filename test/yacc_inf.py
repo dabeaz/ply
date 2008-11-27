@@ -26,7 +26,7 @@ def p_statement_assign(t):
 
 def p_statement_expr(t):
     'statement : expression'
-    print t[1]
+    print(t[1])
 
 def p_expression_binop(t):
     '''expression : expression PLUS expression
@@ -47,7 +47,7 @@ def p_expression_group(t):
     t[0] = t[2]
 
 def p_error(t):
-    print "Syntax error at '%s'" % t.value
+    print("Syntax error at '%s'" % t.value)
 
 yacc.yacc()
 

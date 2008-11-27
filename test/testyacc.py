@@ -1,7 +1,11 @@
 # testyacc.py
 
 import unittest
-import StringIO
+try:
+    import StringIO
+except ImportError:
+    import io as StringIO
+
 import sys
 import os
 
@@ -22,7 +26,7 @@ def check_expected(result,expected):
 
 def run_import(module):
     code = "import "+module
-    exec code
+    exec(code)
     del sys.modules[module]
     
 # Tests related to errors and warnings when building parsers
@@ -57,7 +61,8 @@ class YaccErrorWarningTests(unittest.TestCase):
     def test_yacc_badprec(self):
         try:
             run_import("yacc_badprec")
-        except ply.yacc.YaccError,e:
+        except ply.yacc.YaccError:
+            e = sys.exc_info()[1]
             self.assert_(check_expected(str(e),
                                         "precedence must be a list or tuple."))
     def test_yacc_badprec2(self):
@@ -90,7 +95,8 @@ class YaccErrorWarningTests(unittest.TestCase):
     def test_yacc_badtok(self):
         try:
             run_import("yacc_badtok")
-        except ply.yacc.YaccError,e:
+        except ply.yacc.YaccError:
+            e = sys.exc_info()[1]
             self.assert_(check_expected(str(e),
                                         "tokens must be a list or tuple."))
 
@@ -106,21 +112,24 @@ class YaccErrorWarningTests(unittest.TestCase):
     def test_yacc_error1(self):
         try:
             run_import("yacc_error1")
-        except ply.yacc.YaccError,e:
+        except ply.yacc.YaccError:
+            e = sys.exc_info()[1]
             self.assert_(check_expected(str(e),
                                         "yacc_error1.py:61: p_error() requires 1 argument."))
 
     def test_yacc_error2(self):
         try:
             run_import("yacc_error2")
-        except ply.yacc.YaccError,e:
+        except ply.yacc.YaccError:
+            e = sys.exc_info()[1]
             self.assert_(check_expected(str(e),
                                         "yacc_error2.py:61: p_error() requires 1 argument."))
 
     def test_yacc_error3(self):
         try:
             run_import("yacc_error3")
-        except ply.yacc.YaccError,e:
+        except ply.yacc.YaccError:
+            e = sys.exc_info()[1]
             self.assert_(check_expected(str(e),
                                         "'p_error' defined, but is not a function or method."))
             
@@ -205,7 +214,8 @@ class YaccErrorWarningTests(unittest.TestCase):
     def test_yacc_notok(self):
         try:
             run_import("yacc_notok")
-        except ply.yacc.YaccError,e:
+        except ply.yacc.YaccError:
+            e = sys.exc_info()[1]
             self.assert_(check_expected(str(e),
                                         "module does not define a list 'tokens'"))
 
