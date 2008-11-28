@@ -109,6 +109,16 @@ try:
 except AttributeError:
     MAXINT = sys.maxsize
 
+# Python 2.x/3.0 compatibility.
+def load_ply_lex():
+    if sys.version_info[0] < 3:
+        import lex
+    else:
+        env = { }
+        exec("from . import lex", env, env)
+        lex = env['lex']
+    return lex
+
 # Exception raised for yacc-related errors
 class YaccError(Exception):   pass
 
@@ -248,14 +258,10 @@ class Parser:
         prod    = self.productions       # Local reference to production list (to avoid lookup on self.)
         pslice  = YaccProduction(None)   # Production object passed to grammar rules
         errorcount = 0                   # Used during error recovery 
-        endsym  = "$end"                 # End symbol
+
         # If no lexer was given, we will try to use the lex module
         if not lexer:
-            if sys.version_info[0] < 3:
-                import lex
-            else:
-                from . import lex
-
+            lex = load_ply_lex()
             lexer = lex.lexer
         
         # Set up the lexer and parser objects on pslice
@@ -286,7 +292,7 @@ class Parser:
 
         statestack.append(0)
         sym = YaccSymbol()
-        sym.type = endsym
+        sym.type = "$end"
         symstack.append(sym)
         state = 0
         while 1:
@@ -306,7 +312,7 @@ class Parser:
                     lookahead = lookaheadstack.pop()
                 if not lookahead:
                     lookahead = YaccSymbol()
-                    lookahead.type = endsym
+                    lookahead.type = "$end"
 
             # --! DEBUG
             if debug:
@@ -325,7 +331,7 @@ class Parser:
             if t is not None:
                 if t > 0:
                     # shift a symbol on the stack
-                    if ltype is endsym:
+                    if ltype == "$end":
                         # Error, end of input
                         sys.stderr.write("yacc: Parse error. EOF\n")
                         return
@@ -464,7 +470,7 @@ class Parser:
                     errorcount = error_count
                     self.errorok = 0
                     errtoken = lookahead
-                    if errtoken.type is endsym:
+                    if errtoken.type == "$end":
                         errtoken = None               # End of file!
                     if self.errorfunc:
                         global errok,token,restart
@@ -500,7 +506,7 @@ class Parser:
                 # entire parse has been rolled back and we're completely hosed.   The token is
                 # discarded and we just keep going.
 
-                if len(statestack) <= 1 and lookahead.type is not endsym:
+                if len(statestack) <= 1 and lookahead.type != "$end":
                     lookahead = None
                     errtoken = None
                     state = 0
@@ -512,7 +518,7 @@ class Parser:
                 # at the end of the file. nuke the top entry and generate an error token
 
                 # Start nuking entries on the stack
-                if lookahead.type is endsym:
+                if lookahead.type == "$end":
                     # Whoa. We're really hosed here. Bail out
                     return
 
@@ -560,11 +566,7 @@ class Parser:
 
         # If no lexer was given, we will try to use the lex module
         if not lexer:
-            if sys.version_info[0] < 3:
-                import lex
-            else:
-                from . import lex
-
+            lex = load_ply_lex()
             lexer = lex.lexer
         
         # Set up the lexer and parser objects on pslice
@@ -838,11 +840,7 @@ class Parser:
 
         # If no lexer was given, we will try to use the lex module
         if not lexer:
-            if sys.version_info[0] < 3:
-                import lex
-            else:
-                from . import lex
-
+            lex = load_ply_lex()
             lexer = lex.lexer
         
         # Set up the lexer and parser objects on pslice
@@ -2637,7 +2635,7 @@ del _lr_goto_items
         f.close()
 
     except IOError:
-        _etype,e,_etrace = sys.exc_info()
+        e = sys.exc_info()[1]
         sys.stderr.write("Unable to create '%s'\n" % filename)
         sys.stderr.write(str(e)+"\n")
         return
@@ -2884,7 +2882,7 @@ def yacc(method=default_lr, debug=yaccdebug, module=None, tabmodule=tab_module, 
                     f.write(_vf.getvalue())
                     f.close()
                 except IOError:
-                    _etype,e,_etrace = sys.exc_info()
+                    e = sys.exc_info()[1]
                     sys.stderr.write("yacc: can't create '%s' %s\n" % (debugfile,e))
 
     # Made it here.   Create a parser object and set up its internal state.
