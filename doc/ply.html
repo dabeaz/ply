@@ -12,7 +12,7 @@ dave@dabeaz.com<br>
 </b>
 
 <p>
-<b>PLY Version: 2.5</b>
+<b>PLY Version: 3.0</b>
 <p>
 
 <!-- INDEX -->
@@ -97,7 +97,10 @@ include lexical analysis, parsing, type checking, type inference,
 nested scoping, and code generation for the SPARC processor.
 Approximately 30 different compiler implementations were completed in
 this course.  Most of PLY's interface and operation has been influenced by common
-usability problems encountered by students.
+usability problems encountered by students.   Since 2001, PLY has
+continued to be improved as feedback has been received from users.
+PLY-3.0 represents a major refactoring of the original implementation
+with an eye towards future enhancements.
 
 <p>
 Since PLY was primarily developed as an instructional tool, you will
@@ -245,11 +248,7 @@ t_RPAREN  = r'\)'
 # A regular expression rule with some action code
 def t_NUMBER(t):
     r'\d+'
-    try:
-         t.value = int(t.value)    
-    except ValueError:
-         print "Line %d: Number %s is too large!" % (t.lineno,t.value)
-	 t.value = 0
+    t.value = int(t.value)    
     return t
 
 # Define a rule so we can track line numbers
@@ -266,11 +265,14 @@ def t_error(t):
     t.lexer.skip(1)
 
 # Build the lexer
-lex.lex()
+lexer = lex.lex()
 
 </pre>
 </blockquote>
-To use the lexer, you first need to feed it some input text using its <tt>input()</tt> method.  After that, repeated calls to <tt>token()</tt> produce tokens.   The following code shows how this works:
+To use the lexer, you first need to feed it some input text using
+its <tt>input()</tt> method.  After that, repeated calls
+to <tt>token()</tt> produce tokens.  The following code shows how this
+works:
 
 <blockquote>
 <pre>
@@ -282,11 +284,11 @@ data = '''
 '''
 
 # Give the lexer some input
-lex.input(data)
+lexer.input(data)
 
 # Tokenize
-while 1:
-    tok = lex.token()
+while True:
+    tok = lexer.token()
     if not tok: break      # No more input
     print tok
 </pre>
@@ -310,7 +312,16 @@ LexToken(NUMBER,2,3,21)
 </pre>
 </blockquote>
 
-The tokens returned by <tt>lex.token()</tt> are instances
+Lexers also support the iteration protocol.    So, you can write the above loop as follows:
+
+<blockquote>
+<pre>
+for tok in lexer:
+    print tok
+</pre>
+</blockquote>
+
+The tokens returned by <tt>lexer.token()</tt> are instances
 of <tt>LexToken</tt>.  This object has
 attributes <tt>tok.type</tt>, <tt>tok.value</tt>,
 <tt>tok.lineno</tt>, and <tt>tok.lexpos</tt>.  The following code shows an example of
@@ -319,8 +330,8 @@ accessing these attributes:
 <blockquote>
 <pre>
 # Tokenize
-while 1:
-    tok = lex.token()
+while True:
+    tok = lexer.token()
     if not tok: break      # No more input
     print tok.type, tok.value, tok.line, tok.lexpos
 </pre>
@@ -429,7 +440,7 @@ reserved = {
    ...
 }
 
-tokens = ['LPAREN','RPAREN',...,'ID'] + reserved.values()
+tokens = ['LPAREN','RPAREN',...,'ID'] + list(reserved.values())
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -530,11 +541,10 @@ column information as a separate step.   For instance, just count backwards unti
 #     input is the input text string
 #     token is a token instance
 def find_column(input,token):
-    i = token.lexpos
-    while i > 0:
-        if input[i] == '\n': break
-        i -= 1
-    column = (token.lexpos - i)+1
+    last_cr = input.rfind('\n',0,token.lexpos)
+    if last_cr < 0:
+	last_cr = 0
+    column = (token.lexpos - last_cr) + 1
     return column
 </pre>
 </blockquote>
@@ -607,36 +617,34 @@ In this case, we simply print the offending character and skip ahead one charact
 <p>
 To build the lexer, the function <tt>lex.lex()</tt> is used.  This function
 uses Python reflection (or introspection) to read the the regular expression rules
-out of the calling context and build the lexer. Once the lexer has been built, two functions can
+out of the calling context and build the lexer. Once the lexer has been built, two methods can
 be used to control the lexer.
 
 <ul>
-<li><tt>lex.input(data)</tt>.   Reset the lexer and store a new input string.
-<li><tt>lex.token()</tt>.  Return the next token.  Returns a special <tt>LexToken</tt> instance on success or
+<li><tt>lexer.input(data)</tt>.   Reset the lexer and store a new input string.
+<li><tt>lexer.token()</tt>.  Return the next token.  Returns a special <tt>LexToken</tt> instance on success or
 None if the end of the input text has been reached.
 </ul>
 
-If desired, the lexer can also be used as an object.  The <tt>lex()</tt> returns a <tt>Lexer</tt> object that
-can be used for this purpose.  For example:
+The preferred way to use PLY is to invoke the above methods directly on the lexer object returned by the
+<tt>lex()</tt> function.   The legacy interface to PLY involves module-level functions <tt>lex.input()</tt> and <tt>lex.token()</tt>.
+For example:
 
 <blockquote>
 <pre>
-lexer = lex.lex()
-lexer.input(sometext)
+lex.lex()
+lex.input(sometext)
 while 1:
-    tok = lexer.token()
+    tok = lex.token()
     if not tok: break
     print tok
 </pre>
 </blockquote>
 
 <p>
-This latter technique should be used if you intend to use multiple lexers in your application.  Simply define each
-lexer in its own module and use the object returned by <tt>lex()</tt> as appropriate.
-
-<p>
-Note: The global functions <tt>lex.input()</tt> and <tt>lex.token()</tt> are bound to the <tt>input()</tt> 
-and <tt>token()</tt> methods of the last lexer created by the lex module. 
+In this example, the module-level functions <tt>lex.input()</tt> and <tt>lex.token()</tt> are bound to the <tt>input()</tt> 
+and <tt>token()</tt> methods of the last lexer created by the lex module.    This interface may go away at some point so
+it's probably best not to use it.
 
 <H3><a name="ply_nn14"></a>3.11 The @TOKEN decorator</H3>
 
@@ -785,11 +793,7 @@ t_RPAREN  = r'\)'
 # A regular expression rule with some action code
 def t_NUMBER(t):
     r'\d+'
-    try:
-         t.value = int(t.value)    
-    except ValueError:
-         print "Line %d: Number %s is too large!" % (t.lineno,t.value)
-	 t.value = 0
+    t.value = int(t.value)    
     return t
 
 # Define a rule so we can track line numbers
@@ -826,7 +830,7 @@ None
 </pre>
 </blockquote>
 
-The <tt>object</tt> option can be used to define lexers as a class instead of a module.  For example:
+The <tt>module</tt> option can also be used to define lexers from instances of a class.  For example:
 
 <blockquote>
 <pre>
@@ -856,11 +860,7 @@ class MyLexer:
     # Note addition of self parameter since we're in a class
     def t_NUMBER(self,t):
         r'\d+'
-        try:
-             t.value = int(t.value)    
-        except ValueError:
-             print "Line %d: Number %s is too large!" % (t.lineno,t.value)
-             t.value = 0
+        t.value = int(t.value)    
         return t
 
     # Define a rule so we can track line numbers
@@ -878,12 +878,12 @@ class MyLexer:
 
     <b># Build the lexer
     def build(self,**kwargs):
-        self.lexer = lex.lex(object=self, **kwargs)</b>
+        self.lexer = lex.lex(module=self, **kwargs)</b>
     
     # Test it output
     def test(self,data):
         self.lexer.input(data)
-        while 1:
+        while True:
              tok = lexer.token()
              if not tok: break
              print tok
@@ -895,18 +895,80 @@ m.test("3 + 4")     # Test it
 </pre>
 </blockquote>
 
-When building a lexer from class, you should construct the lexer from
-an instance of the class, not the class object itself.  Also, for
-reasons that are subtle, you should <em>NOT</em>
-invoke <tt>lex.lex()</tt> inside the <tt>__init__()</tt> method of
-your class.  If you do, it may cause bizarre behavior if someone tries
-to duplicate a lexer object. 
+
+When building a lexer from class, <em>you should construct the lexer from
+an instance of the class</em>, not the class object itself.  This is because
+PLY only works properly if the lexer actions are defined by bound-methods.
+
+<p>
+When using the <tt>module</tt> option to <tt>lex()</tt>, PLY collects symbols
+from the underlying object using the <tt>dir()</tt> function. There is no
+direct access to the <tt>__dict__</tt> attribute of the object supplied as a 
+module value.
+
+<P>
+Finally, if you want to keep things nicely encapsulated, but don't want to use a 
+full-fledged class definition, lexers can be defined using closures.  For example:
+
+<blockquote>
+<pre>
+import ply.lex as lex
+
+# List of token names.   This is always required
+tokens = (
+  'NUMBER',
+  'PLUS',
+  'MINUS',
+  'TIMES',
+  'DIVIDE',
+  'LPAREN',
+  'RPAREN',
+)
+
+def MyLexer():
+    # Regular expression rules for simple tokens
+    t_PLUS    = r'\+'
+    t_MINUS   = r'-'
+    t_TIMES   = r'\*'
+    t_DIVIDE  = r'/'
+    t_LPAREN  = r'\('
+    t_RPAREN  = r'\)'
+
+    # A regular expression rule with some action code
+    def t_NUMBER(t):
+        r'\d+'
+        t.value = int(t.value)    
+        return t
+
+    # Define a rule so we can track line numbers
+    def t_newline(t):
+        r'\n+'
+        t.lexer.lineno += len(t.value)
+
+    # A string containing ignored characters (spaces and tabs)
+    t_ignore  = ' \t'
+
+    # Error handling rule
+    def t_error(t):
+        print "Illegal character '%s'" % t.value[0]
+        t.lexer.skip(1)
+
+    # Build the lexer from my environment and return it    
+    return lex.lex()
+</pre>
+</blockquote>
+
 
 <H3><a name="ply_nn18"></a>3.15 Maintaining state</H3>
 
-In your lexer, you may want to maintain a variety of state information.  This might include mode settings, symbol tables, and other details.  There are a few
-different ways to handle this situation.  One way to do this is to keep a set of global variables in the module
-where you created the lexer.   For example:
+In your lexer, you may want to maintain a variety of state
+information.  This might include mode settings, symbol tables, and
+other details.  As an example, suppose that you wanted to keep
+track of how many NUMBER tokens had been encountered.  
+
+<p>
+One way to do this is to keep a set of global variables in the module
+where you created the lexer.  For example: 
 
 <blockquote>
 <pre>
@@ -915,28 +977,22 @@ def t_NUMBER(t):
     r'\d+'
     global num_count
     num_count += 1
-    try:
-         t.value = int(t.value)    
-    except ValueError:
-         print "Line %d: Number %s is too large!" % (t.lineno,t.value)
-	 t.value = 0
+    t.value = int(t.value)    
     return t
 </pre>
 </blockquote>
 
-Alternatively, you can store this information inside the Lexer object created by <tt>lex()</tt>.  To this, you can use the <tt>lexer</tt> attribute
-of tokens passed to the various rules. For example:
+If you don't like the use of a global variable, another place to store
+information is inside the Lexer object created by <tt>lex()</tt>.
+To this, you can use the <tt>lexer</tt> attribute of tokens passed to
+the various rules. For example:
 
 <blockquote>
 <pre>
 def t_NUMBER(t):
     r'\d+'
     t.lexer.num_count += 1     # Note use of lexer attribute
-    try:
-         t.value = int(t.value)    
-    except ValueError:
-         print "Line %d: Number %s is too large!" % (t.lineno,t.value)
-	 t.value = 0
+    t.value = int(t.value)    
     return t
 
 lexer = lex.lex()
@@ -944,17 +1000,20 @@ lexer.num_count = 0            # Set the initial count
 </pre>
 </blockquote>
 
-This latter approach has the advantage of storing information inside
-the lexer object itself---something that may be useful if multiple instances
-of the same lexer have been created.  However, it may also feel kind
-of "hacky" to the OO purists.  Just to put their mind at some ease, all
+This latter approach has the advantage of being simple and working 
+correctly in applications where multiple instantiations of a given
+lexer exist in the same application.   However, this might also feel
+like a gross violation of encapsulation to OO purists. 
+Just to put your mind at some ease, all
 internal attributes of the lexer (with the exception of <tt>lineno</tt>) have names that are prefixed
 by <tt>lex</tt> (e.g., <tt>lexdata</tt>,<tt>lexpos</tt>, etc.).  Thus,
-it should be perfectly safe to store attributes in the lexer that
-don't have names starting with that prefix.
+it is perfectly safe to store attributes in the lexer that
+don't have names starting with that prefix or a name that conlicts with one of the
+predefined methods (e.g., <tt>input()</tt>, <tt>token()</tt>, etc.).
 
 <p>
-A third approach is to define the lexer as a class as shown in the previous example:
+If you don't like assigning values on the lexer object, you can define your lexer as a class as
+shown in the previous section:
 
 <blockquote>
 <pre>
@@ -963,11 +1022,7 @@ class MyLexer:
     def t_NUMBER(self,t):
         r'\d+'
         self.num_count += 1
-        try:
-             t.value = int(t.value)    
-        except ValueError:
-             print "Line %d: Number %s is too large!" % (t.lineno,t.value)
-             t.value = 0
+        t.value = int(t.value)    
         return t
 
     def build(self, **kwargs):
@@ -975,10 +1030,6 @@ class MyLexer:
 
     def __init__(self):
         self.num_count = 0
-
-# Create a lexer 
-m = MyLexer()
-lexer = lex.lex(object=m)
 </pre>
 </blockquote>
 
@@ -986,10 +1037,28 @@ The class approach may be the easiest to manage if your application is
 going to be creating multiple instances of the same lexer and you need
 to manage a lot of state.
 
+<p>
+State can also be managed through closures.   For example, in Python 3:
+
+<blockquote>
+<pre>
+def MyLexer():
+    num_count = 0
+    ...
+    def t_NUMBER(t):
+        r'\d+'
+        nonlocal num_count
+        num_count += 1
+        t.value = int(t.value)    
+        return t
+    ...
+</pre>
+</blockquote>
+
 <H3><a name="ply_nn19"></a>3.16 Lexer cloning</H3>
 
 <p>
-If necessary, a lexer object can be quickly duplicated by invoking its <tt>clone()</tt> method.  For example:
+If necessary, a lexer object can be duplicated by invoking its <tt>clone()</tt> method.  For example:
 
 <blockquote>
 <pre>
@@ -1009,9 +1078,15 @@ clone and use it to look ahead.  Or, if you were implementing some kind of prepr
 cloned lexers could be used to handle different input files.
 
 <p>
-Special considerations need to be made when cloning lexers that also maintain their own
-internal state.   Namely, you need to be aware that the newly created lexers will share all
-of this state with the original lexer.   For example, if you defined a lexer as a class and did this:
+Creating a clone is different than calling <tt>lex.lex()</tt> in that
+PLY doesn't regenerate any of the internal tables or regular expressions.  So,
+
+<p>
+Special considerations need to be made when cloning lexers that also
+maintain their own internal state using classes or closures.  Namely,
+you need to be aware that the newly created lexers will share all of
+this state with the original lexer.  For example, if you defined a
+lexer as a class and did this:
 
 <blockquote>
 <pre>
@@ -1024,8 +1099,9 @@ b = a.clone()              # Clone the lexer
 
 Then both <tt>a</tt> and <tt>b</tt> are going to be bound to the same
 object <tt>m</tt> and any changes to <tt>m</tt> will be reflected in both lexers.  It's
-important to emphasize that <tt>clone()</tt> is not meant to make a totally new copy of a
-lexer.  If you want to do that, call <tt>lex()</tt> again to create a new lexer.
+important to emphasize that <tt>clone()</tt> is only meant to create a new lexer
+that reuses the regular expressions and environment of another lexer.  If you
+need to make a totally new copy of a lexer, then call <tt>lex()</tt> again.
 
 <H3><a name="ply_nn20"></a>3.17 Internal lexer state</H3>
 
@@ -1045,8 +1121,9 @@ matched at the new position.
 <p>
 <tt>lexer.lineno</tt>
 <blockquote>
-The current value of the line number attribute stored in the lexer.  This can be modified as needed to
-change the line number.
+The current value of the line number attribute stored in the lexer.  PLY only specifies that the attribute
+exists---it never sets, updates, or performs any processing with it.  If you want to track line numbers,
+you will need to add code yourself (see the section on line numbers and positional information).
 </blockquote>
 
 <p>
@@ -1065,7 +1142,6 @@ Note: This attribute is only updated when tokens are defined and processed by fu
 </blockquote>
 
 <H3><a name="ply_nn21"></a>3.18 Conditional lexing and start conditions</H3>
-
 
 In advanced parsing applications, it may be useful to have different
 lexing states. For instance, you may want the occurrence of a certain
@@ -1329,9 +1405,10 @@ factor     : NUMBER
 </blockquote>
 
 In the grammar, symbols such as <tt>NUMBER</tt>, <tt>+</tt>, <tt>-</tt>, <tt>*</tt>, and <tt>/</tt> are known
-as <em>terminals</em> and correspond to raw input tokens.  Identifiers such as <tt>term</tt> and <tt>factor</tt> refer to more
-complex rules, typically comprised of a collection of tokens.  These identifiers are known as <em>non-terminals</em>.
+as <em>terminals</em> and correspond to raw input tokens.  Identifiers such as <tt>term</tt> and <tt>factor</tt> refer to 
+grammar rules comprised of a collection of terminals and other rules.  These identifiers are known as <em>non-terminals</em>.
 <P>
+
 The semantic behavior of a language is often specified using a
 technique known as syntax directed translation.  In syntax directed
 translation, attributes are attached to each symbol in a given grammar
@@ -1357,9 +1434,12 @@ factor      : NUMBER                factor.val = int(NUMBER.lexval)
 </pre>
 </blockquote>
 
-A good way to think about syntax directed translation is to simply think of each symbol in the grammar as some
-kind of object.  The semantics of the language are then expressed as a collection of methods/operations on these
-objects. 
+A good way to think about syntax directed translation is to 
+view each symbol in the grammar as a kind of object. Associated
+with each symbol is a value representing its "state" (for example, the
+<tt>val</tt> attribute above).    Semantic
+actions are then expressed as a collection of functions or methods
+that operate on the symbols and associated values.
 
 <p>
 Yacc uses a parsing technique known as LR-parsing or shift-reduce parsing.  LR parsing is a
@@ -1368,63 +1448,77 @@ Whenever a valid right-hand-side is found in the input, the appropriate action c
 grammar symbols are replaced by the grammar symbol on the left-hand-side. 
 
 <p>
-LR parsing is commonly implemented by shifting grammar symbols onto a stack and looking at the stack and the next
-input token for patterns.   The details of the algorithm can be found in a compiler text, but the
-following example illustrates the steps that are performed if you wanted to parse the expression 
-<tt>3 + 5 * (10 - 20)</tt> using the grammar defined above:
+LR parsing is commonly implemented by shifting grammar symbols onto a
+stack and looking at the stack and the next input token for patterns that
+match one of the grammar rules.
+The details of the algorithm can be found in a compiler textbook, but the
+following example illustrates the steps that are performed if you
+wanted to parse the expression
+<tt>3 + 5 * (10 - 20)</tt> using the grammar defined above.  In the example,
+the special symbol <tt>$</tt> represents the end of input.
+
 
 <blockquote>
 <pre>
 Step Symbol Stack           Input Tokens            Action
 ---- ---------------------  ---------------------   -------------------------------
-1    $                      3 + 5 * ( 10 - 20 )$    Shift 3
-2    $ 3                      + 5 * ( 10 - 20 )$    Reduce factor : NUMBER
-3    $ factor                 + 5 * ( 10 - 20 )$    Reduce term   : factor
-4    $ term                   + 5 * ( 10 - 20 )$    Reduce expr : term
-5    $ expr                   + 5 * ( 10 - 20 )$    Shift +
-6    $ expr +                   5 * ( 10 - 20 )$    Shift 5
-7    $ expr + 5                   * ( 10 - 20 )$    Reduce factor : NUMBER
-8    $ expr + factor              * ( 10 - 20 )$    Reduce term   : factor
-9    $ expr + term                * ( 10 - 20 )$    Shift *
-10   $ expr + term *                ( 10 - 20 )$    Shift (
-11   $ expr + term * (                10 - 20 )$    Shift 10
-12   $ expr + term * ( 10                - 20 )$    Reduce factor : NUMBER
-13   $ expr + term * ( factor            - 20 )$    Reduce term : factor
-14   $ expr + term * ( term              - 20 )$    Reduce expr : term
-15   $ expr + term * ( expr              - 20 )$    Shift -
-16   $ expr + term * ( expr -              20 )$    Shift 20
-17   $ expr + term * ( expr - 20              )$    Reduce factor : NUMBER
-18   $ expr + term * ( expr - factor          )$    Reduce term : factor
-19   $ expr + term * ( expr - term            )$    Reduce expr : expr - term
-20   $ expr + term * ( expr                   )$    Shift )
-21   $ expr + term * ( expr )                  $    Reduce factor : (expr)
-22   $ expr + term * factor                    $    Reduce term : term * factor
-23   $ expr + term                             $    Reduce expr : expr + term
-24   $ expr                                    $    Reduce expr
-25   $                                         $    Success!
+1                           3 + 5 * ( 10 - 20 )$    Shift 3
+2    3                        + 5 * ( 10 - 20 )$    Reduce factor : NUMBER
+3    factor                   + 5 * ( 10 - 20 )$    Reduce term   : factor
+4    term                     + 5 * ( 10 - 20 )$    Reduce expr : term
+5    expr                     + 5 * ( 10 - 20 )$    Shift +
+6    expr +                     5 * ( 10 - 20 )$    Shift 5
+7    expr + 5                     * ( 10 - 20 )$    Reduce factor : NUMBER
+8    expr + factor                * ( 10 - 20 )$    Reduce term   : factor
+9    expr + term                  * ( 10 - 20 )$    Shift *
+10   expr + term *                  ( 10 - 20 )$    Shift (
+11   expr + term * (                  10 - 20 )$    Shift 10
+12   expr + term * ( 10                  - 20 )$    Reduce factor : NUMBER
+13   expr + term * ( factor              - 20 )$    Reduce term : factor
+14   expr + term * ( term                - 20 )$    Reduce expr : term
+15   expr + term * ( expr                - 20 )$    Shift -
+16   expr + term * ( expr -                20 )$    Shift 20
+17   expr + term * ( expr - 20                )$    Reduce factor : NUMBER
+18   expr + term * ( expr - factor            )$    Reduce term : factor
+19   expr + term * ( expr - term              )$    Reduce expr : expr - term
+20   expr + term * ( expr                     )$    Shift )
+21   expr + term * ( expr )                    $    Reduce factor : (expr)
+22   expr + term * factor                      $    Reduce term : term * factor
+23   expr + term                               $    Reduce expr : expr + term
+24   expr                                      $    Reduce expr
+25                                             $    Success!
 </pre>
 </blockquote>
 
-When parsing the expression, an underlying state machine and the current input token determine what to do next.  
-If the next token looks like part of a valid grammar rule (based on other items on the stack), it is generally shifted
-onto the stack.  If the top of the stack contains a valid right-hand-side of a grammar rule, it is
-usually "reduced" and the symbols replaced with the symbol on the left-hand-side.  When this reduction occurs, the
-appropriate action is triggered (if defined).  If the input token can't be shifted and the top of stack doesn't match
-any grammar rules, a syntax error has occurred and the parser must take some kind of recovery step (or bail out).
+When parsing the expression, an underlying state machine and the
+current input token determine what happens next.  If the next token
+looks like part of a valid grammar rule (based on other items on the
+stack), it is generally shifted onto the stack.  If the top of the
+stack contains a valid right-hand-side of a grammar rule, it is
+usually "reduced" and the symbols replaced with the symbol on the
+left-hand-side.  When this reduction occurs, the appropriate action is
+triggered (if defined).  If the input token can't be shifted and the
+top of stack doesn't match any grammar rules, a syntax error has
+occurred and the parser must take some kind of recovery step (or bail
+out).  A parse is only successful if the parser reaches a state where
+the symbol stack is empty and there are no more input tokens.
 
 <p>
-It is important to note that the underlying implementation is built around a large finite-state machine that is encoded
-in a collection of tables. The construction of these tables is quite complicated and beyond the scope of this discussion.
-However, subtle details of this process explain why, in the example above, the parser chooses to shift a token
-onto the stack in step 9 rather than reducing the rule <tt>expr : expr + term</tt>.
+It is important to note that the underlying implementation is built
+around a large finite-state machine that is encoded in a collection of
+tables. The construction of these tables is non-trivial and
+beyond the scope of this discussion.  However, subtle details of this
+process explain why, in the example above, the parser chooses to shift
+a token onto the stack in step 9 rather than reducing the
+rule <tt>expr : expr + term</tt>.
 
-<H2><a name="ply_nn23"></a>5. Yacc reference</H2>
+<H2><a name="ply_nn23"></a>5. Yacc</H2>
 
-
-This section describes how to use write parsers in PLY.
+The <tt>ply.yacc</tt> module implements the parsing component of PLY.
+The name "yacc" stands for "Yet Another Compiler Compiler" and is
+borrowed from the Unix tool of the same name.
 
 <H3><a name="ply_nn24"></a>5.1 An example</H3>
-
 
 Suppose you wanted to make a grammar for simple arithmetic expressions as previously described.   Here is
 how you would do it with <tt>yacc.py</tt>:
@@ -1475,26 +1569,26 @@ def p_error(p):
     print "Syntax error in input!"
 
 # Build the parser
-yacc.yacc()
+parser = yacc.yacc()
 
-# Use this if you want to build the parser using SLR instead of LALR
-# yacc.yacc(method="SLR")
-
-while 1:
+while True:
    try:
        s = raw_input('calc > ')
    except EOFError:
        break
    if not s: continue
-   result = yacc.parse(s)
+   result = parser.parse(s)
    print result
 </pre>
 </blockquote>
 
-In this example, each grammar rule is defined by a Python function where the docstring to that function contains the
-appropriate context-free grammar specification.  Each function accepts a single
-argument <tt>p</tt> that is a sequence containing the values of each grammar symbol in the corresponding rule.  The values of
-<tt>p[i]</tt> are mapped to grammar symbols as shown here:
+In this example, each grammar rule is defined by a Python function
+where the docstring to that function contains the appropriate
+context-free grammar specification.  The statements that make up the
+function body implement the semantic actions of the rule. Each function
+accepts a single argument <tt>p</tt> that is a sequence containing the
+values of each grammar symbol in the corresponding rule.  The values
+of <tt>p[i]</tt> are mapped to grammar symbols as shown here:
 
 <blockquote>
 <pre>
@@ -1507,42 +1601,49 @@ def p_expression_plus(p):
 </pre>
 </blockquote>
 
+<p>
 For tokens, the "value" of the corresponding <tt>p[i]</tt> is the
-<em>same</em> as the <tt>p.value</tt> attribute assigned
-in the lexer module.  For non-terminals, the value is determined by
-whatever is placed in <tt>p[0]</tt> when rules are reduced.  This
-value can be anything at all.  However, it probably most common for
-the value to be a simple Python type, a tuple, or an instance.  In this example, we
-are relying on the fact that the <tt>NUMBER</tt> token stores an integer value in its value
-field.  All of the other rules simply perform various types of integer operations and store
-the result.
-
-<P>
-Note: The use of negative indices have a special meaning in yacc---specially <tt>p[-1]</tt> does
-not have the same value as <tt>p[3]</tt> in this example.  Please see the section on "Embedded Actions" for further
-details.
+<em>same</em> as the <tt>p.value</tt> attribute assigned in the lexer
+module.  For non-terminals, the value is determined by whatever is
+placed in <tt>p[0]</tt> when rules are reduced.  This value can be
+anything at all.  However, it probably most common for the value to be
+a simple Python type, a tuple, or an instance.  In this example, we
+are relying on the fact that the <tt>NUMBER</tt> token stores an
+integer value in its value field.  All of the other rules simply
+perform various types of integer operations and propagate the result.
+</p>
 
 <p>
-The first rule defined in the yacc specification determines the starting grammar
-symbol (in this case, a rule for <tt>expression</tt> appears first).  Whenever
-the starting rule is reduced by the parser and no more input is available, parsing 
-stops and the final value is returned (this value will be whatever the top-most rule
-placed in <tt>p[0]</tt>). Note: an alternative starting symbol can be specified using the <tt>start</tt> keyword argument to
+Note: The use of negative indices have a special meaning in
+yacc---specially <tt>p[-1]</tt> does not have the same value
+as <tt>p[3]</tt> in this example.  Please see the section on "Embedded
+Actions" for further details.
+</p>
+
+<p>
+The first rule defined in the yacc specification determines the
+starting grammar symbol (in this case, a rule for <tt>expression</tt>
+appears first).  Whenever the starting rule is reduced by the parser
+and no more input is available, parsing stops and the final value is
+returned (this value will be whatever the top-most rule placed
+in <tt>p[0]</tt>). Note: an alternative starting symbol can be
+specified using the <tt>start</tt> keyword argument to
 <tt>yacc()</tt>.
 
-<p>The <tt>p_error(p)</tt> rule is defined to catch syntax errors.  See the error handling section
-below for more detail.
+<p>The <tt>p_error(p)</tt> rule is defined to catch syntax errors.
+See the error handling section below for more detail.
 
 <p>
-To build the parser, call the <tt>yacc.yacc()</tt> function.  This function
-looks at the module and attempts to construct all of the LR parsing tables for the grammar
-you have specified.   The first time <tt>yacc.yacc()</tt> is invoked, you will get a message
-such as this:
+To build the parser, call the <tt>yacc.yacc()</tt> function.  This
+function looks at the module and attempts to construct all of the LR
+parsing tables for the grammar you have specified.  The first
+time <tt>yacc.yacc()</tt> is invoked, you will get a message such as
+this:
 
 <blockquote>
 <pre>
 $ python calcparse.py
-yacc: Generating LALR parsing table...  
+Generating LALR tables
 calc > 
 </pre>
 </blockquote>
@@ -1554,7 +1655,8 @@ debugging file called <tt>parser.out</tt> is created.  On subsequent
 executions, <tt>yacc</tt> will reload the table from
 <tt>parsetab.py</tt> unless it has detected a change in the underlying
 grammar (in which case the tables and <tt>parsetab.py</tt> file are
-regenerated).   Note: The names of parser output files can be changed if necessary.  See the notes that follow later.
+regenerated).  Note: The names of parser output files can be changed
+if necessary.  See the <a href="reference.html">PLY Reference</a> for details.
 
 <p>
 If any errors are detected in your grammar specification, <tt>yacc.py</tt> will produce
@@ -1569,7 +1671,16 @@ diagnostic messages and possibly raise an exception.  Some of the errors that ca
 <li>Undefined rules and tokens
 </ul>
 
-The next few sections now discuss a few finer points of grammar construction.
+The next few sections discuss grammar specification in more detail.
+
+<p>
+The final part of the example shows how to actually run the parser
+created by
+<tt>yacc()</tt>.  To run the parser, you simply have to call
+the <tt>parse()</tt> with a string of input text.  This will run all
+of the grammar rules and return the result of the entire parse.  This
+result return is the value assigned to <tt>p[0]</tt> in the starting
+grammar rule.
 
 <H3><a name="ply_nn25"></a>5.2 Combining Grammar Rule Functions</H3>
 
@@ -1640,8 +1751,15 @@ def p_expressions(p):
 </pre>
 </blockquote>
 
-<H3><a name="ply_nn26"></a>5.3 Character Literals</H3>
+If parsing performance is a concern, you should resist the urge to put
+too much conditional processing into a single grammar rule as shown in
+these examples.  When you add checks to see which grammar rule is
+being handled, you are actually duplicating the work that the parser
+has already performed (i.e., the parser already knows exactly what rule it
+matched).  You can eliminate this overhead by using a
+separate <tt>p_rule()</tt> function for each grammar rule.
 
+<H3><a name="ply_nn26"></a>5.3 Character Literals</H3>
 
 If desired, a grammar may contain tokens defined as single character literals.   For example:
 
@@ -1700,11 +1818,12 @@ def p_optitem(p):
 </pre>
 </blockquote>
 
-Note: You can write empty rules anywhere by simply specifying an empty right hand side.  However, I personally find that
-writing an "empty" rule and using "empty" to denote an empty production is easier to read.
+Note: You can write empty rules anywhere by simply specifying an empty
+right hand side.  However, I personally find that writing an "empty"
+rule and using "empty" to denote an empty production is easier to read
+and more clearly states your intentions.
 
 <H3><a name="ply_nn28"></a>5.5 Changing the starting symbol</H3>
-
 
 Normally, the first rule found in a yacc specification defines the starting grammar rule (top level rule).  To change this, simply
 supply a <tt>start</tt> specifier in your file.  For example:
@@ -1723,8 +1842,10 @@ def p_foo(p):
 </pre>
 </blockquote>
 
-The use of a <tt>start</tt> specifier may be useful during debugging since you can use it to have yacc build a subset of
-a larger grammar.  For this purpose, it is also possible to specify a starting symbol as an argument to <tt>yacc()</tt>. For example:
+The use of a <tt>start</tt> specifier may be useful during debugging
+since you can use it to have yacc build a subset of a larger grammar.
+For this purpose, it is also possible to specify a starting symbol as
+an argument to <tt>yacc()</tt>. For example:
 
 <blockquote>
 <pre>
@@ -1735,9 +1856,11 @@ yacc.yacc(start='foo')
 <H3><a name="ply_nn27"></a>5.6 Dealing With Ambiguous Grammars</H3>
 
 
-The expression grammar given in the earlier example has been written in a special format to eliminate ambiguity. 
-However, in many situations, it is extremely difficult or awkward to write grammars in this format.  A
-much more natural way to express the grammar is in a more compact form like this:
+The expression grammar given in the earlier example has been written
+in a special format to eliminate ambiguity.  However, in many
+situations, it is extremely difficult or awkward to write grammars in
+this format.  A much more natural way to express the grammar is in a
+more compact form like this:
 
 <blockquote>
 <pre>
@@ -1750,15 +1873,18 @@ expression : expression PLUS expression
 </pre>
 </blockquote>
 
-Unfortunately, this grammar specification is ambiguous.  For example, if you are parsing the string
-"3 * 4 + 5", there is no way to tell how the operators are supposed to be grouped.
-For example, does the expression mean "(3 * 4) + 5" or is it "3 * (4+5)"?
+Unfortunately, this grammar specification is ambiguous.  For example,
+if you are parsing the string "3 * 4 + 5", there is no way to tell how
+the operators are supposed to be grouped.  For example, does the
+expression mean "(3 * 4) + 5" or is it "3 * (4+5)"?
 
 <p>
-When an ambiguous grammar is given to <tt>yacc.py</tt> it will print messages about "shift/reduce conflicts" 
-or a "reduce/reduce conflicts".   A shift/reduce conflict is caused when the parser generator can't decide
-whether or not to reduce a rule or shift a symbol on the parsing stack.   For example, consider
-the string "3 * 4 + 5" and the internal parsing stack:
+When an ambiguous grammar is given to <tt>yacc.py</tt> it will print
+messages about "shift/reduce conflicts" or "reduce/reduce conflicts".
+A shift/reduce conflict is caused when the parser generator can't
+decide whether or not to reduce a rule or shift a symbol on the
+parsing stack.  For example, consider the string "3 * 4 + 5" and the
+internal parsing stack:
 
 <blockquote>
 <pre>
@@ -1773,20 +1899,25 @@ Step Symbol Stack           Input Tokens            Action
 </pre>
 </blockquote>
 
-In this case, when the parser reaches step 6, it has two options.  One is to reduce the
-rule <tt>expr : expr * expr</tt> on the stack.  The other option is to shift the
-token <tt>+</tt> on the stack.   Both options are perfectly legal from the rules
-of the context-free-grammar.
+In this case, when the parser reaches step 6, it has two options.  One
+is to reduce the rule <tt>expr : expr * expr</tt> on the stack.  The
+other option is to shift the token <tt>+</tt> on the stack.  Both
+options are perfectly legal from the rules of the
+context-free-grammar.
 
 <p>
-By default, all shift/reduce conflicts are resolved in favor of shifting.  Therefore, in the above
-example, the parser will always shift the <tt>+</tt> instead of reducing.    Although this
-strategy works in many cases (including the ambiguous if-then-else), it is not enough for arithmetic
-expressions.  In fact, in the above example, the decision to shift <tt>+</tt> is completely wrong---we should have
-reduced <tt>expr * expr</tt> since multiplication has higher mathematical precedence than addition.
+By default, all shift/reduce conflicts are resolved in favor of
+shifting.  Therefore, in the above example, the parser will always
+shift the <tt>+</tt> instead of reducing.  Although this strategy
+works in many cases (for example, the case of 
+"if-then" versus "if-then-else"), it is not enough for arithmetic expressions.  In fact,
+in the above example, the decision to shift <tt>+</tt> is completely
+wrong---we should have reduced <tt>expr * expr</tt> since
+multiplication has higher mathematical precedence than addition.
 
-<p>To resolve ambiguity, especially in expression grammars, <tt>yacc.py</tt> allows individual
-tokens to be assigned a precedence level and associativity.  This is done by adding a variable
+<p>To resolve ambiguity, especially in expression
+grammars, <tt>yacc.py</tt> allows individual tokens to be assigned a
+precedence level and associativity.  This is done by adding a variable
 <tt>precedence</tt> to the grammar file like this:
 
 <blockquote>
@@ -1798,17 +1929,19 @@ precedence = (
 </pre>
 </blockquote>
 
-This declaration specifies that <tt>PLUS</tt>/<tt>MINUS</tt> have
-the same precedence level and are left-associative and that 
-<tt>TIMES</tt>/<tt>DIVIDE</tt> have the same precedence and are left-associative. 
-Within the <tt>precedence</tt> declaration, tokens are ordered from lowest to highest precedence. Thus,
-this declaration specifies that <tt>TIMES</tt>/<tt>DIVIDE</tt> have higher
-precedence than <tt>PLUS</tt>/<tt>MINUS</tt> (since they appear later in the
+This declaration specifies that <tt>PLUS</tt>/<tt>MINUS</tt> have the
+same precedence level and are left-associative and that
+<tt>TIMES</tt>/<tt>DIVIDE</tt> have the same precedence and are
+left-associative.  Within the <tt>precedence</tt> declaration, tokens
+are ordered from lowest to highest precedence. Thus, this declaration
+specifies that <tt>TIMES</tt>/<tt>DIVIDE</tt> have higher precedence
+than <tt>PLUS</tt>/<tt>MINUS</tt> (since they appear later in the
 precedence specification).
 
 <p>
-The precedence specification works by associating a numerical precedence level value and associativity direction to
-the listed tokens.  For example, in the above example you get:
+The precedence specification works by associating a numerical
+precedence level value and associativity direction to the listed
+tokens.  For example, in the above example you get:
 
 <blockquote>
 <pre>
@@ -1819,9 +1952,10 @@ DIVIDE    : level = 2,  assoc = 'left'
 </pre>
 </blockquote>
 
-These values are then used to attach a numerical precedence value and associativity direction 
-to each grammar rule. <em>This is always determined by looking at the precedence of the right-most terminal symbol.</em>  
-For example:
+These values are then used to attach a numerical precedence value and
+associativity direction to each grammar rule. <em>This is always
+determined by looking at the precedence of the right-most terminal
+symbol.</em>  For example:
 
 <blockquote>
 <pre>
@@ -1839,7 +1973,7 @@ looking at the precedence rules and associativity specifiers.
 
 <p>
 <ol>
-<li>If the current token has higher precedence, it is shifted.
+<li>If the current token has higher precedence than the rule on the stack, it is shifted.
 <li>If the grammar rule on the stack has higher precedence, the rule is reduced.
 <li>If the current token and the grammar rule have the same precedence, the
 rule is reduced for left associativity, whereas the token is shifted for right associativity.
@@ -1847,21 +1981,28 @@ rule is reduced for left associativity, whereas the token is shifted for right a
 favor of shifting (the default).
 </ol>
 
-For example, if "expression PLUS expression" has been parsed and the next token
-is "TIMES", the action is going to be a shift because "TIMES" has a higher precedence level than "PLUS".  On the other
-hand, if "expression TIMES expression" has been parsed and the next token is "PLUS", the action
-is going to be reduce because "PLUS" has a lower precedence than "TIMES."
+For example, if "expression PLUS expression" has been parsed and the
+next token is "TIMES", the action is going to be a shift because
+"TIMES" has a higher precedence level than "PLUS".  On the other hand,
+if "expression TIMES expression" has been parsed and the next token is
+"PLUS", the action is going to be reduce because "PLUS" has a lower
+precedence than "TIMES."
 
 <p>
-When shift/reduce conflicts are resolved using the first three techniques (with the help of
-precedence rules), <tt>yacc.py</tt> will report no errors or conflicts in the grammar. 
+When shift/reduce conflicts are resolved using the first three
+techniques (with the help of precedence rules), <tt>yacc.py</tt> will
+report no errors or conflicts in the grammar (although it will print
+some information in the <tt>parser.out</tt> debugging file).
 
 <p>
-One problem with the precedence specifier technique is that it is sometimes necessary to
-change the precedence of an operator in certain contents.  For example, consider a unary-minus operator
-in "3 + 4 * -5".  Normally, unary minus has a very high precedence--being evaluated before the multiply.
-However, in our precedence specifier, MINUS has a lower precedence than TIMES.  To deal with this,
-precedence rules can be given for fictitious tokens like this:
+One problem with the precedence specifier technique is that it is
+sometimes necessary to change the precedence of an operator in certain
+contexts.  For example, consider a unary-minus operator in "3 + 4 *
+-5".  Mathematically, the unary minus is normally given a very high
+precedence--being evaluated before the multiply.  However, in our
+precedence specifier, MINUS has a lower precedence than TIMES.  To
+deal with this, precedence rules can be given for so-called "fictitious tokens"
+like this:
 
 <blockquote>
 <pre>
@@ -1950,9 +2091,25 @@ whether it's supposed to reduce the 5 as an expression and then reduce
 the rule <tt>assignment : ID EQUALS expression</tt>.
 
 <p>
-It should be noted that reduce/reduce conflicts are notoriously difficult to spot
-simply looking at the input grammer.    To locate these, it is usually easier to look at the
-<tt>parser.out</tt> debugging file with an appropriately high level of caffeination.
+It should be noted that reduce/reduce conflicts are notoriously
+difficult to spot simply looking at the input grammer.  When a
+reduce/reduce conflict occurs, <tt>yacc()</tt> will try to help by
+printing a warning message such as this:
+
+<blockquote>
+<pre>
+WARNING: 1 reduce/reduce conflict
+WARNING: reduce/reduce conflict in state 15 resolved using rule (assignment -> ID EQUALS NUMBER)
+WARNING: rejected rule (expression -> NUMBER)
+</pre>
+</blockquote>
+
+This message identifies the two rules that are in conflict.  However,
+it may not tell you how the parser arrived at such a state.  To try
+and figure it out, you'll probably have to look at your grammar and
+the contents of the
+<tt>parser.out</tt> debugging file with an appropriately high level of
+caffeination.
 
 <H3><a name="ply_nn28"></a>5.7 The parser.out file</H3>
 
@@ -2212,10 +2369,15 @@ state 13
 </pre>
 </blockquote>
 
-In the file, each state of the grammar is described.  Within each state the "." indicates the current
-location of the parse within any applicable grammar rules.   In addition, the actions for each valid
-input token are listed.   When a shift/reduce or reduce/reduce conflict arises, rules <em>not</em> selected
-are prefixed with an !.  For example:
+The different states that appear in this file are a representation of
+every possible sequence of valid input tokens allowed by the grammar.
+When receiving input tokens, the parser is building up a stack and
+looking for matching rules.  Each state keeps track of the grammar
+rules that might be in the process of being matched at that point.  Within each
+rule, the "." character indicates the current location of the parse
+within that rule.  In addition, the actions for each valid input token
+are listed.  When a shift/reduce or reduce/reduce conflict arises,
+rules <em>not</em> selected are prefixed with an !.  For example:
 
 <blockquote>
 <pre>
@@ -2232,10 +2394,19 @@ bad.  However, the only way to be sure that they are resolved correctly is to lo
   
 <H3><a name="ply_nn29"></a>5.8 Syntax Error Handling</H3>
 
+If you are creating a parser for production use, the handling of
+syntax errors is important.  As a general rule, you don't want a
+parser to simply throw up its hands and stop at the first sign of
+trouble.  Instead, you want it to report the error, recover if possible, and
+continue parsing so that all of the errors in the input get reported
+to the user at once.   This is the standard behavior found in compilers
+for languages such as C, C++, and Java.
 
-When a syntax error occurs during parsing, the error is immediately
+In PLY, when a syntax error occurs during parsing, the error is immediately
 detected (i.e., the parser does not read any more tokens beyond the
-source of the error).  Error recovery in LR parsers is a delicate
+source of the error).  However, at this point, the parser enters a
+recovery mode that can be used to try and continue further parsing.
+As a general rule, error recovery in LR parsers is a delicate
 topic that involves ancient rituals and black-magic.   The recovery mechanism
 provided by <tt>yacc.py</tt> is comparable to Unix yacc so you may want
 consult a book like O'Reilly's "Lex and Yacc" for some of the finer details.
@@ -2407,7 +2578,7 @@ is done by raising the <tt>SyntaxError</tt> exception like this:
 <pre>
 def p_production(p):
     'production : some production ...'
-    raise yacc.SyntaxError
+    raise SyntaxError
 </pre>
 </blockquote>
 
@@ -2438,8 +2609,9 @@ to discard huge portions of the input text to find a valid restart point.
 <H3><a name="ply_nn33"></a>5.9 Line Number and Position Tracking</H3>
 
 
-Position tracking is often a tricky problem when writing compilers.  By default, PLY tracks the line number and position of
-all tokens.    This information is available using the following functions:
+Position tracking is often a tricky problem when writing compilers.
+By default, PLY tracks the line number and position of all tokens.
+This information is available using the following functions:
 
 <ul>
 <li><tt>p.lineno(num)</tt>. Return the line number for symbol <em>num</em>
@@ -2457,9 +2629,11 @@ def p_expression(p):
 </pre>
 </blockquote>
 
-As an optional feature, <tt>yacc.py</tt> can automatically track line numbers and positions for all of the grammar symbols 
-as well.  However, this
-extra tracking requires extra processing and can significantly slow down parsing.  Therefore, it must be enabled by passing the 
+As an optional feature, <tt>yacc.py</tt> can automatically track line
+numbers and positions for all of the grammar symbols as well.
+However, this extra tracking requires extra processing and can
+significantly slow down parsing.  Therefore, it must be enabled by
+passing the
 <tt>tracking=True</tt> option to <tt>yacc.parse()</tt>.  For example:
 
 <blockquote>
@@ -2468,8 +2642,9 @@ yacc.parse(data,tracking=True)
 </pre>
 </blockquote>
 
-Once enabled, the <tt>lineno()</tt> and <tt>lexpos()</tt> methods work for all grammar symbols.  In addition, two
-additional methods can be used:
+Once enabled, the <tt>lineno()</tt> and <tt>lexpos()</tt> methods work
+for all grammar symbols.  In addition, two additional methods can be
+used:
 
 <ul>
 <li><tt>p.linespan(num)</tt>. Return a tuple (startline,endline) with the starting and ending line number for symbol <em>num</em>.
@@ -2511,29 +2686,58 @@ def p_bad_func(p):
 </blockquote>
 
 <p>
-Similarly, you may get better parsing performance if you only propagate line number
-information where it's needed.   For example:
+Similarly, you may get better parsing performance if you only
+selectively propagate line number information where it's needed using
+the <tt>p.set_lineno()</tt> method.  For example:
 
 <blockquote>
 <pre>
 def p_fname(p):
     'fname : ID'
-    p[0] = (p[1],p.lineno(1))
+    p[0] = p[1]
+    p.set_lineno(0,p.lineno(1))
 </pre>
 </blockquote>
 
-Finally, it should be noted that PLY does not store position information after a rule has been
-processed.  If it is important for you to retain this information in an abstract syntax tree, you
-must make your own copy.
+PLY doesn't retain line number information from rules that have already been
+parsed.   If you are building an abstract syntax tree and need to have line numbers,
+you should make sure that the line numbers appear in the tree itself.
 
 <H3><a name="ply_nn34"></a>5.10 AST Construction</H3>
 
+<tt>yacc.py</tt> provides no special functions for constructing an
+abstract syntax tree.  However, such construction is easy enough to do
+on your own. 
 
-<tt>yacc.py</tt> provides no special functions for constructing an abstract syntax tree.  However, such
-construction is easy enough to do on your own.  Simply create a data structure for abstract syntax tree nodes
-and assign nodes to <tt>p[0]</tt> in each rule.
+<p>A minimal way to construct a tree is to simply create and
+propagate a tuple or list in each grammar rule function.   There
+are many possible ways to do this, but one example would be something
+like this:
 
-For example:
+<blockquote>
+<pre>
+def p_expression_binop(p):
+    '''expression : expression PLUS expression
+                  | expression MINUS expression
+                  | expression TIMES expression
+                  | expression DIVIDE expression'''
+
+    p[0] = ('binary-expression',p[2],p[1],p[3])
+
+def p_expression_group(p):
+    'expression : LPAREN expression RPAREN'
+    p[0] = ('group-expression',p[2])
+
+def p_expression_number(p):
+    'expression : NUMBER'
+    p[0] = ('number-expression',p[1])
+</pre>
+</blockquote>
+
+<p>
+Another approach is to create a set of data structure for different
+kinds of abstract syntax tree nodes and assign nodes to <tt>p[0]</tt>
+in each rule.  For example:
 
 <blockquote>
 <pre>
@@ -2569,8 +2773,12 @@ def p_expression_number(p):
 </pre>
 </blockquote>
 
-To simplify tree traversal, it may make sense to pick a very generic tree structure for your parse tree nodes.
-For example:
+The advantage to this approach is that it may make it easier to attach more complicated
+semantics, type checking, code generation, and other features to the node classes.
+
+<p>
+To simplify tree traversal, it may make sense to pick a very generic
+tree structure for your parse tree nodes.  For example:
 
 <blockquote>
 <pre>
@@ -2613,7 +2821,7 @@ symbols <tt>A</tt>, <tt>B</tt>, <tt>C</tt>, and <tt>D</tt> have been
 parsed. Sometimes, however, it is useful to execute small code
 fragments during intermediate stages of parsing.  For example, suppose
 you wanted to perform some action immediately after <tt>A</tt> has
-been parsed. To do this, you can write a empty rule like this:
+been parsed. To do this, write an empty rule like this:
 
 <blockquote>
 <pre>
@@ -2676,8 +2884,11 @@ def p_seen_AB(p):
 </pre>
 </blockquote>
 
-an extra shift-reduce conflict will be introduced.  This conflict is caused by the fact that the same symbol <tt>C</tt> appears next in 
-both the <tt>abcd</tt> and <tt>abcx</tt> rules.   The parser can either shift the symbol (<tt>abcd</tt> rule) or reduce the empty rule <tt>seen_AB</tt> (<tt>abcx</tt> rule).
+an extra shift-reduce conflict will be introduced.  This conflict is
+caused by the fact that the same symbol <tt>C</tt> appears next in
+both the <tt>abcd</tt> and <tt>abcx</tt> rules.  The parser can either
+shift the symbol (<tt>abcd</tt> rule) or reduce the empty
+rule <tt>seen_AB</tt> (<tt>abcx</tt> rule).
 
 <p>
 A common use of embedded rules is to control other aspects of parsing
@@ -2701,10 +2912,14 @@ def p_new_scope(p):
 </pre>
 </blockquote>
 
-In this case, the embedded action <tt>new_scope</tt> executes immediately after a <tt>LBRACE</tt> (<tt>{</tt>) symbol is parsed.   This might 
-adjust internal symbol tables and other aspects of the parser.  Upon completion of the rule <tt>statements_block</tt>, code might undo the operations performed in the embedded action (e.g., <tt>pop_scope()</tt>).
+In this case, the embedded action <tt>new_scope</tt> executes
+immediately after a <tt>LBRACE</tt> (<tt>{</tt>) symbol is parsed.
+This might adjust internal symbol tables and other aspects of the
+parser.  Upon completion of the rule <tt>statements_block</tt>, code
+might undo the operations performed in the embedded action
+(e.g., <tt>pop_scope()</tt>).
 
-<H3><a name="ply_nn36"></a>5.12 Yacc implementation notes</H3>
+<H3><a name="ply_nn36"></a>5.12 Miscellaneous Yacc Notes</h3>
 
 
 <ul>
@@ -2817,17 +3032,17 @@ machine.  Please be patient.
 size of the grammar.   The biggest bottlenecks will be the lexer and the complexity of the code in your grammar rules.
 </ul>
 
-<H2><a name="ply_nn37"></a>6. Parser and Lexer State Management</H2>
+<H2><a name="ply_nn37"></a>6. Multiple Parsers and Lexers</H2>
 
 
 In advanced parsing applications, you may want to have multiple
-parsers and lexers.  Furthermore, the parser may want to control the
-behavior of the lexer in some way.
+parsers and lexers. 
 
 <p>
-To do this, it is important to note that both the lexer and parser are
-actually implemented as objects.   These objects are returned by the
-<tt>lex()</tt> and <tt>yacc()</tt> functions respectively.  For example:
+As a general rules this isn't a problem.   However, to make it work,
+you need to carefully make sure everything gets hooked up correctly.
+First, make sure you save the objects returned by <tt>lex()</tt> and
+<tt>yacc()</tt>.  For example:
 
 <blockquote>
 <pre>
@@ -2836,7 +3051,8 @@ parser = yacc.yacc()     # Return parser object
 </pre>
 </blockquote>
 
-To attach the lexer and parser together, make sure you use the <tt>lexer</tt> argumemnt to parse.  For example:
+Next, when parsing, make sure you give the <tt>parse()</tt> function a reference to the lexer it
+should be using.  For example:
 
 <blockquote>
 <pre>
@@ -2844,8 +3060,13 @@ parser.parse(text,lexer=lexer)
 </pre>
 </blockquote>
 
-Within lexer and parser rules, these objects are also available.  In the lexer,
-the "lexer" attribute of a token refers to the lexer object in use.  For example:
+If you forget to do this, the parser will use the last lexer
+created--which is not always what you want.
+
+<p>
+Within lexer and parser rule functions, these objects are also
+available.  In the lexer, the "lexer" attribute of a token refers to
+the lexer object that triggered the rule. For example:
 
 <blockquote>
 <pre>

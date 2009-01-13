@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------------
 # calc.py
 #
-# A simple calculator with variables.   This is from O'Reilly's
-# "Lex and Yacc", p. 63.
+# This example shows how to run the parser in a debugging mode
+# with output routed to a logging object.
 # -----------------------------------------------------------------------------
 
 import sys
@@ -98,10 +98,16 @@ def p_error(p):
 import ply.yacc as yacc
 yacc.yacc()
 
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    filename="parselog.txt"
+)
+
 while 1:
     try:
         s = raw_input('calc > ')
     except EOFError:
         break
     if not s: continue
-    yacc.parse(s)
+    yacc.parse(s,debug=logging.getLogger())

@@ -3,7 +3,7 @@
 #
 # Author: David M. Beazley (dave@dabeaz.com)
 #
-# Copyright (C) 2001-2008, David M. Beazley
+# Copyright (C) 2001-2009, David M. Beazley
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,12 +22,12 @@
 # See the file COPYING for a complete copy of the LGPL.
 # -----------------------------------------------------------------------------
 
-__version__    = "2.6"
-__tabversion__ = "2.4"       # Version of table file used
+__version__    = "3.0"
+__tabversion__ = "3.0"       # Version of table file used
 
 import re, sys, types, copy, os
 
-# This tuple lists known string types
+# This tuple contains known string types
 try:
     # Python 2.6
     StringTypes = (types.StringType, types.UnicodeType)
@@ -35,7 +35,9 @@ except AttributeError:
     # Python 3.0
     StringTypes = (str, bytes)
 
-# Compatibility function for python 2.6/3.0
+# Extract the code attribute of a function. Different implementations
+# are for Python 2/3 compatibility.
+
 if sys.version_info[0] < 3:
     def func_code(f):
         return f.func_code
@@ -54,27 +56,12 @@ class LexError(Exception):
          self.args = (message,)
          self.text = s
 
-# An object used to issue one-time warning messages for various features
-
-class LexWarning(object):
-   def __init__(self):
-      self.warned = 0
-   def __call__(self,msg):
-      if not self.warned:
-         sys.stderr.write("ply.lex: Warning: " + msg+"\n")
-         self.warned = 1
-
-_SkipWarning = LexWarning()         # Warning for use of t.skip() on tokens
-
 # Token class.  This class is used to represent the tokens produced.
 class LexToken(object):
     def __str__(self):
         return "LexToken(%s,%r,%d,%d)" % (self.type,self.value,self.lineno,self.lexpos)
     def __repr__(self):
         return str(self)
-    def skip(self,n):
-        self.lexer.skip(n)
-        _SkipWarning("Calling t.skip() on a token is deprecated.  Please use t.lexer.skip()")
 
 # -----------------------------------------------------------------------------
 # Lexer class
@@ -371,6 +358,19 @@ class Lexer:
         if self.lexdata is None:
              raise RuntimeError("No input string given with input()")
         return None
+
+    # Iterator interface
+    def __iter__(self):
+        return self
+
+    def next(self):
+        t = self.token()
+        if t is None:
+            raise StopIteration
+        return t
+
+    __next__ = next
+
 
 # -----------------------------------------------------------------------------
 # _validate_file()
@@ -890,7 +890,6 @@ def runmain(lexer=None,data=None):
         tok = _token()
         if not tok: break
         sys.stdout.write("(%s,%r,%d,%d)\n" % (tok.type, tok.value, tok.lineno,tok.lexpos))
-
 
 # -----------------------------------------------------------------------------
 # @TOKEN(regex)

@@ -15,7 +15,14 @@ sys.tracebacklimit = 0
 import ply.yacc
 
 def check_expected(result,expected):
-    resultlines = result.splitlines()
+    resultlines = []
+    for line in result.splitlines():
+        if line.startswith("WARNING: "):
+            line = line[9:]
+        elif line.startswith("ERROR: "):
+            line = line[7:]
+        resultlines.append(line)
+
     expectedlines = expected.splitlines()
     if len(resultlines) != len(expectedlines):
         return False
@@ -47,8 +54,8 @@ class YaccErrorWarningTests(unittest.TestCase):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_badargs")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc_badargs.py:23: Rule 'p_statement_assign' has too many arguments.\n"
-                                    "yacc_badargs.py:27: Rule 'p_statement_expr' requires an argument.\n"
+                                    "yacc_badargs.py:23: Rule 'p_statement_assign' has too many arguments\n"
+                                    "yacc_badargs.py:27: Rule 'p_statement_expr' requires an argument\n"
                                     ))        
     def test_yacc_badid(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_badid")
@@ -62,24 +69,24 @@ class YaccErrorWarningTests(unittest.TestCase):
         try:
             run_import("yacc_badprec")
         except ply.yacc.YaccError:
-            e = sys.exc_info()[1]
-            self.assert_(check_expected(str(e),
-                                        "precedence must be a list or tuple."))
+            result = sys.stderr.getvalue()
+            self.assert_(check_expected(result,
+                                        "precedence must be a list or tuple\n"
+                                        ))
     def test_yacc_badprec2(self):
-        run_import("yacc_badprec2")
+        self.assertRaises(ply.yacc.YaccError,run_import,"yacc_badprec2")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc: Invalid precedence table.\n"
-                                    "yacc: Generating LALR parsing table...\n"
-                                    "yacc: 8 shift/reduce conflicts\n"
+                                    "Bad precedence table\n"
                                     ))
 
     def test_yacc_badprec3(self):
         run_import("yacc_badprec3")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc: Precedence already specified for terminal 'MINUS'\n"
-                                    "yacc: Generating LALR parsing table...\n"
+                                    "Precedence already specified for terminal 'MINUS'\n"
+                                    "Generating LALR tables\n"
+
                                     ))
         
     def test_yacc_badrule(self):
@@ -96,58 +103,60 @@ class YaccErrorWarningTests(unittest.TestCase):
         try:
             run_import("yacc_badtok")
         except ply.yacc.YaccError:
-            e = sys.exc_info()[1]
-            self.assert_(check_expected(str(e),
-                                        "tokens must be a list or tuple."))
+            result = sys.stderr.getvalue()
+            self.assert_(check_expected(result,
+                                        "tokens must be a list or tuple\n"))
 
     def test_yacc_dup(self):
         run_import("yacc_dup")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
                                     "yacc_dup.py:27: Function p_statement redefined. Previously defined on line 23\n"
-                                    "yacc: Warning. Token 'EQUALS' defined, but not used.\n"
-                                    "yacc: Warning. There is 1 unused token.\n"
-                                    "yacc: Generating LALR parsing table...\n"
+                                    "Token 'EQUALS' defined, but not used\n"
+                                    "There is 1 unused token\n"
+                                    "Generating LALR tables\n"
+
                                     ))
     def test_yacc_error1(self):
         try:
             run_import("yacc_error1")
         except ply.yacc.YaccError:
-            e = sys.exc_info()[1]
-            self.assert_(check_expected(str(e),
-                                        "yacc_error1.py:61: p_error() requires 1 argument."))
+            result = sys.stderr.getvalue()
+            self.assert_(check_expected(result,
+                                        "yacc_error1.py:61: p_error() requires 1 argument\n"))
 
     def test_yacc_error2(self):
         try:
             run_import("yacc_error2")
         except ply.yacc.YaccError:
-            e = sys.exc_info()[1]
-            self.assert_(check_expected(str(e),
-                                        "yacc_error2.py:61: p_error() requires 1 argument."))
+            result = sys.stderr.getvalue()
+            self.assert_(check_expected(result,
+                                        "yacc_error2.py:61: p_error() requires 1 argument\n"))
 
     def test_yacc_error3(self):
         try:
             run_import("yacc_error3")
         except ply.yacc.YaccError:
             e = sys.exc_info()[1]
-            self.assert_(check_expected(str(e),
-                                        "'p_error' defined, but is not a function or method."))
+            result = sys.stderr.getvalue()
+            self.assert_(check_expected(result,
+                                        "'p_error' defined, but is not a function or method\n"))
             
     def test_yacc_error4(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_error4")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc_error4.py:62: Illegal rule name 'error'. Already defined as a token.\n"
+                                    "yacc_error4.py:62: Illegal rule name 'error'. Already defined as a token\n"
                                     ))
         
     def test_yacc_inf(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_inf")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc: Warning. Token 'NUMBER' defined, but not used.\n"
-                                    "yacc: Warning. There is 1 unused token.\n"
-                                    "yacc: Infinite recursion detected for symbol 'statement'.\n"
-                                    "yacc: Infinite recursion detected for symbol 'expression'.\n"
+                                    "Token 'NUMBER' defined, but not used\n"
+                                    "There is 1 unused token\n"
+                                    "Infinite recursion detected for symbol 'statement'\n"
+                                    "Infinite recursion detected for symbol 'expression'\n"
                                     ))
     def test_yacc_literal(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_literal")
@@ -159,14 +168,14 @@ class YaccErrorWarningTests(unittest.TestCase):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_misplaced")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc_misplaced.py:32: Misplaced '|'.\n"
+                                    "yacc_misplaced.py:32: Misplaced '|'\n"
                                     ))
 
     def test_yacc_missing1(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_missing1")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc_missing1.py:24: Symbol 'location' used, but not defined as a token or a rule.\n"
+                                    "yacc_missing1.py:24: Symbol 'location' used, but not defined as a token or a rule\n"
                                     ))
 
     def test_yacc_nested(self):
@@ -182,92 +191,96 @@ class YaccErrorWarningTests(unittest.TestCase):
         run_import("yacc_nodoc")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc_nodoc.py:27: No documentation string specified in function 'p_statement_expr'\n"
-                                    "yacc: Generating LALR parsing table...\n"
+                                    "yacc_nodoc.py:27: No documentation string specified in function 'p_statement_expr' (ignored)\n"
+                                    "Generating LALR tables\n"
                                     ))
 
     def test_yacc_noerror(self):
         run_import("yacc_noerror")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc: Warning. no p_error() function is defined.\n"
-                                    "yacc: Generating LALR parsing table...\n"
+                                    "no p_error() function is defined\n"
+                                    "Generating LALR tables\n"
                                     ))
 
     def test_yacc_nop(self):
         run_import("yacc_nop")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc_nop.py:27: Warning. Possible grammar rule 'statement_expr' defined without p_ prefix.\n"
-                                    "yacc: Generating LALR parsing table...\n"
+                                    "yacc_nop.py:27: Possible grammar rule 'statement_expr' defined without p_ prefix\n"
+                                    "Generating LALR tables\n"
                                     ))
 
     def test_yacc_notfunc(self):
         run_import("yacc_notfunc")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc: Warning. 'p_statement_assign' not defined as a function\n"
-                                    "yacc: Warning. Token 'EQUALS' defined, but not used.\n"
-                                    "yacc: Warning. There is 1 unused token.\n"
-                                    "yacc: Generating LALR parsing table...\n"
+                                    "'p_statement_assign' not defined as a function\n"
+                                    "Token 'EQUALS' defined, but not used\n"
+                                    "There is 1 unused token\n"
+                                    "Generating LALR tables\n"
                                     ))
     def test_yacc_notok(self):
         try:
             run_import("yacc_notok")
         except ply.yacc.YaccError:
-            e = sys.exc_info()[1]
-            self.assert_(check_expected(str(e),
-                                        "module does not define a list 'tokens'"))
+            result = sys.stderr.getvalue()
+            self.assert_(check_expected(result,
+                                        "No token list is defined\n"))
 
     def test_yacc_rr(self):
         run_import("yacc_rr")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc: Generating LALR parsing table...\n"
-                                    "yacc: 1 reduce/reduce conflict\n"
+                                    "Generating LALR tables\n"
+                                    "1 reduce/reduce conflict\n"
+                                    "reduce/reduce conflict in state 15 resolved using rule (statement -> NAME EQUALS NUMBER)\n"
+                                    "rejected rule (expression -> NUMBER)\n"
+
                                     ))
     def test_yacc_simple(self):
         run_import("yacc_simple")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc: Generating LALR parsing table...\n"
+                                    "Generating LALR tables\n"
                                     ))
     def test_yacc_sr(self):
         run_import("yacc_sr")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc: Generating LALR parsing table...\n"
-                                    "yacc: 20 shift/reduce conflicts\n"
+                                    "Generating LALR tables\n"
+                                    "20 shift/reduce conflicts\n"
                                     ))
 
     def test_yacc_term1(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_term1")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc_term1.py:24: Illegal rule name 'NUMBER'. Already defined as a token.\n"
+                                    "yacc_term1.py:24: Illegal rule name 'NUMBER'. Already defined as a token\n"
                                     ))
 
     def test_yacc_unused(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_unused")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc_unused.py:62: Symbol 'COMMA' used, but not defined as a token or a rule.\n"
-                                    "yacc: Symbol 'COMMA' is unreachable.\n"
-                                    "yacc: Symbol 'exprlist' is unreachable.\n"
+                                    "yacc_unused.py:62: Symbol 'COMMA' used, but not defined as a token or a rule\n"
+                                    "Symbol 'COMMA' is unreachable\n"
+                                    "Symbol 'exprlist' is unreachable\n"
                                     ))
     def test_yacc_unused_rule(self):
         run_import("yacc_unused_rule")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc_unused_rule.py:62: Warning. Rule 'integer' defined, but not used.\n"
-                                    "yacc: Warning. There is 1 unused rule.\n"
-                                    "yacc: Symbol 'integer' is unreachable.\n"
-                                    "yacc: Generating LALR parsing table...\n"
+                                    "yacc_unused_rule.py:62: Rule 'integer' defined, but not used\n"
+                                    "There is 1 unused rule\n"
+                                    "Symbol 'integer' is unreachable\n"
+                                    "Generating LALR tables\n"
                                     ))
 
     def test_yacc_uprec(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_uprec")
         result = sys.stderr.getvalue()
+        print repr(result)
         self.assert_(check_expected(result,
                                     "yacc_uprec.py:37: Nothing known about the precedence of 'UMINUS'\n"
                                     ))
@@ -276,17 +289,17 @@ class YaccErrorWarningTests(unittest.TestCase):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_uprec2")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc_uprec2.py:37: Syntax error. Nothing follows %prec.\n"
+                                    "yacc_uprec2.py:37: Syntax error. Nothing follows %prec\n"
                                     ))
 
     def test_yacc_prec1(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_prec1")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "yacc: Precedence rule 'left' defined for unknown symbol '+'\n"
-                                    "yacc: Precedence rule 'left' defined for unknown symbol '*'\n"
-                                    "yacc: Precedence rule 'left' defined for unknown symbol '-'\n"
-                                    "yacc: Precedence rule 'left' defined for unknown symbol '/'\n"
+                                    "Precedence rule 'left' defined for unknown symbol '+'\n"
+                                    "Precedence rule 'left' defined for unknown symbol '*'\n"
+                                    "Precedence rule 'left' defined for unknown symbol '-'\n"
+                                    "Precedence rule 'left' defined for unknown symbol '/'\n"
                                     ))
 
 

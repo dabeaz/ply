@@ -1,5 +1,45 @@
-Version 2.6
+Version 3.0
 -----------------------------
+01/13/09: beazley
+          Minor change to the procedure for signalling a syntax error in a
+          production rule.  A normal SyntaxError exception should be raised
+          instead of yacc.SyntaxError.
+
+01/13/09: beazley
+          Added a new method p.set_lineno(n,lineno) that can be used to set the
+          line number of symbol n in grammar rules.   This simplifies manual
+          tracking of line numbers.
+
+01/11/09: beazley
+          Vastly improved debugging support for yacc.parse().   Instead of passing
+          debug as an integer, you can supply a Logging object (see the logging
+          module). Messages will be generated at the ERROR, INFO, and DEBUG
+	  logging levels, each level providing progressively more information.
+          The debugging trace also shows states, grammar rule, values passed
+          into grammar rules, and the result of each reduction.
+
+01/09/09: beazley
+          The yacc() command now does all error-reporting and diagnostics using
+          the interface of the logging module.  Use the errorlog parameter to
+          specify a logging object for error messages.  Use the debuglog parameter
+          to specify a logging object for the 'parser.out' output.
+
+01/09/09: beazley
+          *HUGE* refactoring of the the ply.yacc() implementation.   The high-level
+	  user interface is backwards compatible, but the internals are completely
+          reorganized into classes.  No more global variables.    The internals
+          are also more extensible.  For example, you can use the classes to 
+          construct a LALR(1) parser in an entirely different manner than 
+          what is currently the case.  Documentation is forthcoming.
+
+01/07/09: beazley
+          Various cleanup and refactoring of yacc internals.  
+
+01/06/09: beazley
+          Fixed a bug with precedence assignment.  yacc was assigning the precedence
+          each rule based on the left-most token, when in fact, it should have been
+          using the right-most token.  Reported by Bruce Frederiksen.
+
 11/27/08: beazley
           Numerous changes to support Python 3.0 including removal of deprecated 
           statements (e.g., has_key) and the additional of compatibility code

@@ -28,7 +28,7 @@ def p_statement_expr(t):
     'statement : expression'
     print(t[1])
 
-def p_statement_expr(t):
+def p_statement_expr2(t):
     'statement : bad&rule'
     pass
 

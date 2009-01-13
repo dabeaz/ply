@@ -36,11 +36,7 @@ def make_calculator():
 
     def t_NUMBER(t):
         r'\d+'
-        try:
-            t.value = int(t.value)
-        except ValueError:
-            print("Integer value too large %s" % t.value)
-            t.value = 0
+        t.value = int(t.value)
         return t
 
     def t_newline(t):
