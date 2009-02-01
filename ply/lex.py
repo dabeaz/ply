@@ -63,13 +63,43 @@ class LexToken(object):
     def __repr__(self):
         return str(self)
 
+# This object is a stand-in for a logging object created by the 
+# logging module.  
+
+class PlyLogger(object):
+    def __init__(self,f):
+        self.f = f
+    def debug(self,msg,*args,**kwargs):
+        self.f.write((msg % args) + "\n")
+    info     = debug
+
+    def warning(self,msg,*args,**kwargs):
+        self.f.write("WARNING: "+ (msg % args) + "\n")
+
+    def error(self,msg,*args,**kwargs):
+        self.f.write("ERROR: " + (msg % args) + "\n")
+
+    critical = debug
+
+# Null logger is used when no output is generated. Does nothing.
+class NullLogger(object):
+    def __getattribute__(self,name):
+        return self
+    def __call__(self,*args,**kwargs):
+        return self
+
 # -----------------------------------------------------------------------------
-# Lexer class
+#                        === Lexing Engine ===
 #
-# This class encapsulates all of the methods and data associated with a lexer.
+# The following Lexer class implements the lexer runtime.   There are only
+# a few public methods and attributes:
 #
 #    input()          -  Store a new string in the lexer
 #    token()          -  Get the next token
+#    clone()          -  Clone the lexer
+#
+#    lineno           -  Current line number
+#    lexpos           -  Current position in the input string
 # -----------------------------------------------------------------------------
 
 class Lexer:
@@ -297,10 +327,6 @@ class Lexer:
 
                 lexpos = m.end()
 
-                # if func not callable, it means it's an ignored token
-                if not hasattr(func,"__call__"):
-                   break
-
                 # If token is processed by a function, call it
 
                 tok.lexer = self      # Set additional attributes useful in token rules
@@ -371,6 +397,35 @@ class Lexer:
 
     __next__ = next
 
+# -----------------------------------------------------------------------------
+#                           ==== Lex Builder ===
+#
+# The functions and classes below are used to collect lexing information
+# and build a Lexer object from it.
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# get_caller_module_dict()
+#
+# This function returns a dictionary containing all of the symbols defined within
+# a caller further down the call stack.  This is used to get the environment
+# associated with the yacc() call if none was provided.
+# -----------------------------------------------------------------------------
+
+def get_caller_module_dict(levels):
+    try:
+        raise RuntimeError
+    except RuntimeError:
+        e,b,t = sys.exc_info()
+        f = t.tb_frame
+        while levels > 0:
+            f = f.f_back                   
+            levels -= 1
+        ldict = f.f_globals.copy()
+        if f.f_globals != f.f_locals:
+            ldict.update(f.f_locals)
+
+        return ldict
 
 # -----------------------------------------------------------------------------
 # _validate_file()
@@ -537,20 +592,8 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
         for (i,v) in _items:
             ldict[i] = v
         lexobj.lexmodule = module
-
     else:
-        # No module given.  We might be able to get information from the caller.
-        try:
-            raise RuntimeError
-        except RuntimeError:
-            e,b,t = sys.exc_info()
-            f = t.tb_frame
-            f = f.f_back                    # Walk out to our calling function
-            if f.f_globals is f.f_locals:   # Collect global and local variations from caller
-               ldict = f.f_globals
-            else:
-               ldict = f.f_globals.copy()
-               ldict.update(f.f_locals)
+        ldict = get_caller_module_dict(2)
 
     if optimize and lextab:
         try:
