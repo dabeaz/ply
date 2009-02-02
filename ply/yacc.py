@@ -2615,7 +2615,7 @@ def get_caller_module_dict(levels):
         e,b,t = sys.exc_info()
         f = t.tb_frame
         while levels > 0:
-            f = f.f_back                    # Walk out to our calling function
+            f = f.f_back                   
             levels -= 1
         ldict = f.f_globals.copy()
         if f.f_globals != f.f_locals:

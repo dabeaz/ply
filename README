@@ -1,8 +1,8 @@
-PLY (Python Lex-Yacc)                   Version 2.6  (Alpha1)
+PLY (Python Lex-Yacc)                   Version 3.0
 
 David M. Beazley (dave@dabeaz.com)
 
-Copyright (C) 2001-2008   David M. Beazley
+Copyright (C) 2001-2009   David M. Beazley
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -24,10 +24,9 @@ Introduction
 ============
 
 PLY is a 100% Python implementation of the common parsing tools lex
-and yacc.   Although several other parsing tools are available for
-Python, there are several reasons why you might want to consider PLY:
+and yacc. Here are a few highlights:
 
- -  The tools are very closely modeled after traditional lex/yacc.
+ -  PLY is very closely modeled after traditional lex/yacc.
     If you know how to use these tools in C, you will find PLY
     to be similar.
 
@@ -43,8 +42,8 @@ Python, there are several reasons why you might want to consider PLY:
  -  Parsing is based on LR-parsing which is fast, memory efficient, 
     better suited to large grammars, and which has a number of nice
     properties when dealing with syntax errors and other parsing problems.
-    Currently, PLY builds its parsing tables using the SLR algorithm which 
-    is slightly weaker than LALR(1) used in traditional yacc. 
+    Currently, PLY builds its parsing tables using the LALR(1)
+    algorithm used in yacc.
 
  -  PLY uses Python introspection features to build lexers and parsers.  
     This greatly simplifies the task of parser construction since it reduces 
@@ -127,16 +126,13 @@ Elias Ioup did the first implementation of LALR(1) parsing in PLY-1.x.
 Andrew Waters and Markus Schoepflin were instrumental in reporting bugs
 and testing a revised LALR(1) implementation for PLY-2.0.
 
-Special Note for PLY-2.x
+Special Note for PLY-3.0
 ========================
-PLY-2.0 is the first in a series of PLY releases that will be adding a
-variety of significant new features.  The first release in this series
-(Ply-2.0) should be 100% compatible with all previous Ply-1.x releases
-except for the fact that Ply-2.0 features a correct implementation of
-LALR(1) table generation.  
-
-If you have suggestions for improving PLY in future 2.x releases, please
-contact me.   - Dave
+PLY-3.0 the first PLY release to support Python 3. However, backwards
+compatibility with Python 2.2 is still preserved. PLY provides dual
+Python 2/3 compatibility by restricting its implementation to a common
+subset of basic language features. You should not convert PLY using
+2to3--it is not necessary and may in fact break the implementation.
 
 Example
 =======
@@ -169,11 +165,7 @@ t_NAME    = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
 def t_NUMBER(t):
     r'\d+'
-    try:
-        t.value = int(t.value)
-    except ValueError:
-        print "Integer value too large", t.value
-        t.value = 0
+    t.value = int(t.value)
     return t
 
 # Ignored characters

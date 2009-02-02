@@ -44,7 +44,7 @@ class LexErrorWarningTests(unittest.TestCase):
         sys.stderr = sys.__stderr__
         sys.stdout = sys.__stdout__
     def test_lex_doc1(self):
-        run_import("lex_doc1")
+        self.assertRaises(SyntaxError,run_import,"lex_doc1")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
                               "lex_doc1.py:18: No regular expression defined for rule 't_NUMBER'\n"))
@@ -67,165 +67,165 @@ class LexErrorWarningTests(unittest.TestCase):
                                     "lex_dup3.py:20: Rule t_NUMBER redefined. Previously defined on line 18\n" ))
 
     def test_lex_empty(self):
-        try:
-            run_import("lex_empty")
-        except SyntaxError:
-            e = sys.exc_info()[1]
-        self.assertEquals(str(e),"lex: no rules of the form t_rulename are defined.")
+        self.assertRaises(SyntaxError,run_import,"lex_empty")
+        result = sys.stderr.getvalue()
+        self.assert_(check_expected(result,
+                                    "No rules of the form t_rulename are defined\n"
+                                    "No rules defined for state 'INITIAL'\n"))
 
     def test_lex_error1(self):
         run_import("lex_error1")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Warning. no t_error rule is defined.\n"))
+                                    "No t_error rule is defined\n"))
 
     def test_lex_error2(self):
-        try:
-            run_import("lex_error2")
-        except SyntaxError:
-            e = sys.exc_info()[1]
-        self.assertEquals(str(e),"lex: Rule 't_error' must be defined as a function")
+        self.assertRaises(SyntaxError,run_import,"lex_error2")
+        result = sys.stderr.getvalue()
+        self.assert_(check_expected(result,
+                                    "Rule 't_error' must be defined as a function\n")
+                     )
 
     def test_lex_error3(self):
         self.assertRaises(SyntaxError,run_import,"lex_error3")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex_error3.py:20: Rule 't_error' requires an argument.\n"))
+                                    "lex_error3.py:20: Rule 't_error' requires an argument\n"))
 
     def test_lex_error4(self):
         self.assertRaises(SyntaxError,run_import,"lex_error4")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex_error4.py:20: Rule 't_error' has too many arguments.\n"))
+                                    "lex_error4.py:20: Rule 't_error' has too many arguments\n"))
 
     def test_lex_ignore(self):
         self.assertRaises(SyntaxError,run_import,"lex_ignore")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex_ignore.py:20: Rule 't_ignore' must be defined as a string.\n"))
+                                    "lex_ignore.py:20: Rule 't_ignore' must be defined as a string\n"))
 
     def test_lex_ignore2(self):
         run_import("lex_ignore2")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Warning. t_ignore contains a literal backslash '\\'\n"))
+                                    "t_ignore contains a literal backslash '\\'\n"))
 
-    def test_lex_nowarn(self):
-        run_import("lex_nowarn")
-        self.assertEquals(sys.stderr.getvalue(),"")
-        self.assertEquals(sys.stdout.getvalue(),"")
 
     def test_lex_re1(self):
         self.assertRaises(SyntaxError,run_import,"lex_re1")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Invalid regular expression for rule 't_NUMBER'. unbalanced parenthesis\n"))
+                                    "Invalid regular expression for rule 't_NUMBER'. unbalanced parenthesis\n"))
 
     def test_lex_re2(self):
         self.assertRaises(SyntaxError,run_import,"lex_re2")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Regular expression for rule 't_PLUS' matches empty string.\n"))
+                                    "Regular expression for rule 't_PLUS' matches empty string\n"))
 
     def test_lex_re3(self):
         self.assertRaises(SyntaxError,run_import,"lex_re3")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Invalid regular expression for rule 't_POUND'. unbalanced parenthesis\n"
-                                    "lex: Make sure '#' in rule 't_POUND' is escaped with '\\#'.\n"))
+                                    "Invalid regular expression for rule 't_POUND'. unbalanced parenthesis\n"
+                                    "Make sure '#' in rule 't_POUND' is escaped with '\\#'\n"))
 
     def test_lex_rule1(self):
         self.assertRaises(SyntaxError,run_import,"lex_rule1")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: t_NUMBER not defined as a function or string\n"))
+                                    "t_NUMBER not defined as a function or string\n"))
 
     def test_lex_rule2(self):
         self.assertRaises(SyntaxError,run_import,"lex_rule2")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex_rule2.py:18: Rule 't_NUMBER' requires an argument.\n"))
+                                    "lex_rule2.py:18: Rule 't_NUMBER' requires an argument\n"))
 
     def test_lex_rule3(self):
         self.assertRaises(SyntaxError,run_import,"lex_rule3")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex_rule3.py:18: Rule 't_NUMBER' has too many arguments.\n"))
+                                    "lex_rule3.py:18: Rule 't_NUMBER' has too many arguments\n"))
 
 
     def test_lex_state1(self):
         self.assertRaises(SyntaxError,run_import,"lex_state1")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: states must be defined as a tuple or list.\n"))
+                                   "states must be defined as a tuple or list\n"))
 
     def test_lex_state2(self):
         self.assertRaises(SyntaxError,run_import,"lex_state2")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: invalid state specifier 'comment'. Must be a tuple (statename,'exclusive|inclusive')\n"
-                                    "lex: invalid state specifier 'example'. Must be a tuple (statename,'exclusive|inclusive')\n"))
+                                    "Invalid state specifier 'comment'. Must be a tuple (statename,'exclusive|inclusive')\n"
+                                    "Invalid state specifier 'example'. Must be a tuple (statename,'exclusive|inclusive')\n"))
 
     def test_lex_state3(self):
         self.assertRaises(SyntaxError,run_import,"lex_state3")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: state name 1 must be a string\n"
-                                    "lex: No rules defined for state 'example'\n"))
+                                    "State name 1 must be a string\n"
+                                    "No rules defined for state 'example'\n"))
 
     def test_lex_state4(self):
         self.assertRaises(SyntaxError,run_import,"lex_state4")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: state type for state comment must be 'inclusive' or 'exclusive'\n"))
+                                    "State type for state comment must be 'inclusive' or 'exclusive'\n"))
 
 
     def test_lex_state5(self):
         self.assertRaises(SyntaxError,run_import,"lex_state5")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: state 'comment' already defined.\n"))
+                                    "State 'comment' already defined\n"))
 
     def test_lex_state_noerror(self):
         run_import("lex_state_noerror")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Warning. no error rule is defined for exclusive state 'comment'\n"))    
+                                    "No error rule is defined for exclusive state 'comment'\n"))    
 
     def test_lex_state_norule(self):
         self.assertRaises(SyntaxError,run_import,"lex_state_norule")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: No rules defined for state 'example'\n"))
+                                    "No rules defined for state 'example'\n"))
 
     def test_lex_token1(self):
-        try:
-            run_import("lex_token1")
-        except SyntaxError:
-            e = sys.exc_info()[1]
-        self.assertEquals(str(e),"lex: module does not define 'tokens'")
-
+        self.assertRaises(SyntaxError,run_import,"lex_token1")
+        result = sys.stderr.getvalue()
+        self.assert_(check_expected(result,
+                                    "No token list is defined\n"
+                                    "Rule 't_NUMBER' defined for an unspecified token NUMBER\n"
+                                    "Rule 't_PLUS' defined for an unspecified token PLUS\n"
+                                    "Rule 't_MINUS' defined for an unspecified token MINUS\n"
+))
 
     def test_lex_token2(self):
-        try:
-            run_import("lex_token2")
-        except SyntaxError:
-            e = sys.exc_info()[1]
-        self.assertEquals(str(e),"lex: tokens must be a list or tuple.")
-
+        self.assertRaises(SyntaxError,run_import,"lex_token2")
+        result = sys.stderr.getvalue()
+        self.assert_(check_expected(result,
+                                    "tokens must be a list or tuple\n"
+                                    "Rule 't_NUMBER' defined for an unspecified token NUMBER\n"
+                                    "Rule 't_PLUS' defined for an unspecified token PLUS\n"
+                                    "Rule 't_MINUS' defined for an unspecified token MINUS\n"
+))
     
     def test_lex_token3(self):
         self.assertRaises(SyntaxError,run_import,"lex_token3")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Rule 't_MINUS' defined for an unspecified token MINUS.\n"))
+                                    "Rule 't_MINUS' defined for an unspecified token MINUS\n"))
 
 
     def test_lex_token4(self):
         self.assertRaises(SyntaxError,run_import,"lex_token4")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Bad token name '-'\n"))
+                                    "Bad token name '-'\n"))
 
 
     def test_lex_token5(self):
@@ -239,20 +239,20 @@ class LexErrorWarningTests(unittest.TestCase):
         run_import("lex_token_dup")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Warning. Token 'MINUS' multiply defined.\n"))   
+                                    "Token 'MINUS' multiply defined\n"))   
 
         
     def test_lex_literal1(self):
         self.assertRaises(SyntaxError,run_import,"lex_literal1")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Invalid literal '**'. Must be a single character\n"))
+                                    "Invalid literal '**'. Must be a single character\n"))
 
     def test_lex_literal2(self):
         self.assertRaises(SyntaxError,run_import,"lex_literal2")
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
-                                    "lex: Invalid literals specification. literals must be a sequence of characters.\n"))
+                                    "Invalid literals specification. literals must be a sequence of characters\n"))
 
 import os
 import subprocess
