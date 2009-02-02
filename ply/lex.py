@@ -710,7 +710,7 @@ class LexerReflect(object):
                 s.sort(lambda x,y: (len(x[1]) < len(y[1])) - (len(x[1]) > len(y[1])))
             else:
                 # Python 3.0
-                s.sort(key=lambda x: len(x[1]))
+                s.sort(key=lambda x: len(x[1]),reverse=True)
 
     # Validate all of the t_rules collected 
     def validate_rules(self):
