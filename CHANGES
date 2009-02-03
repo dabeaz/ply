@@ -1,5 +1,10 @@
 Version 3.0
 -----------------------------
+02/03/09: beazley
+          Fixed missing lexer attribute on certain tokens when
+          invoking the parser p_error() function.  Reported by 
+          Bart Whiteley.
+
 02/02/09: beazley
           The lex() command now does all error-reporting and diagonistics
           using the logging module interface.   Pass in a Logger object
