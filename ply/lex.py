@@ -78,11 +78,8 @@ class PlyLogger(object):
     def error(self,msg,*args,**kwargs):
         self.f.write("ERROR: " + (msg % args) + "\n")
 
-    def info(self,msg,*args,**kwargs):
-        pass
-
-    def debug(self,msg,*args,**kwargs):
-        pass
+    info = critical
+    debug = critical
 
 # Null logger is used when no output is generated. Does nothing.
 class NullLogger(object):
@@ -289,7 +286,7 @@ class Lexer:
         self.lexpos += n
 
     # ------------------------------------------------------------
-    # token() - Return the next token from the Lexer
+    # opttoken() - Return the next token from the Lexer
     #
     # Note: This function has been carefully implemented to be as fast
     # as possible.  Don't make changes unless you really know what
@@ -855,7 +852,7 @@ class LexerReflect(object):
 #
 # Build all of the regular expression rules from definitions in the supplied module
 # -----------------------------------------------------------------------------
-def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,outputdir="",errorlog=None):
+def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,outputdir="", debuglog=None, errorlog=None):
     global lexer
     ldict = None
     stateinfo  = { 'INITIAL' : 'inclusive'}
@@ -865,6 +862,10 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,out
 
     if errorlog is None:
         errorlog = PlyLogger(sys.stderr)
+
+    if debug:
+        if debuglog is None:
+            debuglog = PlyLogger(sys.stderr)
 
     # Get the module dictionary used for the lexer
     if object: module = object
@@ -893,9 +894,11 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,out
         except ImportError:
             pass
 
-    # Get the tokens, states, and literals variables (if any)
-
-    states = ldict.get("states",None)
+    # Dump some basic debugging information
+    if debug:
+        debuglog.info("lex: tokens   = %r", linfo.tokens)
+        debuglog.info("lex: literals = %r", linfo.literals)
+        debuglog.info("lex: states   = %r", linfo.stateinfo)
 
     # Build a dictionary of valid token names
     lexobj.lextokens = { }
@@ -921,14 +924,21 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,out
             line = func_code(f).co_firstlineno
             file = func_code(f).co_filename
             regex_list.append("(?P<%s>%s)" % (fname,f.__doc__))
+            if debug:
+                debuglog.info("lex: Adding rule %s -> '%s' (state '%s')",fname,f.__doc__, state)
 
         # Now add all of the simple rules
         for name,r in linfo.strsym[state]:
             regex_list.append("(?P<%s>%s)" % (name,r))
+            if debug:
+                debuglog.info("lex: Adding rule %s -> '%s' (state '%s')",name,r, state)
 
         regexs[state] = regex_list
 
     # Build the master regular expressions
+
+    if debug:
+        debuglog.info("lex: ==== MASTER REGEXS FOLLOW ====")
 
     for state in regexs:
         lexre, re_text, re_names = _form_master_re(regexs[state],reflags,ldict,linfo.toknames)
@@ -937,7 +947,7 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,out
         lexobj.lexstaterenames[state] = re_names
         if debug:
             for i in range(len(re_text)):
-                errorlog.debug("lex: state '%s'. regex[%d] = '%s'",state, i, re_text[i])
+                debuglog.info("lex: state '%s' : regex[%d] = '%s'",state, i, re_text[i])
 
     # For inclusive states, we need to add the regular expressions from the INITIAL state
     for state,stype in stateinfo.items():

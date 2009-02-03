@@ -71,6 +71,8 @@ error_count = 3                # Number of symbols that must be shifted to leave
 yaccdevel   = 0                # Set to True if developing yacc.  This turns off optimized
                                # implementations of certain functions.
 
+resultlimit = 40               # Size limit of results when running in debug mode.
+
 import re, types, sys, os.path
 
 # Compatibility function for python 2.6/3.0
@@ -125,6 +127,23 @@ class NullLogger(object):
         
 # Exception raised for yacc-related errors
 class YaccError(Exception):   pass
+
+# Format the result message that the parser produces when running in debug mode.
+def format_result(r):
+    repr_str = repr(r)
+    if len(repr_str) > resultlimit:
+        repr_str = repr_str[:resultlimit]+" ..."
+    result = "<%s @ 0x%x> (%s)" % (type(r).__name__,id(r),repr_str)
+    return result
+
+
+# Format stack entries when the parser is running in debug mode
+def format_stack_entry(r):
+    repr_str = repr(r)
+    if len(repr_str) < 16:
+        return repr_str
+    else:
+        return "<%s @ 0x%x>" % (type(r).__name__,id(r))
 
 #-----------------------------------------------------------------------------
 #                        ===  LR Parsing Engine ===
@@ -264,7 +283,7 @@ class LRParser:
         if not lexer:
             lex = load_ply_lex()
             lexer = lex.lexer
-        
+
         # Set up the lexer and parser objects on pslice
         pslice.lexer = lexer
         pslice.parser = self
@@ -354,7 +373,7 @@ class LRParser:
 
                     # --! DEBUG
                     if plen:
-                        debug.info("Action : Reduce rule [%s] with %s and goto state %d", p.str, [_v.value for _v in symstack[-plen:]],-t)
+                        debug.info("Action : Reduce rule [%s] with %s and goto state %d", p.str, "["+",".join([format_stack_entry(_v.value) for _v in symstack[-plen:]])+"]",-t)
                     else:
                         debug.info("Action : Reduce rule [%s] with %s and goto state %d", p.str, [],-t)
                         
@@ -388,7 +407,7 @@ class LRParser:
                             del statestack[-plen:]
                             p.callable(pslice)
                             # --! DEBUG
-                            debug.info("Result : %r", pslice[0])
+                            debug.info("Result : %s", format_result(pslice[0]))
                             # --! DEBUG
                             symstack.append(sym)
                             state = goto[statestack[-1]][pname]
@@ -427,7 +446,7 @@ class LRParser:
                             # Call the grammar rule with our special slice object
                             p.callable(pslice)
                             # --! DEBUG
-                            debug.info("Result : %r", pslice[0])
+                            debug.info("Result : %s", format_result(pslice[0]))
                             # --! DEBUG
                             symstack.append(sym)
                             state = goto[statestack[-1]][pname]
@@ -449,7 +468,7 @@ class LRParser:
                     n = symstack[-1]
                     result = getattr(n,"value",None)
                     # --! DEBUG
-                    debug.info("Done   : Returning %r", result)
+                    debug.info("Done   : Returning %s", format_result(result))
                     debug.info("PLY: PARSE DEBUG END")
                     # --! DEBUG
                     return result
@@ -2717,7 +2736,7 @@ class ParserReflect(object):
                     sig = crc32(f[3].encode('latin-1'),sig)
         except (TypeError,ValueError):
             pass
-        return sig & 0xffffffff
+        return sig
 
     # -----------------------------------------------------------------------------
     # validate_file()
@@ -3109,7 +3128,8 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
         raise YaccError("Unable to build parser")
     
     # Run the LRGeneratedTable on the grammar
-    errorlog.debug("Generating %s tables", method)
+    if debug:
+        errorlog.debug("Generating %s tables", method)
             
     lr = LRGeneratedTable(grammar,method,debuglog)
 

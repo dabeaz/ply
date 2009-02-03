@@ -72,10 +72,23 @@ dave@dabeaz.com<br>
 <!-- INDEX -->
 
 
+<h2>Preface and Requirements</h2>
 
+<p>
+This document provides an overview of lexing and parsing with PLY.
+Given the intrinsic complexity of parsing, I would strongly advise 
+that you read (or at least skim) this entire document before jumping
+into a big development project with PLY.  
+</p>
 
-
-
+<p>
+PLY-3.0 is compatible with both Python 2 and Python 3.  Be aware that
+Python 3 support is new and has not been extensively tested (although
+all of the examples and unit tests pass under Python 3.0).   If you are
+using Python 2, you should try to use Python 2.4 or newer.  Although PLY
+works with versions as far back as Python 2.2, some of its optional features
+require more modern library modules.
+</p>
 
 <H2><a name="ply_nn1"></a>1. Introduction</H2>
 
@@ -392,11 +405,7 @@ converts the string into a Python integer.
 <pre>
 def t_NUMBER(t):
     r'\d+'
-    try:
-         t.value = int(t.value)
-    except ValueError:
-         print "Number %s is too large!" % t.value
-	 t.value = 0
+    t.value = int(t.value)
     return t
 </pre>
 </blockquote>
@@ -427,8 +436,8 @@ expressions in order of decreasing length, this problem is solved for rules defi
 the order can be explicitly controlled since rules appearing first are checked first.
 
 <p>
-To handle reserved words, it is usually easier to just match an identifier and do a special name lookup in a function
-like this:
+To handle reserved words, you should write a single rule to match an
+identifier and do a special name lookup in a function like this:
 
 <blockquote>
 <pre>
@@ -741,12 +750,16 @@ lexer = lex.lex(debug=1)
 </pre>
 </blockquote>
 
-This will result in a large amount of debugging information to be printed including all of the added rules and the master
-regular expressions.
+<p>
+This will produce various sorts of debugging information including all of the added rules,
+the master regular expressions used by the lexer, and tokens generating during lexing.
+</p>
 
+<p>
 In addition, <tt>lex.py</tt> comes with a simple main function which
 will either tokenize input read from standard input or from a file specified
 on the command line. To use it, simply put this in your lexer:
+</p>
 
 <blockquote>
 <pre>
@@ -754,6 +767,9 @@ if __name__ == '__main__':
      lex.runmain()
 </pre>
 </blockquote>
+
+Please refer to the "Debugging" section near the end for some more advanced details 
+of debugging.
 
 <H3><a name="ply_nn17"></a>3.14 Alternative specification of lexers</H3>
 
@@ -2990,16 +3006,7 @@ each time it runs (which may take awhile depending on how large your grammar is)
 
 <blockquote>
 <pre>
-yacc.parse(debug=n)      # Pick n > 1 for increased amounts of debugging
-</pre>
-</blockquote>
-
-<p>
-<li>To redirect the debugging output to a filename of your choosing, use:
-
-<blockquote>
-<pre>
-yacc.parse(debug=n, debugfile="debugging.out")   # Pick n > 1 for increasing amount of debugging
+yacc.parse(debug=1)     
 </pre>
 </blockquote>
 
@@ -3117,9 +3124,107 @@ the tables without the need for doc strings.
 <p>
 Beware: running PLY in optimized mode disables a lot of error
 checking.  You should only do this when your project has stabilized
-and you don't need to do any debugging.
-  
-<H2><a name="ply_nn39"></a>8. Where to go from here?</H2>
+and you don't need to do any debugging.   One of the purposes of
+optimized mode is to substantially decrease the startup time of
+your compiler (by assuming that everything is already properly
+specified and works).
+
+<H2>8. Advanced Debugging</H2>
+
+<p>
+Debugging a compiler is typically not an easy task. PLY provides some
+advanced diagonistic capabilities through the use of Python's
+<tt>logging</tt> module.   The next two sections describe this:
+
+<h3>8.1 Debugging the lex() and yacc() commands</h3>
+
+<p>
+Both the <tt>lex()</tt> and <tt>yacc()</tt> commands have a debugging
+mode that can be enabled using the <tt>debug</tt> flag.  For example:
+
+<blockquote>
+<pre>
+lex.lex(debug=True)
+yacc.yacc(debug=True)
+</pre>
+</blockquote>
+
+Normally, the output produced by debugging is routed to either
+standard error or, in the case of <tt>yacc()</tt>, to a file
+<tt>parser.out</tt>.  This output can be more carefully controlled
+by supplying a logging object.  Here is an example that adds
+information about where different debugging messages are coming from:
+
+<blockquote>
+<pre>
+# Set up a logging object
+import logging
+logging.basicConfig(
+    level = logging.DEBUG,
+    filename = "parselog.txt",
+    filemode = "w",
+    format = "%(filename)10s:%(lineno)4d:%(message)s"
+)
+log = logging.getLogger()
+
+lex.lex(debug=True,debuglog=log)
+yacc.yacc(debug=True,debuglog=log)
+</pre>
+</blockquote>
+
+If you supply a custom logger, the amount of debugging
+information produced can be controlled by setting the logging level.
+Typically, debugging messages are either issued at the <tt>DEBUG</tt>,
+<tt>INFO</tt>, or <tt>WARNING</tt> levels.
+
+<p>
+PLY's error messages and warnings are also produced using the logging
+interface.  This can be controlled by passing a logging object
+using the <tt>errorlog</tt> parameter.
+
+<blockquote>
+<pre>
+lex.lex(errorlog=log)
+yacc.yacc(errorlog=log)
+</pre>
+</blockquote>
+
+If you want to completely silence warnings, you can either pass in a
+logging object with an appropriate filter level or use the <tt>NullLogger</tt>
+object defined in either <tt>lex</tt> or <tt>yacc</tt>.  For example:
+
+<blockquote>
+<pre>
+yacc.yacc(errorlog=yacc.NullLogger())
+</pre>
+</blockquote>
+
+<h3>8.2 Run-time Debugging</h3>
+
+<p>
+To enable run-time debugging of a parser, use the <tt>debug</tt> option to parse. This
+option can either be an integer (which simply turns debugging on or off) or an instance
+of a logger object. For example:
+
+<blockquote>
+<pre>
+log = logging.getLogger()
+parser.parse(input,debug=log)
+</pre>
+</blockquote>
+
+If a logging object is passed, you can use its filtering level to control how much
+output gets generated.   The <tt>INFO</tt> level is used to produce information
+about rule reductions.  The <tt>DEBUG</tt> level will show information about the
+parsing stack, token shifts, and other details.  The <tt>ERROR</tt> level shows information
+related to parsing errors.
+
+<p>
+For very complicated problems, you should pass in a logging object that
+redirects to a file where you can more easily inspect the output after
+execution.
+
+<H2><a name="ply_nn39"></a>9. Where to go from here?</H2>
 
 
 The <tt>examples</tt> directory of the PLY distribution contains several simple examples.   Please consult a
