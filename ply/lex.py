@@ -679,7 +679,8 @@ class LexerReflect(object):
                         self.funcsym[s].append((f,t))
             elif isinstance(t, StringTypes):
                 if tokname == 'ignore':
-                    self.ignore[s] = t
+                    for s in states:
+                        self.ignore[s] = t
                     if "\\" in t:
                         self.log.warning("%s contains a literal backslash '\\'",f)
 
