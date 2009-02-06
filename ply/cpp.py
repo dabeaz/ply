@@ -739,7 +739,7 @@ class Preprocessor(object):
                 else:
                     print "Malformed #include <...>"
                     return
-                filename = "".join(x.value for x in tokens[1:i])
+                filename = "".join([x.value for x in tokens[1:i]])
                 path = self.path + [""] + self.temp_path
             elif tokens[0].type == self.t_STRING:
                 filename = tokens[0].value[1:-1]
