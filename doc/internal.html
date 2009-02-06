@@ -16,9 +16,24 @@ dave@dabeaz.com<br>
 <p>
 
 <!-- INDEX -->
+<div class="sectiontoc">
+<ul>
+<li><a href="#internal_nn1">Introduction</a>
+<li><a href="#internal_nn2">Grammar Class</a>
+<li><a href="#internal_nn3">Productions</a>
+<li><a href="#internal_nn4">LRItems</a>
+<li><a href="#internal_nn5">LRTable</a>
+<li><a href="#internal_nn6">LRGeneratedTable</a>
+<li><a href="#internal_nn7">LRParser</a>
+<li><a href="#internal_nn8">ParserReflect</a>
+<li><a href="#internal_nn9">High-level operation</a>
+</ul>
+</div>
 <!-- INDEX -->
 
-<H2>1. Introduction</H2>
+
+<H2><a name="internal_nn1"></a>1. Introduction</H2>
+
 
 This document describes classes and functions that make up the internal
 operation of PLY.  Using this programming interface, it is possible to
@@ -33,7 +48,8 @@ It should be stressed that using PLY at this level is not for the
 faint of heart.  Generally, it's assumed that you know a bit of
 the underlying compiler theory and how an LR parser is put together.
 
-<h2>2. Grammar Class</h2>
+<H2><a name="internal_nn2"></a>2. Grammar Class</H2>
+
 
 The file <tt>ply.yacc</tt> defines a class <tt>Grammar</tt> that 
 is used to hold and manipulate information about a grammar
@@ -249,7 +265,8 @@ For the purposes of debugging, a <tt>Grammar</tt> object supports the <tt>__len_
 from the grammar.
 
 
-<h2>3. Productions</h2>
+<H2><a name="internal_nn3"></a>3. Productions</H2>
+
 
 <tt>Grammar</tt> objects store grammar rules as instances of a <tt>Production</tt> class.  This
 class has no public constructor--you should only create productions by calling <tt>Grammar.add_production()</tt>.
@@ -348,7 +365,8 @@ special methods.
 <tt>len(p)</tt> returns the number of symbols in <tt>p.prod</tt>
 and <tt>p[n]</tt> is the same as <tt>p.prod[n]</tt>. 
 
-<h2>4. LRItems</h2>
+<H2><a name="internal_nn4"></a>4. LRItems</H2>
+
 
 The construction of parsing tables in an LR-based parser generator is primarily
 done over a set of "LR Items".   An LR item represents a stage of parsing one
@@ -486,7 +504,8 @@ It goes without saying that all of the attributes associated with LR
 items should be assumed to be read-only.  Modifications will very
 likely create a small black-hole that will consume you and your code.
 
-<h2>5. LRTable</h2>
+<H2><a name="internal_nn5"></a>5. LRTable</H2>
+
 
 The <tt>LRTable</tt> class is used to represent LR parsing table data. This
 minimally includes the production list, action table, and goto table. 
@@ -556,7 +575,8 @@ The LR goto table that contains information about grammar rule reductions.
 </blockquote>
 
 
-<h2>6. LRGeneratedTable</h2>
+<H2><a name="internal_nn6"></a>6. LRGeneratedTable</H2>
+
 
 The <tt>LRGeneratedTable</tt> class represents constructed LR parsing tables on a
 grammar.  It is a subclass of <tt>LRTable</tt>.
@@ -644,7 +664,8 @@ used.
 </blockquote>
 
 
-<h2>7. LRParser</h2>
+<H2><a name="internal_nn7"></a>7. LRParser</H2>
+
 
 The <tt>LRParser</tt> class implements the low-level LR parsing engine.
 
@@ -678,7 +699,8 @@ all tokens.
 Resets the parser state for a parse already in progress.
 </blockquote>
 
-<h2>8. ParserReflect</h2>
+<H2><a name="internal_nn8"></a>8. ParserReflect</H2>
+
 
 <p>
 The <tt>ParserReflect</tt> class is used to collect parser specification data
@@ -821,7 +843,8 @@ performed.
 </blockquote>
 
 
-<h2>9. High-level operation</h2>
+<H2><a name="internal_nn9"></a>9. High-level operation</H2>
+
 
 Using all of the above classes requires some attention to detail.  The <tt>yacc()</tt>
 function carries out a very specific sequence of operations to create a grammar.

@@ -55,16 +55,8 @@ and yacc. Here are a few highlights:
     PLY can be used to parse grammars consisting of several hundred
     rules (as might be found for a language like C).  The lexer and LR 
     parser are also reasonably efficient when parsing typically
-    sized programs.
-
-The original version of PLY was developed for an Introduction to
-Compilers course where students used it to build a compiler for a
-simple Pascal-like language.  Their compiler had to include lexical
-analysis, parsing, type checking, type inference, and generation of
-assembly code for the SPARC processor.  Because of this, the current
-implementation has been extensively tested and debugged.  In addition,
-most of the API and error checking steps have been adapted to address
-common usability problems.
+    sized programs.  People have used PLY to build parsers for
+    C, C++, ADA, and other real programming languages.
 
 How to Use
 ==========

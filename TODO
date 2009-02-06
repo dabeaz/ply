@@ -1,14 +1,16 @@
 The PLY to-do list:
 
-1. More interesting parsing examples.
+1. Finish writing the C Preprocessor module.  Started in the
+   file ply/cpp.py
 
-2. Work on the ANSI C grammar so that it can actually parse C programs.  To do this,
-   some extra code needs to be added to the lexer to deal with typedef names and enumeration
-   constants.
+2. Create and document libraries of useful tokens.
 
-3. More tests in the test directory.
+3. Expand the examples/yply tool that parses bison/yacc
+   files.
 
-4. Performance improvements and cleanup in yacc.py.
+4. Think of various diabolical things to do with the
+   new yacc internals.  For example, it is now possible
+   to specify grammrs using completely different schemes
+   than the reflection approach used by PLY.
 
-5. More documentation (?).
 

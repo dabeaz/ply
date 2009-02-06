@@ -18,6 +18,7 @@ dave@dabeaz.com<br>
 <!-- INDEX -->
 <div class="sectiontoc">
 <ul>
+<li><a href="#ply_nn1">Preface and Requirements</a>
 <li><a href="#ply_nn1">Introduction</a>
 <li><a href="#ply_nn2">PLY Overview</a>
 <li><a href="#ply_nn3">Lex</a>
@@ -43,7 +44,7 @@ dave@dabeaz.com<br>
 <li><a href="#ply_nn21">Miscellaneous Issues</a>
 </ul>
 <li><a href="#ply_nn22">Parsing basics</a>
-<li><a href="#ply_nn23">Yacc reference</a>
+<li><a href="#ply_nn23">Yacc</a>
 <ul>
 <li><a href="#ply_nn24">An example</a>
 <li><a href="#ply_nn25">Combining Grammar Rule Functions</a>
@@ -62,17 +63,24 @@ dave@dabeaz.com<br>
 <li><a href="#ply_nn33">Line Number and Position Tracking</a>
 <li><a href="#ply_nn34">AST Construction</a>
 <li><a href="#ply_nn35">Embedded Actions</a>
-<li><a href="#ply_nn36">Yacc implementation notes</a>
+<li><a href="#ply_nn36">Miscellaneous Yacc Notes</a>
 </ul>
-<li><a href="#ply_nn37">Parser and Lexer State Management</a>
+<li><a href="#ply_nn37">Multiple Parsers and Lexers</a>
 <li><a href="#ply_nn38">Using Python's Optimized Mode</a>
+<li><a href="#ply_nn44">Advanced Debugging</a>
+<ul>
+<li><a href="#ply_nn45">Debugging the lex() and yacc() commands</a>
+<li><a href="#ply_nn46">Run-time Debugging</a>
+</ul>
 <li><a href="#ply_nn39">Where to go from here?</a>
 </ul>
 </div>
 <!-- INDEX -->
 
 
-<h2>Preface and Requirements</h2>
+
+<H2><a name="ply_nn1"></a>1. Preface and Requirements</H2>
+
 
 <p>
 This document provides an overview of lexing and parsing with PLY.
@@ -90,7 +98,7 @@ works with versions as far back as Python 2.2, some of its optional features
 require more modern library modules.
 </p>
 
-<H2><a name="ply_nn1"></a>1. Introduction</H2>
+<H2><a name="ply_nn1"></a>2. Introduction</H2>
 
 
 PLY is a pure-Python implementation of the popular compiler
@@ -138,7 +146,7 @@ Techniques, and Tools", by Aho, Sethi, and Ullman.  O'Reilly's "Lex
 and Yacc" by John Levine may also be handy.  In fact, the O'Reilly book can be
 used as a reference for PLY as the concepts are virtually identical.
 
-<H2><a name="ply_nn2"></a>2. PLY Overview</H2>
+<H2><a name="ply_nn2"></a>3. PLY Overview</H2>
 
 
 PLY consists of two separate modules; <tt>lex.py</tt> and
@@ -181,7 +189,7 @@ parsing tables is relatively expensive, PLY caches the results and
 saves them to a file.  If no changes are detected in the input source,
 the tables are read from the cache. Otherwise, they are regenerated.
 
-<H2><a name="ply_nn3"></a>3. Lex</H2>
+<H2><a name="ply_nn3"></a>4. Lex</H2>
 
 
 <tt>lex.py</tt> is used to tokenize an input string.  For example, suppose
@@ -224,7 +232,7 @@ More specifically, the input is broken into pairs of token types and values.  Fo
 The identification of tokens is typically done by writing a series of regular expression
 rules.  The next section shows how this is done using <tt>lex.py</tt>.
 
-<H3><a name="ply_nn4"></a>3.1 Lex Example</H3>
+<H3><a name="ply_nn4"></a>4.1 Lex Example</H3>
 
 
 The following example shows how <tt>lex.py</tt> is used to write a simple tokenizer.
@@ -356,7 +364,7 @@ type and value of the token itself.
 the location of the token.  <tt>tok.lexpos</tt> is the index of the
 token relative to the start of the input text.
 
-<H3><a name="ply_nn5"></a>3.2 The tokens list</H3>
+<H3><a name="ply_nn5"></a>4.2 The tokens list</H3>
 
 
 All lexers must provide a list <tt>tokens</tt> that defines all of the possible token
@@ -381,7 +389,7 @@ tokens = (
 </pre>
 </blockquote>
 
-<H3><a name="ply_nn6"></a>3.3 Specification of tokens</H3>
+<H3><a name="ply_nn6"></a>4.3 Specification of tokens</H3>
 
 
 Each token is specified by writing a regular expression rule.  Each of these rules are
@@ -473,7 +481,7 @@ t_PRINT = r'print'
 those rules will be triggered for identifiers that include those words as a prefix such as "forget" or "printed".  This is probably not
 what you want.
 
-<H3><a name="ply_nn7"></a>3.4 Token values</H3>
+<H3><a name="ply_nn7"></a>4.4 Token values</H3>
 
 
 When tokens are returned by lex, they have a value that is stored in the <tt>value</tt> attribute.    Normally, the value is the text
@@ -495,7 +503,7 @@ It is important to note that storing data in other attribute names is <em>not</e
 contents of the <tt>value</tt> attribute.  Thus, accessing other attributes may  be unnecessarily awkward.   If you
 need to store multiple values on a token, assign a tuple, dictionary, or instance to <tt>value</tt>.
 
-<H3><a name="ply_nn8"></a>3.5 Discarded tokens</H3>
+<H3><a name="ply_nn8"></a>4.5 Discarded tokens</H3>
 
 
 To discard a token, such as a comment, simply define a token rule that returns no value.  For example:
@@ -521,7 +529,7 @@ Be advised that if you are ignoring many different kinds of text, you may still 
 control over the order in which regular expressions are matched (i.e., functions are matched in order of specification whereas strings are
 sorted by regular expression length).
 
-<H3><a name="ply_nn9"></a>3.6 Line numbers and positional information</H3>
+<H3><a name="ply_nn9"></a>4.6 Line numbers and positional information</H3>
 
 
 <p>By default, <tt>lex.py</tt> knows nothing about line numbers.  This is because <tt>lex.py</tt> doesn't know anything
@@ -561,7 +569,7 @@ def find_column(input,token):
 Since column information is often only useful in the context of error handling, calculating the column
 position can be performed when needed as opposed to doing it for each token.
 
-<H3><a name="ply_nn10"></a>3.7 Ignored characters</H3>
+<H3><a name="ply_nn10"></a>4.7 Ignored characters</H3>
 
 
 <p>
@@ -573,7 +581,7 @@ similar to <tt>t_newline()</tt>, the use of <tt>t_ignore</tt> provides substanti
 lexing performance because it is handled as a special case and is checked in a much
 more efficient manner than the normal regular expression rules.
 
-<H3><a name="ply_nn11"></a>3.8 Literal characters</H3>
+<H3><a name="ply_nn11"></a>4.8 Literal characters</H3>
 
 
 <p>
@@ -599,7 +607,7 @@ take precedence.
 <p>
 When a literal token is returned, both its <tt>type</tt> and <tt>value</tt> attributes are set to the character itself. For example, <tt>'+'</tt>.
 
-<H3><a name="ply_nn12"></a>3.9 Error handling</H3>
+<H3><a name="ply_nn12"></a>4.9 Error handling</H3>
 
 
 <p>
@@ -620,7 +628,7 @@ def t_error(t):
 
 In this case, we simply print the offending character and skip ahead one character by calling <tt>t.lexer.skip(1)</tt>.
 
-<H3><a name="ply_nn13"></a>3.10 Building and using the lexer</H3>
+<H3><a name="ply_nn13"></a>4.10 Building and using the lexer</H3>
 
 
 <p>
@@ -655,7 +663,7 @@ In this example, the module-level functions <tt>lex.input()</tt> and <tt>lex.tok
 and <tt>token()</tt> methods of the last lexer created by the lex module.    This interface may go away at some point so
 it's probably best not to use it.
 
-<H3><a name="ply_nn14"></a>3.11 The @TOKEN decorator</H3>
+<H3><a name="ply_nn14"></a>4.11 The @TOKEN decorator</H3>
 
 
 In some applications, you may want to define build tokens from as a series of
@@ -702,7 +710,7 @@ t_ID.__doc__ = identifier
 <b>NOTE:</b> Use of <tt>@TOKEN</tt> requires Python-2.4 or newer.  If you're concerned about backwards compatibility with older
 versions of Python, use the alternative approach of setting the docstring directly.
 
-<H3><a name="ply_nn15"></a>3.12 Optimized mode</H3>
+<H3><a name="ply_nn15"></a>4.12 Optimized mode</H3>
 
 
 For improved performance, it may be desirable to use Python's
@@ -739,7 +747,7 @@ lexer = lex.lex(optimize=1,lextab="footab")
 When running in optimized mode, it is important to note that lex disables most error checking.  Thus, this is really only recommended
 if you're sure everything is working correctly and you're ready to start releasing production code.
 
-<H3><a name="ply_nn16"></a>3.13 Debugging</H3>
+<H3><a name="ply_nn16"></a>4.13 Debugging</H3>
 
 
 For the purpose of debugging, you can run <tt>lex()</tt> in a debugging mode as follows:
@@ -771,7 +779,7 @@ if __name__ == '__main__':
 Please refer to the "Debugging" section near the end for some more advanced details 
 of debugging.
 
-<H3><a name="ply_nn17"></a>3.14 Alternative specification of lexers</H3>
+<H3><a name="ply_nn17"></a>4.14 Alternative specification of lexers</H3>
 
 
 As shown in the example, lexers are specified all within one Python module.   If you want to
@@ -975,7 +983,8 @@ def MyLexer():
 </blockquote>
 
 
-<H3><a name="ply_nn18"></a>3.15 Maintaining state</H3>
+<H3><a name="ply_nn18"></a>4.15 Maintaining state</H3>
+
 
 In your lexer, you may want to maintain a variety of state
 information.  This might include mode settings, symbol tables, and
@@ -1071,7 +1080,8 @@ def MyLexer():
 </pre>
 </blockquote>
 
-<H3><a name="ply_nn19"></a>3.16 Lexer cloning</H3>
+<H3><a name="ply_nn19"></a>4.16 Lexer cloning</H3>
+
 
 <p>
 If necessary, a lexer object can be duplicated by invoking its <tt>clone()</tt> method.  For example:
@@ -1119,7 +1129,7 @@ important to emphasize that <tt>clone()</tt> is only meant to create a new lexer
 that reuses the regular expressions and environment of another lexer.  If you
 need to make a totally new copy of a lexer, then call <tt>lex()</tt> again.
 
-<H3><a name="ply_nn20"></a>3.17 Internal lexer state</H3>
+<H3><a name="ply_nn20"></a>4.17 Internal lexer state</H3>
 
 
 A Lexer object <tt>lexer</tt> has a number of internal attributes that may be useful in certain
@@ -1157,7 +1167,8 @@ current token.  If you have written a regular expression that contains named gro
 Note: This attribute is only updated when tokens are defined and processed by functions.  
 </blockquote>
 
-<H3><a name="ply_nn21"></a>3.18 Conditional lexing and start conditions</H3>
+<H3><a name="ply_nn21"></a>4.18 Conditional lexing and start conditions</H3>
+
 
 In advanced parsing applications, it may be useful to have different
 lexing states. For instance, you may want the occurrence of a certain
@@ -1355,7 +1366,7 @@ However, if the closing right brace is encountered, the rule <tt>t_ccode_rbrace<
 position), stores it, and returns a token 'CCODE' containing all of that text.  When returning the token, the lexing state is restored back to its
 initial state.
 
-<H3><a name="ply_nn21"></a>3.19 Miscellaneous Issues</H3>
+<H3><a name="ply_nn21"></a>4.19 Miscellaneous Issues</H3>
 
 
 <P>
@@ -1395,7 +1406,7 @@ tokens are available.
 <li>The <tt>token()</tt> method must return an object <tt>tok</tt> that has <tt>type</tt> and <tt>value</tt> attributes.
 </ul>
 
-<H2><a name="ply_nn22"></a>4. Parsing basics</H2>
+<H2><a name="ply_nn22"></a>5. Parsing basics</H2>
 
 
 <tt>yacc.py</tt> is used to parse language syntax.  Before showing an
@@ -1528,13 +1539,15 @@ process explain why, in the example above, the parser chooses to shift
 a token onto the stack in step 9 rather than reducing the
 rule <tt>expr : expr + term</tt>.
 
-<H2><a name="ply_nn23"></a>5. Yacc</H2>
+<H2><a name="ply_nn23"></a>6. Yacc</H2>
+
 
 The <tt>ply.yacc</tt> module implements the parsing component of PLY.
 The name "yacc" stands for "Yet Another Compiler Compiler" and is
 borrowed from the Unix tool of the same name.
 
-<H3><a name="ply_nn24"></a>5.1 An example</H3>
+<H3><a name="ply_nn24"></a>6.1 An example</H3>
+
 
 Suppose you wanted to make a grammar for simple arithmetic expressions as previously described.   Here is
 how you would do it with <tt>yacc.py</tt>:
@@ -1698,7 +1711,7 @@ of the grammar rules and return the result of the entire parse.  This
 result return is the value assigned to <tt>p[0]</tt> in the starting
 grammar rule.
 
-<H3><a name="ply_nn25"></a>5.2 Combining Grammar Rule Functions</H3>
+<H3><a name="ply_nn25"></a>6.2 Combining Grammar Rule Functions</H3>
 
 
 When grammar rules are similar, they can be combined into a single function.
@@ -1775,7 +1788,8 @@ has already performed (i.e., the parser already knows exactly what rule it
 matched).  You can eliminate this overhead by using a
 separate <tt>p_rule()</tt> function for each grammar rule.
 
-<H3><a name="ply_nn26"></a>5.3 Character Literals</H3>
+<H3><a name="ply_nn26"></a>6.3 Character Literals</H3>
+
 
 If desired, a grammar may contain tokens defined as single character literals.   For example:
 
@@ -1810,7 +1824,7 @@ literals = ['+','-','*','/' ]
 <b>Character literals are limited to a single character</b>.  Thus, it is not legal to specify literals such as <tt>'&lt;='</tt> or <tt>'=='</tt>.  For this, use
 the normal lexing rules (e.g., define a rule such as <tt>t_EQ = r'=='</tt>).
 
-<H3><a name="ply_nn26"></a>5.4 Empty Productions</H3>
+<H3><a name="ply_nn26"></a>6.4 Empty Productions</H3>
 
 
 <tt>yacc.py</tt> can handle empty productions by defining a rule like this:
@@ -1839,7 +1853,8 @@ right hand side.  However, I personally find that writing an "empty"
 rule and using "empty" to denote an empty production is easier to read
 and more clearly states your intentions.
 
-<H3><a name="ply_nn28"></a>5.5 Changing the starting symbol</H3>
+<H3><a name="ply_nn28"></a>6.5 Changing the starting symbol</H3>
+
 
 Normally, the first rule found in a yacc specification defines the starting grammar rule (top level rule).  To change this, simply
 supply a <tt>start</tt> specifier in your file.  For example:
@@ -1869,7 +1884,7 @@ yacc.yacc(start='foo')
 </pre>
 </blockquote>
 
-<H3><a name="ply_nn27"></a>5.6 Dealing With Ambiguous Grammars</H3>
+<H3><a name="ply_nn27"></a>6.6 Dealing With Ambiguous Grammars</H3>
 
 
 The expression grammar given in the earlier example has been written
@@ -2127,7 +2142,7 @@ the contents of the
 <tt>parser.out</tt> debugging file with an appropriately high level of
 caffeination.
 
-<H3><a name="ply_nn28"></a>5.7 The parser.out file</H3>
+<H3><a name="ply_nn28"></a>6.7 The parser.out file</H3>
 
 
 Tracking down shift/reduce and reduce/reduce conflicts is one of the finer pleasures of using an LR
@@ -2408,7 +2423,8 @@ By looking at these rules (and with a little practice), you can usually track do
 of most parsing conflicts.  It should also be stressed that not all shift-reduce conflicts are
 bad.  However, the only way to be sure that they are resolved correctly is to look at <tt>parser.out</tt>.
   
-<H3><a name="ply_nn29"></a>5.8 Syntax Error Handling</H3>
+<H3><a name="ply_nn29"></a>6.8 Syntax Error Handling</H3>
+
 
 If you are creating a parser for production use, the handling of
 syntax errors is important.  As a general rule, you don't want a
@@ -2459,7 +2475,7 @@ shifted onto the parsing stack.
 parser can successfully shift a new symbol or reduce a rule involving <tt>error</tt>.
 </ol>
 
-<H4><a name="ply_nn30"></a>5.8.1 Recovery and resynchronization with error rules</H4>
+<H4><a name="ply_nn30"></a>6.8.1 Recovery and resynchronization with error rules</H4>
 
 
 The most well-behaved approach for handling syntax errors is to write grammar rules that include the <tt>error</tt>
@@ -2511,7 +2527,7 @@ This is because the first bad token encountered will cause the rule to
 be reduced--which may make it difficult to recover if more bad tokens
 immediately follow.   
 
-<H4><a name="ply_nn31"></a>5.8.2 Panic mode recovery</H4>
+<H4><a name="ply_nn31"></a>6.8.2 Panic mode recovery</H4>
 
 
 An alternative error recovery scheme is to enter a panic mode recovery in which tokens are
@@ -2584,7 +2600,7 @@ def p_error(p):
 </pre>
 </blockquote>
 
-<H4><a name="ply_nn35"></a>5.8.3 Signaling an error from a production</H4>
+<H4><a name="ply_nn35"></a>6.8.3 Signaling an error from a production</H4>
 
 
 If necessary, a production rule can manually force the parser to enter error recovery.  This
@@ -2614,7 +2630,7 @@ raises <tt>SyntaxError</tt>.
 Note: This feature of PLY is meant to mimic the behavior of the YYERROR macro in yacc.
 
 
-<H4><a name="ply_nn32"></a>5.8.4 General comments on error handling</H4>
+<H4><a name="ply_nn32"></a>6.8.4 General comments on error handling</H4>
 
 
 For normal types of languages, error recovery with error rules and resynchronization characters is probably the most reliable
@@ -2622,7 +2638,7 @@ technique. This is because you can instrument the grammar to catch errors at sel
 to recover and continue parsing.  Panic mode recovery is really only useful in certain specialized applications where you might want
 to discard huge portions of the input text to find a valid restart point.
 
-<H3><a name="ply_nn33"></a>5.9 Line Number and Position Tracking</H3>
+<H3><a name="ply_nn33"></a>6.9 Line Number and Position Tracking</H3>
 
 
 Position tracking is often a tricky problem when writing compilers.
@@ -2719,7 +2735,8 @@ PLY doesn't retain line number information from rules that have already been
 parsed.   If you are building an abstract syntax tree and need to have line numbers,
 you should make sure that the line numbers appear in the tree itself.
 
-<H3><a name="ply_nn34"></a>5.10 AST Construction</H3>
+<H3><a name="ply_nn34"></a>6.10 AST Construction</H3>
+
 
 <tt>yacc.py</tt> provides no special functions for constructing an
 abstract syntax tree.  However, such construction is easy enough to do
@@ -2817,7 +2834,7 @@ def p_expression_binop(p):
 </pre>
 </blockquote>
 
-<H3><a name="ply_nn35"></a>5.11 Embedded Actions</H3>
+<H3><a name="ply_nn35"></a>6.11 Embedded Actions</H3>
 
 
 The parsing technique used by yacc only allows actions to be executed at the end of a rule.  For example,
@@ -2935,7 +2952,7 @@ parser.  Upon completion of the rule <tt>statements_block</tt>, code
 might undo the operations performed in the embedded action
 (e.g., <tt>pop_scope()</tt>).
 
-<H3><a name="ply_nn36"></a>5.12 Miscellaneous Yacc Notes</h3>
+<H3><a name="ply_nn36"></a>6.12 Miscellaneous Yacc Notes</H3>
 
 
 <ul>
@@ -3039,7 +3056,7 @@ machine.  Please be patient.
 size of the grammar.   The biggest bottlenecks will be the lexer and the complexity of the code in your grammar rules.
 </ul>
 
-<H2><a name="ply_nn37"></a>6. Multiple Parsers and Lexers</H2>
+<H2><a name="ply_nn37"></a>7. Multiple Parsers and Lexers</H2>
 
 
 In advanced parsing applications, you may want to have multiple
@@ -3101,7 +3118,7 @@ If necessary, arbitrary attributes can be attached to the lexer or parser object
 For example, if you wanted to have different parsing modes, you could attach a mode
 attribute to the parser object and look at it later.
 
-<H2><a name="ply_nn38"></a>7. Using Python's Optimized Mode</H2>
+<H2><a name="ply_nn38"></a>8. Using Python's Optimized Mode</H2>
 
 
 Because PLY uses information from doc-strings, parsing and lexing
@@ -3129,14 +3146,16 @@ optimized mode is to substantially decrease the startup time of
 your compiler (by assuming that everything is already properly
 specified and works).
 
-<H2>8. Advanced Debugging</H2>
+<H2><a name="ply_nn44"></a>9. Advanced Debugging</H2>
+
 
 <p>
 Debugging a compiler is typically not an easy task. PLY provides some
 advanced diagonistic capabilities through the use of Python's
 <tt>logging</tt> module.   The next two sections describe this:
 
-<h3>8.1 Debugging the lex() and yacc() commands</h3>
+<H3><a name="ply_nn45"></a>9.1 Debugging the lex() and yacc() commands</H3>
+
 
 <p>
 Both the <tt>lex()</tt> and <tt>yacc()</tt> commands have a debugging
@@ -3199,7 +3218,8 @@ yacc.yacc(errorlog=yacc.NullLogger())
 </pre>
 </blockquote>
 
-<h3>8.2 Run-time Debugging</h3>
+<H3><a name="ply_nn46"></a>9.2 Run-time Debugging</H3>
+
 
 <p>
 To enable run-time debugging of a parser, use the <tt>debug</tt> option to parse. This
@@ -3224,7 +3244,7 @@ For very complicated problems, you should pass in a logging object that
 redirects to a file where you can more easily inspect the output after
 execution.
 
-<H2><a name="ply_nn39"></a>9. Where to go from here?</H2>
+<H2><a name="ply_nn39"></a>10. Where to go from here?</H2>
 
 
 The <tt>examples</tt> directory of the PLY distribution contains several simple examples.   Please consult a

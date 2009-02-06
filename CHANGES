@@ -22,7 +22,7 @@ Version 3.0
 
 02/01/09: beazley
           Discovered and removed a dead if-statement in the lexer.  This
-          results in a 6-7% speedup in lexing.
+          resulted in a 6-7% speedup in lexing when I tested it.
 
 01/13/09: beazley
           Minor change to the procedure for signalling a syntax error in a
