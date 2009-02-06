@@ -503,7 +503,7 @@ class LRParser:
                         errok = self.errok        # Set some special functions available in error recovery
                         token = get_token
                         restart = self.restart
-                        if not hasattr(errtoken,'lexer'):
+                        if errtoken and not hasattr(errtoken,'lexer'):
                             errtoken.lexer = lexer
                         tok = self.errorfunc(errtoken)
                         del errok, token, restart   # Delete special functions
@@ -776,7 +776,7 @@ class LRParser:
                         errok = self.errok        # Set some special functions available in error recovery
                         token = get_token
                         restart = self.restart
-                        if not hasattr(errtoken,'lexer'):
+                        if errtoken and not hasattr(errtoken,'lexer'):
                             errtoken.lexer = lexer
                         tok = self.errorfunc(errtoken)
                         del errok, token, restart   # Delete special functions
@@ -1031,7 +1031,7 @@ class LRParser:
                         errok = self.errok        # Set some special functions available in error recovery
                         token = get_token
                         restart = self.restart
-                        if not hasattr(errtoken,'lexer'):
+                        if errtoken and not hasattr(errtoken,'lexer'):
                             errtoken.lexer = lexer
                         tok = self.errorfunc(errtoken)
                         del errok, token, restart   # Delete special functions
