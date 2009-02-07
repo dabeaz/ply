@@ -853,7 +853,7 @@ class LexerReflect(object):
 #
 # Build all of the regular expression rules from definitions in the supplied module
 # -----------------------------------------------------------------------------
-def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,outputdir="", debuglog=None, errorlog=None):
+def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,nowarn=0,outputdir="", debuglog=None, errorlog=None):
     global lexer
     ldict = None
     stateinfo  = { 'INITIAL' : 'inclusive'}
