@@ -3052,7 +3052,10 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
 
     # Set the grammar start symbols
     try:
-        grammar.set_start(pinfo.start)
+        if start is None:
+            grammar.set_start(pinfo.start)
+        else:
+            grammar.set_start(start)
     except GrammarError:
         e = sys.exc_info()[1]
         errorlog.error(str(e))
@@ -3141,19 +3144,20 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
             
     lr = LRGeneratedTable(grammar,method,debuglog)
 
-    num_sr = len(lr.sr_conflicts)
+    if debug:
+        num_sr = len(lr.sr_conflicts)
 
-    # Report shift/reduce and reduce/reduce conflicts
-    if num_sr == 1:
-        errorlog.warning("1 shift/reduce conflict")
-    elif num_sr > 1:
-        errorlog.warning("%d shift/reduce conflicts", num_sr)
+        # Report shift/reduce and reduce/reduce conflicts
+        if num_sr == 1:
+            errorlog.warning("1 shift/reduce conflict")
+        elif num_sr > 1:
+            errorlog.warning("%d shift/reduce conflicts", num_sr)
 
-    num_rr = len(lr.rr_conflicts)
-    if num_rr == 1:
-        errorlog.warning("1 reduce/reduce conflict")
-    elif num_rr > 1:
-        errorlog.warning("%d reduce/reduce conflicts", num_rr)
+        num_rr = len(lr.rr_conflicts)
+        if num_rr == 1:
+            errorlog.warning("1 reduce/reduce conflict")
+        elif num_rr > 1:
+            errorlog.warning("%d reduce/reduce conflicts", num_rr)
 
     # Write out conflicts to the output file
     if debug and (lr.sr_conflicts or lr.rr_conflicts):

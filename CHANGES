@@ -1,3 +1,14 @@
+Version 3.1
+-----------------------------
+02/28/09: beazley
+          Fixed broken start argument to yacc().  PLY-3.0 broke this
+          feature by accident.
+
+02/28/09: beazley
+          Fixed debugging output. yacc() no longer reports shift/reduce
+          or reduce/reduce conflicts if debugging is turned off.  This
+          restores similar behavior in PLY-2.5.   Reported by Andrew Waters.
+
 Version 3.0
 -----------------------------
 02/03/09: beazley
