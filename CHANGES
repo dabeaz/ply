@@ -1,3 +1,13 @@
+Version 3.2
+-----------------------------
+03/13/09: beazley
+          Fixed a bug in parser.out generation where the rule numbers
+          where off by one.
+
+03/13/09: beazley
+          Fixed a string formatting bug with one of the error messages.
+          Reported by Richard Reitmeyer
+
 Version 3.1
 -----------------------------
 02/28/09: beazley
