@@ -1429,7 +1429,7 @@ class Grammar(object):
         if map in self.Prodmap:
             m = self.Prodmap[map]
             raise GrammarError("%s:%d: Duplicate rule %s. " % (file,line, m) +
-                               "Previous definition at %s:%d" % (file,line, m.file, m.line))
+                               "Previous definition at %s:%d" % (m.file, m.line))
 
         # From this point on, everything is valid.  Create a new Production instance
         pnumber  = len(self.Productions)
