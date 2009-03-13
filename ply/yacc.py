@@ -3085,7 +3085,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
         debuglog.info("Grammar")
         debuglog.info("")
         for n,p in enumerate(grammar.Productions):
-            debuglog.info("Rule %-5d %s", n+1, p)
+            debuglog.info("Rule %-5d %s", n, p)
 
     # Find unused non-terminals
     unused_rules = grammar.unused_rules()
