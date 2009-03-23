@@ -1,5 +1,26 @@
+
 Version 3.2
 -----------------------------
+03/23/09: beazley
+          Added a new picklefile option to yacc() to write the parsing
+          tables to a filename using the pickle module.   Here is how
+          it works:
+
+              yacc(picklefile="parsetab.p")
+
+          This option can be used if the normal parsetab.py file is
+          extremely large.  For example, on jython, it is impossible
+          to read parsing tables if the parsetab.py exceeds a certain
+          threshold.
+
+          The filename supplied to the picklefile option is opened
+          relative to the current working directory of the Python 
+          interpreter.  If you need to refer to the file elsewhere,
+          you will need to supply an absolute or relative path.
+
+          For maximum portability, the pickle file is written
+          using protocol 0. 
+ 
 03/13/09: beazley
           Fixed a bug in parser.out generation where the rule numbers
           where off by one.
