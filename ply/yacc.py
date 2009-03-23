@@ -50,8 +50,8 @@
 # own risk!
 # ----------------------------------------------------------------------------
 
-__version__    = "3.0"
-__tabversion__ = "3.0"       # Table version
+__version__    = "3.2"
+__tabversion__ = "3.2"       # Table version
 
 #-----------------------------------------------------------------------------
 #                     === User configurable parameters ===
@@ -2730,21 +2730,24 @@ class ParserReflect(object):
 
     # Compute a signature over the grammar
     def signature(self):
-        from binascii import crc32
-        sig = 0
         try:
+            from hashlib import md5
+        except ImportError:
+            from md5 import md5
+        try:
+            sig = md5()
             if self.start:
-                sig = crc32(self.start.encode('latin-1'),sig)
+                sig.update(self.start.encode('latin-1'))
             if self.prec:
-                sig = crc32("".join(["".join(p) for p in self.prec]).encode('latin-1'),sig)
+                sig.update("".join(["".join(p) for p in self.prec]).encode('latin-1'))
             if self.tokens:
-                sig = crc32(" ".join(self.tokens).encode('latin-1'),sig)
+                sig.update(" ".join(self.tokens).encode('latin-1'))
             for f in self.pfuncs:
                 if f[3]:
-                    sig = crc32(f[3].encode('latin-1'),sig)
+                    sig.update(f[3].encode('latin-1'))
         except (TypeError,ValueError):
             pass
-        return sig
+        return sig.digest()
 
     # -----------------------------------------------------------------------------
     # validate_file()
