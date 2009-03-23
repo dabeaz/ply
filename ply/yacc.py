@@ -73,6 +73,8 @@ yaccdevel   = 0                # Set to True if developing yacc.  This turns off
 
 resultlimit = 40               # Size limit of results when running in debug mode.
 
+pickle_protocol = 0            # Protocol to use when writing pickle files
+
 import re, types, sys, os.path
 
 # Compatibility function for python 2.6/3.0
@@ -1836,6 +1838,30 @@ class LRTable(object):
         self.lr_method = parsetab._lr_method
         return parsetab._lr_signature
 
+    def read_pickle(self,filename):
+        try:
+            import cPickle as pickle
+        except ImportError:
+            import pickle
+
+        in_f = open(filename,"rb")
+
+        tabversion = pickle.load(in_f)
+        if tabversion != __tabversion__:
+            raise VersionError("yacc table file version is out of date")
+        self.lr_method = pickle.load(in_f)
+        signature      = pickle.load(in_f)
+        self.lr_action = pickle.load(in_f)
+        self.lr_goto   = pickle.load(in_f)
+        productions    = pickle.load(in_f)
+
+        self.lr_productions = []
+        for p in productions:
+            self.lr_productions.append(MiniProduction(*p))
+
+        in_f.close()
+        return signature
+
     # Bind all production function names to callable objects in pdict
     def bind_callables(self,pdict):
         for p in self.lr_productions:
@@ -2620,6 +2646,33 @@ del _lr_goto_items
             return
 
 
+    # -----------------------------------------------------------------------------
+    # pickle_table()
+    #
+    # This function pickles the LR parsing tables to a supplied file object
+    # -----------------------------------------------------------------------------
+
+    def pickle_table(self,filename,signature=""):
+        try:
+            import cPickle as pickle
+        except ImportError:
+            import pickle
+        outf = open(filename,"wb")
+        pickle.dump(__tabversion__,outf,pickle_protocol)
+        pickle.dump(self.lr_method,outf,pickle_protocol)
+        pickle.dump(signature,outf,pickle_protocol)
+        pickle.dump(self.lr_action,outf,pickle_protocol)
+        pickle.dump(self.lr_goto,outf,pickle_protocol)
+
+        outp = []
+        for p in self.lr_productions:
+            if p.func:
+                outp.append((p.str,p.name, p.len, p.func,p.file,p.line))
+            else:
+                outp.append((str(p),p.name,p.len,None,None,None))
+        pickle.dump(outp,outf,pickle_protocol)
+        outf.close()
+
 # -----------------------------------------------------------------------------
 #                            === INTROSPECTION ===
 #
@@ -2971,9 +3024,14 @@ class ParserReflect(object):
 
 def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, start=None, 
          check_recursion=1, optimize=0, write_tables=1, debugfile=debug_file,outputdir='',
-         debuglog=None, errorlog = None):
+         debuglog=None, errorlog = None, picklefile=None):
 
     global parse                 # Reference to the parsing method of the last built parser
+
+    # If pickling is enabled, table files are not created
+
+    if picklefile:
+        write_tables = 0
 
     if errorlog is None:
         errorlog = PlyLogger(sys.stderr)
@@ -2998,7 +3056,10 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     # Read the tables
     try:
         lr = LRTable()
-        read_signature = lr.read_table(tabmodule)
+        if picklefile:
+            read_signature = lr.read_pickle(picklefile)
+        else:
+            read_signature = lr.read_table(tabmodule)
         if optimize or (read_signature == signature):
             try:
                 lr.bind_callables(pinfo.pdict)
@@ -3180,7 +3241,11 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     # Write the table file if requested
     if write_tables:
         lr.write_table(tabmodule,outputdir,signature)
-    
+
+    # Write a pickled version of the tables
+    if picklefile:
+        lr.pickle_table(picklefile,signature)
+
     # Build the parser
     lr.bind_callables(pinfo.pdict)
     parser = LRParser(lr,pinfo.error_func)
