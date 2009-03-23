@@ -22,8 +22,8 @@
 # See the file COPYING for a complete copy of the LGPL.
 # -----------------------------------------------------------------------------
 
-__version__    = "3.0"
-__tabversion__ = "3.0"       # Version of table file used
+__version__    = "3.2"
+__tabversion__ = "3.2"       # Version of table file used
 
 import re, sys, types, copy, os
 
