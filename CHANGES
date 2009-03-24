@@ -2,6 +2,18 @@
 Version 3.2
 -----------------------------
 03/23/09: beazley
+          Performance optimization.  Discovered a few places to make
+          speedups in LR table generation.
+
+03/23/09: beazley
+          New warning message.  PLY now warns about rules never 
+          reduced due to reduce/reduce conflicts.  Suggested by
+          Bruce Frederiksen.
+
+03/23/09: beazley
+          Some clean-up of warning messages related to reduce/reduce errors.
+
+03/23/09: beazley
           Added a new picklefile option to yacc() to write the parsing
           tables to a filename using the pickle module.   Here is how
           it works:

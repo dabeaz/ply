@@ -235,7 +235,7 @@ class YaccErrorWarningTests(unittest.TestCase):
                                     "Generating LALR tables\n"
                                     "1 reduce/reduce conflict\n"
                                     "reduce/reduce conflict in state 15 resolved using rule (statement -> NAME EQUALS NUMBER)\n"
-                                    "rejected rule (expression -> NUMBER)\n"
+                                    "rejected rule (expression -> NUMBER) in state 15\n"
 
                                     ))
     def test_yacc_simple(self):

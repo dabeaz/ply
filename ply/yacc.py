@@ -1141,6 +1141,7 @@ _is_identifier = re.compile(r'^[a-zA-Z0-9_-]+$')
 # -----------------------------------------------------------------------------
 
 class Production(object):
+    reduced = 0
     def __init__(self,number,name,prod,precedence=('right',0),func=None,file='',line=0):
         self.name     = name
         self.prod     = tuple(prod)
@@ -1277,12 +1278,6 @@ class LRItem(object):
 
     def __repr__(self):
         return "LRItem("+str(self)+")"
-
-    def __len__(self):
-        return len(self.prod)
-
-    def __getitem__(self,index):
-        return self.prod[index]
 
 # -----------------------------------------------------------------------------
 # rightmost_terminal()
@@ -2356,12 +2351,14 @@ class LRGeneratedTable(LRTable):
     # This function constructs the parse tables for SLR or LALR
     # -----------------------------------------------------------------------------
     def lr_parse_table(self):
+        Productions = self.grammar.Productions
+        Precedence  = self.grammar.Precedence
         goto   = self.lr_goto         # Goto array
         action = self.lr_action       # Action array
         log    = self.log             # Logger for output
 
         actionp = { }                 # Action production array (temporary)
-
+        
         log.info("Parsing method: %s", self.lr_method)
 
         # Step 1: Construct C = { I0, I1, ... IN}, collection of LR(0) items
@@ -2408,8 +2405,8 @@ class LRGeneratedTable(LRTable):
                                         # Need to decide on shift or reduce here
                                         # By default we favor shifting. Need to add
                                         # some precedence rules here.
-                                        sprec,slevel = self.grammar.Productions[st_actionp[a].number].prec
-                                        rprec,rlevel = self.grammar.Precedence.get(a,('right',0))
+                                        sprec,slevel = Productions[st_actionp[a].number].prec
+                                        rprec,rlevel = Precedence.get(a,('right',0))
                                         if (slevel < rlevel) or ((slevel == rlevel) and (rprec == 'left')):
                                             # We really need to reduce here.
                                             st_action[a] = -p.number
@@ -2417,6 +2414,7 @@ class LRGeneratedTable(LRTable):
                                             if not slevel and not rlevel:
                                                 log.info("  ! shift/reduce conflict for %s resolved as reduce",a)
                                                 self.sr_conflicts.append((st,a,'reduce'))
+                                            Productions[p.number].reduced += 1
                                         elif (slevel == rlevel) and (rprec == 'nonassoc'):
                                             st_action[a] = None
                                         else:
@@ -2427,12 +2425,14 @@ class LRGeneratedTable(LRTable):
                                     elif r < 0:
                                         # Reduce/reduce conflict.   In this case, we favor the rule
                                         # that was defined first in the grammar file
-                                        oldp = self.grammar.Productions[-r]
-                                        pp = self.grammar.Productions[p.number]
+                                        oldp = Productions[-r]
+                                        pp = Productions[p.number]
                                         if oldp.line > pp.line:
                                             st_action[a] = -p.number
                                             st_actionp[a] = p
                                             chosenp,rejectp = pp,oldp
+                                            Productions[p.number].reduced += 1
+                                            Productions[oldp.number].reduced -= 1
                                         else:
                                             chosenp,rejectp = oldp,pp
                                         self.rr_conflicts.append((st,chosenp,rejectp))
@@ -2442,6 +2442,7 @@ class LRGeneratedTable(LRTable):
                                 else:
                                     st_action[a] = -p.number
                                     st_actionp[a] = p
+                                    Productions[p.number].reduced += 1
                     else:
                         i = p.lr_index
                         a = p.prod[i+1]       # Get symbol right after the "."
@@ -2462,10 +2463,11 @@ class LRGeneratedTable(LRTable):
                                         #   -  if precedence of reduce rule is higher, we reduce.
                                         #   -  if precedence of reduce is same and left assoc, we reduce.
                                         #   -  otherwise we shift
-                                        rprec,rlevel = self.grammar.Productions[st_actionp[a].number].prec
-                                        sprec,slevel = self.grammar.Precedence.get(a,('right',0))
+                                        rprec,rlevel = Productions[st_actionp[a].number].prec
+                                        sprec,slevel = Precedence.get(a,('right',0))
                                         if (slevel > rlevel) or ((slevel == rlevel) and (rprec == 'right')):
                                             # We decide to shift here... highest precedence to shift
+                                            Productions[st_actionp[a].number].reduced -= 1
                                             st_action[a] = j
                                             st_actionp[a] = p
                                             if not rlevel:
@@ -3234,9 +3236,16 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
             
         for state, rule, rejected in lr.rr_conflicts:
             debuglog.warning("reduce/reduce conflict in state %d resolved using rule (%s)", state, rule)
-            debuglog.warning("rejected rule (%s)", rejected)
+            debuglog.warning("rejected rule (%s) in state %d", rejected,state)
             errorlog.warning("reduce/reduce conflict in state %d resolved using rule (%s)", state, rule)
-            errorlog.warning("rejected rule (%s)", rejected)
+            errorlog.warning("rejected rule (%s) in state %d", rejected, state)
+        
+        warned_never = []
+        for state, rule, rejected in lr.rr_conflicts:
+            if not rejected.reduced and (rejected not in warned_never):
+                debuglog.warning("Rule (%s) is never reduced", rejected)
+                errorlog.warning("Rule (%s) is never reduced", rejected)
+                warned_never.append(rejected)
 
     # Write the table file if requested
     if write_tables:
