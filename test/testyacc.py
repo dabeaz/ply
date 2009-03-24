@@ -242,7 +242,6 @@ class YaccErrorWarningTests(unittest.TestCase):
     def test_yacc_rr_unused(self):
         run_import("yacc_rr_unused")
         result = sys.stderr.getvalue()
-        open("foo","w").write(result)
         self.assert_(check_expected(result,
                                     "no p_error() function is defined\n"
                                     "Generating LALR tables\n"
