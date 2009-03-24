@@ -15,7 +15,7 @@ productions, precedence rules, error recovery, and support for ambiguous grammar
 
 PLY is extremely easy to use and provides very extensive error checking. 
 """,
-            license="""Lesser GPL (LGPL)""",
+            license="""BSD""",
             version = "3.2",
             author = "David Beazley",
             author_email = "dave@dabeaz.com",
