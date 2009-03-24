@@ -2,6 +2,10 @@
 Version 3.2
 -----------------------------
 03/24/09: beazley
+          Added an extra check to not print duplicated warning messages
+          about reduce/reduce conflicts.
+
+03/24/09: beazley
           Switched PLY over to a BSD-license.
 
 03/23/09: beazley

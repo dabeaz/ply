@@ -3242,12 +3242,17 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
 
         for state, tok, resolution in lr.sr_conflicts:
             debuglog.warning("shift/reduce conflict for %s in state %d resolved as %s",  tok, state, resolution)
-            
+        
+        already_reported = {}
         for state, rule, rejected in lr.rr_conflicts:
+            if (state,id(rule),id(rejected)) in already_reported:
+                pass
+#                continue
             debuglog.warning("reduce/reduce conflict in state %d resolved using rule (%s)", state, rule)
             debuglog.warning("rejected rule (%s) in state %d", rejected,state)
             errorlog.warning("reduce/reduce conflict in state %d resolved using rule (%s)", state, rule)
             errorlog.warning("rejected rule (%s) in state %d", rejected, state)
+            already_reported[state,id(rule),id(rejected)] = 1
         
         warned_never = []
         for state, rule, rejected in lr.rr_conflicts:
