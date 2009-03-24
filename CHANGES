@@ -1,6 +1,9 @@
 
 Version 3.2
 -----------------------------
+03/24/09: beazley
+          Switched PLY over to a BSD-license.
+
 03/23/09: beazley
           Performance optimization.  Discovered a few places to make
           speedups in LR table generation.
