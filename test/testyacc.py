@@ -238,6 +238,24 @@ class YaccErrorWarningTests(unittest.TestCase):
                                     "rejected rule (expression -> NUMBER) in state 15\n"
 
                                     ))
+
+    def test_yacc_rr_unused(self):
+        run_import("yacc_rr_unused")
+        result = sys.stderr.getvalue()
+        open("foo","w").write(result)
+        self.assert_(check_expected(result,
+                                    "no p_error() function is defined\n"
+                                    "Generating LALR tables\n"
+                                    "3 reduce/reduce conflicts\n"
+                                    "reduce/reduce conflict in state 1 resolved using rule (rule3 -> A)\n"
+                                    "rejected rule (rule4 -> A) in state 1\n"
+                                    "reduce/reduce conflict in state 1 resolved using rule (rule3 -> A)\n"
+                                    "rejected rule (rule5 -> A) in state 1\n"
+                                    "reduce/reduce conflict in state 1 resolved using rule (rule4 -> A)\n"
+                                    "rejected rule (rule5 -> A) in state 1\n"
+                                    "Rule (rule5 -> A) is never reduced\n"
+                                    ))
+
     def test_yacc_simple(self):
         run_import("yacc_simple")
         result = sys.stderr.getvalue()
