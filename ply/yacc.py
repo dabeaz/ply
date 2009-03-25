@@ -3246,8 +3246,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
         already_reported = {}
         for state, rule, rejected in lr.rr_conflicts:
             if (state,id(rule),id(rejected)) in already_reported:
-                pass
-#                continue
+                continue
             debuglog.warning("reduce/reduce conflict in state %d resolved using rule (%s)", state, rule)
             debuglog.warning("rejected rule (%s) in state %d", rejected,state)
             errorlog.warning("reduce/reduce conflict in state %d resolved using rule (%s)", state, rule)
