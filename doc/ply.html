@@ -1403,7 +1403,8 @@ it only needs to conform to the following requirements:
 <ul>
 <li>It must provide a <tt>token()</tt> method that returns the next token or <tt>None</tt> if no more
 tokens are available.
-<li>The <tt>token()</tt> method must return an object <tt>tok</tt> that has <tt>type</tt> and <tt>value</tt> attributes.
+<li>The <tt>token()</tt> method must return an object <tt>tok</tt> that has <tt>type</tt> and <tt>value</tt> attributes.  If 
+line number tracking is being used, then the token should also define a <tt>lineno</tt> attribute.
 </ul>
 
 <H2><a name="ply_nn22"></a>5. Parsing basics</H2>

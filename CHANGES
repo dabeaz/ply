@@ -1,3 +1,14 @@
+Version 3.3
+-----------------------------
+08/25/09: beazley
+          Fixed issue 15 related to the set_lineno() method in yacc.  Reported by
+	  mdsherry.
+
+08/25/09: beazley
+          Fixed a bug related to regular expression compilation flags not being
+          properly stored in lextab.py files created by the lexer when running
+          in optimize mode.  Reported by Bruce Frederiksen.
+
 
 Version 3.2
 -----------------------------

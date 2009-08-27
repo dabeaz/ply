@@ -31,7 +31,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-__version__    = "3.2"
+__version__    = "3.3"
 __tabversion__ = "3.2"       # Version of table file used
 
 import re, sys, types, copy, os
@@ -236,7 +236,7 @@ class Lexer:
              titem = []
              txtitem = []
              for i in range(len(lre)):
-                  titem.append((re.compile(lre[i][0],lextab._lexreflags),_names_to_funcs(lre[i][1],fdict)))
+                  titem.append((re.compile(lre[i][0],lextab._lexreflags | re.VERBOSE),_names_to_funcs(lre[i][1],fdict)))
                   txtitem.append(lre[i][0])
              self.lexstatere[key] = titem
              self.lexstateretext[key] = txtitem
@@ -969,6 +969,7 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
     lexobj.lexstateinfo = stateinfo
     lexobj.lexre = lexobj.lexstatere["INITIAL"]
     lexobj.lexretext = lexobj.lexstateretext["INITIAL"]
+    lexobj.lexreflags = reflags
 
     # Set up ignore variables
     lexobj.lexstateignore = linfo.ignore

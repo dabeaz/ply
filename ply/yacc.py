@@ -211,7 +211,7 @@ class YaccProduction:
         return getattr(self.slice[n],"lineno",0)
 
     def set_lineno(self,n,lineno):
-        self.slice[n].lineno = n
+        self.slice[n].lineno = lineno
 
     def linespan(self,n):
         startline = getattr(self.slice[n],"lineno",0)
