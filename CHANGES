@@ -1,5 +1,13 @@
-Version (in progress)
+Version 3.4
 ---------------------
+02/17/11: beazley
+          Minor patch to make cpp.py compatible with Python 3.  Note: This
+          is an experimental file not currently used by the rest of PLY.
+
+02/17/11: beazley
+          Fixed setup.py trove classifiers to properly list PLY as
+          Python 3 compatible.
+
 01/02/11: beazley
           Migration of repository to github.
 

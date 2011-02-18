@@ -1,6 +1,6 @@
-PLY (Python Lex-Yacc)                   Version 3.3
+PLY (Python Lex-Yacc)                   Version 3.4
 
-Copyright (C) 2001-2009,
+Copyright (C) 2001-2011,
 David M. Beazley (Dabeaz LLC)
 All rights reserved.
 
@@ -177,7 +177,7 @@ def t_newline(t):
     t.lexer.lineno += t.value.count("\n")
     
 def t_error(t):
-    print "Illegal character '%s'" % t.value[0]
+    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
     
 # Build the lexer
@@ -200,7 +200,7 @@ def p_statement_assign(p):
 
 def p_statement_expr(p):
     'statement : expression'
-    print p[1]
+    print(p[1])
 
 def p_expression_binop(p):
     '''expression : expression PLUS expression
@@ -229,18 +229,18 @@ def p_expression_name(p):
     try:
         p[0] = names[p[1]]
     except LookupError:
-        print "Undefined name '%s'" % p[1]
+        print("Undefined name '%s'" % p[1])
         p[0] = 0
 
 def p_error(p):
-    print "Syntax error at '%s'" % p.value
+    print("Syntax error at '%s'" % p.value)
 
 import ply.yacc as yacc
 yacc.yacc()
 
 while 1:
     try:
-        s = raw_input('calc > ')
+        s = raw_input('calc > ')   # use input() on Python 3
     except EOFError:
         break
     yacc.parse(s)
