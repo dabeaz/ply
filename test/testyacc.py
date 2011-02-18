@@ -8,11 +8,32 @@ except ImportError:
 
 import sys
 import os
+import warnings
 
 sys.path.insert(0,"..")
 sys.tracebacklimit = 0
 
 import ply.yacc
+import imp
+
+def make_pymodule_path(filename):
+    path = os.path.dirname(filename)
+    file = os.path.basename(filename)
+    mod, ext = os.path.splitext(file)
+
+    if sys.hexversion >= 0x3020000:
+        modname = mod+"."+imp.get_tag()+ext
+        fullpath = os.path.join(path,'__pycache__',modname)
+    else:
+        fullpath = filename
+    return fullpath
+
+def pymodule_out_exists(filename):
+    return os.path.exists(make_pymodule_path(filename))
+
+def pymodule_out_remove(filename):
+    os.remove(make_pymodule_path(filename))
+
 
 def check_expected(result,expected):
     resultlines = []
@@ -43,10 +64,13 @@ class YaccErrorWarningTests(unittest.TestCase):
         sys.stdout = StringIO.StringIO()
         try:
             os.remove("parsetab.py")
-            os.remove("parsetab.pyc")
+            pymodule_out_remove("parsetab.pyc")
         except OSError:
             pass
         
+        if sys.hexversion >= 0x3020000:
+            warnings.filterwarnings('ignore',category=ResourceWarning)
+
     def tearDown(self):
         sys.stderr = sys.__stderr__
         sys.stdout = sys.__stdout__
@@ -297,7 +321,6 @@ class YaccErrorWarningTests(unittest.TestCase):
     def test_yacc_uprec(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_uprec")
         result = sys.stderr.getvalue()
-        print repr(result)
         self.assert_(check_expected(result,
                                     "yacc_uprec.py:37: Nothing known about the precedence of 'UMINUS'\n"
                                     ))
