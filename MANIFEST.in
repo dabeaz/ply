@@ -1,0 +1,6 @@
+recursive-include example *
+recursive-include doc *
+include ANNOUNCE
+include CHANGES
+include TODO
+
