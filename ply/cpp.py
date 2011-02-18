@@ -176,7 +176,7 @@ class Preprocessor(object):
     # ----------------------------------------------------------------------
 
     def error(self,file,line,msg):
-        print("%s:%d %s" % (file,line,msg),file=sys.stderr)
+        print("%s:%d %s" % (file,line,msg))
 
     # ----------------------------------------------------------------------
     # lexprobe()
