@@ -175,7 +175,7 @@ class Lexer:
         filename = os.path.join(outputdir,basetabfilename)+".py"
         tf = open(filename,"w")
         tf.write("# %s.py. This file automatically created by PLY (version %s). Don't edit!\n" % (tabfile,__version__))
-        tf.write("_tabversion   = %s\n" % repr(__version__))
+        tf.write("_tabversion   = %s\n" % repr(__tabversion__))
         tf.write("_lextokens    = %s\n" % repr(self.lextokens))
         tf.write("_lexreflags   = %s\n" % repr(self.lexreflags))
         tf.write("_lexliterals  = %s\n" % repr(self.lexliterals))
@@ -222,7 +222,7 @@ class Lexer:
                 exec("import %s as lextab" % tabfile, env,env)
                 lextab = env['lextab']
 
-        if getattr(lextab,"_tabversion","0.0") != __version__:
+        if getattr(lextab,"_tabversion","0.0") != __tabversion__:
             raise ImportError("Inconsistent PLY version")
 
         self.lextokens      = lextab._lextokens
