@@ -750,7 +750,11 @@ class Preprocessor(object):
         for p in path:
             iname = os.path.join(p,filename)
             try:
-                data = open(iname,"r").read()
+                f = open(iname,"r")
+                try:
+                    data = f.read()
+                finally:
+                    f.close()
                 dname = os.path.dirname(iname)
                 if dname:
                     self.temp_path.insert(0,dname)
@@ -877,7 +881,10 @@ if __name__ == '__main__':
     # Run a preprocessor
     import sys
     f = open(sys.argv[1])
-    input = f.read()
+    try:
+        input = f.read()
+    finally:
+        f.close()
 
     p = Preprocessor(lexer)
     p.parse(input,sys.argv[1])

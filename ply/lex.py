@@ -174,39 +174,41 @@ class Lexer:
         basetabfilename = tabfile.split(".")[-1]
         filename = os.path.join(outputdir,basetabfilename)+".py"
         tf = open(filename,"w")
-        tf.write("# %s.py. This file automatically created by PLY (version %s). Don't edit!\n" % (tabfile,__version__))
-        tf.write("_tabversion   = %s\n" % repr(__version__))
-        tf.write("_lextokens    = %s\n" % repr(self.lextokens))
-        tf.write("_lexreflags   = %s\n" % repr(self.lexreflags))
-        tf.write("_lexliterals  = %s\n" % repr(self.lexliterals))
-        tf.write("_lexstateinfo = %s\n" % repr(self.lexstateinfo))
+        try:
+            tf.write("# %s.py. This file automatically created by PLY (version %s). Don't edit!\n" % (tabfile,__version__))
+            tf.write("_tabversion   = %s\n" % repr(__version__))
+            tf.write("_lextokens    = %s\n" % repr(self.lextokens))
+            tf.write("_lexreflags   = %s\n" % repr(self.lexreflags))
+            tf.write("_lexliterals  = %s\n" % repr(self.lexliterals))
+            tf.write("_lexstateinfo = %s\n" % repr(self.lexstateinfo))
 
-        tabre = { }
-        # Collect all functions in the initial state
-        initial = self.lexstatere["INITIAL"]
-        initialfuncs = []
-        for part in initial:
-            for f in part[1]:
-                if f and f[0]:
-                    initialfuncs.append(f)
+            tabre = { }
+            # Collect all functions in the initial state
+            initial = self.lexstatere["INITIAL"]
+            initialfuncs = []
+            for part in initial:
+                for f in part[1]:
+                    if f and f[0]:
+                        initialfuncs.append(f)
 
-        for key, lre in self.lexstatere.items():
-             titem = []
-             for i in range(len(lre)):
-                  titem.append((self.lexstateretext[key][i],_funcs_to_names(lre[i][1],self.lexstaterenames[key][i])))
-             tabre[key] = titem
+            for key, lre in self.lexstatere.items():
+                 titem = []
+                 for i in range(len(lre)):
+                      titem.append((self.lexstateretext[key][i],_funcs_to_names(lre[i][1],self.lexstaterenames[key][i])))
+                 tabre[key] = titem
 
-        tf.write("_lexstatere   = %s\n" % repr(tabre))
-        tf.write("_lexstateignore = %s\n" % repr(self.lexstateignore))
+            tf.write("_lexstatere   = %s\n" % repr(tabre))
+            tf.write("_lexstateignore = %s\n" % repr(self.lexstateignore))
 
-        taberr = { }
-        for key, ef in self.lexstateerrorf.items():
-             if ef:
-                  taberr[key] = ef.__name__
-             else:
-                  taberr[key] = None
-        tf.write("_lexstateerrorf = %s\n" % repr(taberr))
-        tf.close()
+            taberr = { }
+            for key, ef in self.lexstateerrorf.items():
+                 if ef:
+                      taberr[key] = ef.__name__
+                 else:
+                      taberr[key] = None
+            tf.write("_lexstateerrorf = %s\n" % repr(taberr))
+        finally:
+            tf.close()
 
     # ------------------------------------------------------------
     # readtab() - Read lexer information from a tab file
@@ -833,8 +835,10 @@ class LexerReflect(object):
 
         try:
             f = open(filename)
-            lines = f.readlines()
-            f.close()
+            try:
+                lines = f.readlines()
+            finally:
+                f.close()
         except IOError:
             return                      # Couldn't find the file.  Don't worry about it
 
@@ -1016,8 +1020,10 @@ def runmain(lexer=None,data=None):
         try:
             filename = sys.argv[1]
             f = open(filename)
-            data = f.read()
-            f.close()
+            try:
+                data = f.read()
+            finally:
+                f.close()
         except IndexError:
             sys.stdout.write("Reading from standard input (type EOF to end):\n")
             data = sys.stdin.read()
