@@ -925,100 +925,10 @@ class LRParser:
 
             # Check the action table
             ltype = lookahead.type
-            t = actions[state].get(ltype)
-
-            if t is not None:
-                if t > 0:
-                    # shift a symbol on the stack
-                    statestack.append(t)
-                    state = t
-
-                    symstack.append(lookahead)
-                    lookahead = None
-
-                    # Decrease error count on successful shift
-                    if errorcount: errorcount -=1
-                    continue
-
-                if t < 0:
-                    # reduce a symbol on the stack, emit a production
-                    p = prod[-t]
-                    pname = p.name
-                    plen  = p.len
-
-                    # Get production function
-                    sym = YaccSymbol()
-                    sym.type = pname       # Production name
-                    sym.value = None
-
-                    if plen:
-                        targ = symstack[-plen-1:]
-                        targ[0] = sym
-
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        # The code enclosed in this section is duplicated 
-                        # below as a performance optimization.  Make sure
-                        # changes get made in both locations.
-
-                        pslice.slice = targ
-                        
-                        try:
-                            # Call the grammar rule with our special slice object
-                            del symstack[-plen:]
-                            del statestack[-plen:]
-                            p.callable(pslice)
-                            symstack.append(sym)
-                            state = goto[statestack[-1]][pname]
-                            statestack.append(state)
-                        except SyntaxError:
-                            # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
-                            state = statestack[-1]
-                            sym.type = 'error'
-                            lookahead = sym
-                            errorcount = error_count
-                            self.errorok = 0
-                        continue
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    
-                    else:
-
-                        targ = [ sym ]
-
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        # The code enclosed in this section is duplicated 
-                        # above as a performance optimization.  Make sure
-                        # changes get made in both locations.
-
-                        pslice.slice = targ
-
-                        try:
-                            # Call the grammar rule with our special slice object
-                            p.callable(pslice)
-                            symstack.append(sym)
-                            state = goto[statestack[-1]][pname]
-                            statestack.append(state)
-                        except SyntaxError:
-                            # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
-                            state = statestack[-1]
-                            sym.type = 'error'
-                            lookahead = sym
-                            errorcount = error_count
-                            self.errorok = 0
-                        continue
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-                if t == 0:
-                    n = symstack[-1]
-                    return getattr(n,"value",None)
-
-            if t == None:
-
+            state_actions = actions[state]
+            try:
+                t = state_actions[ltype]
+            except KeyError:
                 # We have some kind of parsing error here.  To handle
                 # this, we are going to push the current token onto
                 # the tokenstack and replace it with an 'error' token.
@@ -1107,6 +1017,95 @@ class LRParser:
                     state = statestack[-1]       # Potential bug fix
 
                 continue
+            else:
+                if t > 0:
+                    # shift a symbol on the stack
+                    statestack.append(t)
+                    state = t
+
+                    symstack.append(lookahead)
+                    lookahead = None
+
+                    # Decrease error count on successful shift
+                    if errorcount: errorcount -=1
+                    continue
+
+                if t < 0:
+                    # reduce a symbol on the stack, emit a production
+                    p = prod[-t]
+                    pname = p.name
+                    plen  = p.len
+
+                    # Get production function
+                    sym = YaccSymbol()
+                    sym.type = pname       # Production name
+                    sym.value = None
+
+                    if plen:
+                        targ = symstack[-plen-1:]
+                        targ[0] = sym
+
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        # The code enclosed in this section is duplicated 
+                        # below as a performance optimization.  Make sure
+                        # changes get made in both locations.
+
+                        pslice.slice = targ
+                        
+                        try:
+                            # Call the grammar rule with our special slice object
+                            del symstack[-plen:]
+                            del statestack[-plen:]
+                            p.callable(pslice)
+                            symstack.append(sym)
+                            state = goto[statestack[-1]][pname]
+                            statestack.append(state)
+                        except SyntaxError:
+                            # If an error was set. Enter error recovery state
+                            lookaheadstack.append(lookahead)
+                            symstack.pop()
+                            statestack.pop()
+                            state = statestack[-1]
+                            sym.type = 'error'
+                            lookahead = sym
+                            errorcount = error_count
+                            self.errorok = 0
+                        continue
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+                    else:
+
+                        targ = [ sym ]
+
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        # The code enclosed in this section is duplicated 
+                        # above as a performance optimization.  Make sure
+                        # changes get made in both locations.
+
+                        pslice.slice = targ
+
+                        try:
+                            # Call the grammar rule with our special slice object
+                            p.callable(pslice)
+                            symstack.append(sym)
+                            state = goto[statestack[-1]][pname]
+                            statestack.append(state)
+                        except SyntaxError:
+                            # If an error was set. Enter error recovery state
+                            lookaheadstack.append(lookahead)
+                            symstack.pop()
+                            statestack.pop()
+                            state = statestack[-1]
+                            sym.type = 'error'
+                            lookahead = sym
+                            errorcount = error_count
+                            self.errorok = 0
+                        continue
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                if t == 0:
+                    n = symstack[-1]
+                    return getattr(n,"value",None)
 
             # Call an error function here
             raise RuntimeError("yacc: internal parser error!!!\n")
