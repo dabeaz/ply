@@ -654,9 +654,99 @@ class LRParser:
 
             # Check the action table
             ltype = lookahead.type
-            t = actions[state].get(ltype)
+            state_actions = actions[state]
+            try:
+                t = state_actions[ltype]
+            except KeyError:
+                # We have some kind of parsing error here.  To handle
+                # this, we are going to push the current token onto
+                # the tokenstack and replace it with an 'error' token.
+                # If there are any synchronization rules, they may
+                # catch it.
+                #
+                # In addition to pushing the error token, we call call
+                # the user defined p_error() function if this is the
+                # first syntax error.  This function is only called if
+                # errorcount == 0.
+                if errorcount == 0 or self.errorok:
+                    errorcount = error_count
+                    self.errorok = 0
+                    errtoken = lookahead
+                    if errtoken.type == '$end':
+                        errtoken = None               # End of file!
+                    if self.errorfunc:
+                        global errok,token,restart
+                        errok = self.errok        # Set some special functions available in error recovery
+                        token = get_token
+                        restart = self.restart
+                        if errtoken and not hasattr(errtoken,'lexer'):
+                            errtoken.lexer = lexer
+                        tok = self.errorfunc(errtoken)
+                        del errok, token, restart   # Delete special functions
 
-            if t is not None:
+                        if self.errorok:
+                            # User must have done some kind of panic
+                            # mode recovery on their own.  The
+                            # returned token is the next lookahead
+                            lookahead = tok
+                            errtoken = None
+                            continue
+                    else:
+                        if errtoken:
+                            if hasattr(errtoken,"lineno"): lineno = lookahead.lineno
+                            else: lineno = 0
+                            if lineno:
+                                sys.stderr.write("yacc: Syntax error at line %d, token=%s\n" % (lineno, errtoken.type))
+                            else:
+                                sys.stderr.write("yacc: Syntax error, token=%s" % errtoken.type)
+                        else:
+                            sys.stderr.write("yacc: Parse error in input. EOF\n")
+                            return
+
+                else:
+                    errorcount = error_count
+
+                # case 1:  the statestack only has 1 entry on it.  If we're in this state, the
+                # entire parse has been rolled back and we're completely hosed.   The token is
+                # discarded and we just keep going.
+
+                if len(statestack) <= 1 and lookahead.type != '$end':
+                    lookahead = None
+                    errtoken = None
+                    state = 0
+                    # Nuke the pushback stack
+                    del lookaheadstack[:]
+                    continue
+
+                # case 2: the statestack has a couple of entries on it, but we're
+                # at the end of the file. nuke the top entry and generate an error token
+
+                # Start nuking entries on the stack
+                if lookahead.type == '$end':
+                    # Whoa. We're really hosed here. Bail out
+                    return
+
+                if lookahead.type != 'error':
+                    sym = symstack[-1]
+                    if sym.type == 'error':
+                        # Hmmm. Error is on top of stack, we'll just nuke input
+                        # symbol and continue
+                        lookahead = None
+                        continue
+                    t = YaccSymbol()
+                    t.type = 'error'
+                    if hasattr(lookahead,"lineno"):
+                        t.lineno = lookahead.lineno
+                    t.value = lookahead
+                    lookaheadstack.append(lookahead)
+                    lookahead = t
+                else:
+                    symstack.pop()
+                    statestack.pop()
+                    state = statestack[-1]       # Potential bug fix
+
+                continue
+            else:
                 if t > 0:
                     # shift a symbol on the stack
                     statestack.append(t)
@@ -762,97 +852,6 @@ class LRParser:
                 if t == 0:
                     n = symstack[-1]
                     return getattr(n,"value",None)
-
-            if t == None:
-
-                # We have some kind of parsing error here.  To handle
-                # this, we are going to push the current token onto
-                # the tokenstack and replace it with an 'error' token.
-                # If there are any synchronization rules, they may
-                # catch it.
-                #
-                # In addition to pushing the error token, we call call
-                # the user defined p_error() function if this is the
-                # first syntax error.  This function is only called if
-                # errorcount == 0.
-                if errorcount == 0 or self.errorok:
-                    errorcount = error_count
-                    self.errorok = 0
-                    errtoken = lookahead
-                    if errtoken.type == '$end':
-                        errtoken = None               # End of file!
-                    if self.errorfunc:
-                        global errok,token,restart
-                        errok = self.errok        # Set some special functions available in error recovery
-                        token = get_token
-                        restart = self.restart
-                        if errtoken and not hasattr(errtoken,'lexer'):
-                            errtoken.lexer = lexer
-                        tok = self.errorfunc(errtoken)
-                        del errok, token, restart   # Delete special functions
-
-                        if self.errorok:
-                            # User must have done some kind of panic
-                            # mode recovery on their own.  The
-                            # returned token is the next lookahead
-                            lookahead = tok
-                            errtoken = None
-                            continue
-                    else:
-                        if errtoken:
-                            if hasattr(errtoken,"lineno"): lineno = lookahead.lineno
-                            else: lineno = 0
-                            if lineno:
-                                sys.stderr.write("yacc: Syntax error at line %d, token=%s\n" % (lineno, errtoken.type))
-                            else:
-                                sys.stderr.write("yacc: Syntax error, token=%s" % errtoken.type)
-                        else:
-                            sys.stderr.write("yacc: Parse error in input. EOF\n")
-                            return
-
-                else:
-                    errorcount = error_count
-
-                # case 1:  the statestack only has 1 entry on it.  If we're in this state, the
-                # entire parse has been rolled back and we're completely hosed.   The token is
-                # discarded and we just keep going.
-
-                if len(statestack) <= 1 and lookahead.type != '$end':
-                    lookahead = None
-                    errtoken = None
-                    state = 0
-                    # Nuke the pushback stack
-                    del lookaheadstack[:]
-                    continue
-
-                # case 2: the statestack has a couple of entries on it, but we're
-                # at the end of the file. nuke the top entry and generate an error token
-
-                # Start nuking entries on the stack
-                if lookahead.type == '$end':
-                    # Whoa. We're really hosed here. Bail out
-                    return
-
-                if lookahead.type != 'error':
-                    sym = symstack[-1]
-                    if sym.type == 'error':
-                        # Hmmm. Error is on top of stack, we'll just nuke input
-                        # symbol and continue
-                        lookahead = None
-                        continue
-                    t = YaccSymbol()
-                    t.type = 'error'
-                    if hasattr(lookahead,"lineno"):
-                        t.lineno = lookahead.lineno
-                    t.value = lookahead
-                    lookaheadstack.append(lookahead)
-                    lookahead = t
-                else:
-                    symstack.pop()
-                    statestack.pop()
-                    state = statestack[-1]       # Potential bug fix
-
-                continue
 
             # Call an error function here
             raise RuntimeError("yacc: internal parser error!!!\n")
