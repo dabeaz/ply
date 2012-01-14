@@ -1419,7 +1419,7 @@ class Grammar(object):
             if syms[-2] != '%prec':
                 raise GrammarError("%s:%d: Syntax error. %%prec can only appear at the end of a grammar rule" % (file,line))
             precname = syms[-1]
-            prodprec = self.Precedence.get(precname,None)
+            prodprec = self.Precedence.get(precname)
             if not prodprec:
                 raise GrammarError("%s:%d: Nothing known about the precedence of '%s'" % (file,line,precname))
             else:
@@ -2001,13 +2001,13 @@ class LRGeneratedTable(LRTable):
 
     def lr0_goto(self,I,x):
         # First we look for a previously cached entry
-        g = self.lr_goto_cache.get((id(I),x),None)
+        g = self.lr_goto_cache.get((id(I),x))
         if g: return g
 
         # Now we generate the goto set in a way that guarantees uniqueness
         # of the result
 
-        s = self.lr_goto_cache.get(x,None)
+        s = self.lr_goto_cache.get(x)
         if not s:
             s = { }
             self.lr_goto_cache[x] = s
@@ -2016,13 +2016,13 @@ class LRGeneratedTable(LRTable):
         for p in I:
             n = p.lr_next
             if n and n.lr_before == x:
-                s1 = s.get(id(n),None)
+                s1 = s.get(id(n))
                 if not s1:
                     s1 = { }
                     s[id(n)] = s1
                 gs.append(n)
                 s = s1
-        g = s.get('$end',None)
+        g = s.get('$end')
         if not g:
             if gs:
                 g = self.lr0_closure(gs)
@@ -2407,7 +2407,7 @@ class LRGeneratedTable(LRTable):
                                 laheads = self.grammar.Follow[p.name]
                             for a in laheads:
                                 actlist.append((a,p,"reduce using rule %d (%s)" % (p.number,p)))
-                                r = st_action.get(a,None)
+                                r = st_action.get(a)
                                 if r is not None:
                                     # Whoa. Have a shift/reduce or reduce/reduce conflict
                                     if r > 0:
@@ -2461,7 +2461,7 @@ class LRGeneratedTable(LRTable):
                             if j >= 0:
                                 # We are in a shift state
                                 actlist.append((a,p,"shift and go to state %d" % j))
-                                r = st_action.get(a,None)
+                                r = st_action.get(a)
                                 if r is not None:
                                     # Whoa have a shift/reduce or shift/shift conflict
                                     if r > 0:
@@ -2887,7 +2887,7 @@ class ParserReflect(object):
 
     # Get the tokens map
     def get_tokens(self):
-        tokens = self.pdict.get("tokens",None)
+        tokens = self.pdict.get("tokens")
         if not tokens:
             self.log.error("No token list is defined")
             self.error = 1
@@ -2921,7 +2921,7 @@ class ParserReflect(object):
 
     # Get the precedence map (if any)
     def get_precedence(self):
-        self.prec = self.pdict.get("precedence",None)
+        self.prec = self.pdict.get("precedence")
 
     # Validate and parse the precedence map
     def validate_precedence(self):
