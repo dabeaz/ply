@@ -2958,7 +2958,7 @@ class ParserReflect(object):
     def get_pfunctions(self):
         p_functions = []
         for name, item in self.pdict.items():
-            if name[:2] != 'p_': continue
+            if not name.startswith('p_'): continue
             if name == 'p_error': continue
             if isinstance(item,(types.FunctionType,types.MethodType)):
                 line = func_code(item).co_firstlineno
@@ -3011,9 +3011,9 @@ class ParserReflect(object):
         # or functions that look like they might be grammar rules.
 
         for n,v in self.pdict.items():
-            if n[0:2] == 'p_' and isinstance(v, (types.FunctionType, types.MethodType)): continue
-            if n[0:2] == 't_': continue
-            if n[0:2] == 'p_' and n != 'p_error':
+            if n.startswith('p_') and isinstance(v, (types.FunctionType, types.MethodType)): continue
+            if n.startswith('t_'): continue
+            if n.startswith('p_') and n != 'p_error':
                 self.log.warning("'%s' not defined as a function", n)
             if ((isinstance(v,types.FunctionType) and func_code(v).co_argcount == 1) or
                 (isinstance(v,types.MethodType) and func_code(v).co_argcount == 2)):
