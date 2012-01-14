@@ -1359,8 +1359,9 @@ class Grammar(object):
             if syms[-2] != '%prec':
                 raise GrammarError("%s:%d: Syntax error. %%prec can only appear at the end of a grammar rule" % (file,line))
             precname = syms[-1]
-            prodprec = self.Precedence.get(precname)
-            if not prodprec:
+            try:
+                prodprec = self.Precedence[precname]
+            except KeyError:
                 raise GrammarError("%s:%d: Nothing known about the precedence of %r" % (file,line,precname))
             else:
                 self.UsedPrecedence[precname] = 1
@@ -1941,33 +1942,36 @@ class LRGeneratedTable(LRTable):
 
     def lr0_goto(self,I,x):
         # First we look for a previously cached entry
-        g = self.lr_goto_cache.get((id(I),x))
-        if g: return g
+        try:
+            return self.lr_goto_cache[(id(I),x)]
+        except KeyError:
+            pass
 
         # Now we generate the goto set in a way that guarantees uniqueness
         # of the result
 
-        s = self.lr_goto_cache.get(x)
-        if not s:
-            s = { }
-            self.lr_goto_cache[x] = s
+        try:
+            s = self.lr_goto_cache[x]
+        except KeyError:
+            self.lr_goto_cache[x] = s = { }
 
         gs = [ ]
         for p in I:
             n = p.lr_next
             if n and n.lr_before == x:
-                s1 = s.get(id(n))
-                if not s1:
-                    s1 = { }
-                    s[id(n)] = s1
+                try:
+                    s1 = s[id(n)]
+                except KeyError:
+                    s[id(n)] = s1 = { }
                 gs.append(n)
                 s = s1
-        g = s.get('$end')
-        if not g:
+        try:
+            g = s['$end']
+        except KeyError:
             if gs:
-                g = self.lr0_closure(gs)
-                s['$end'] = g
+                s['$end'] = g = self.lr0_closure(gs)
             else:
+                g = None
                 s['$end'] = gs
         self.lr_goto_cache[(id(I),x)] = g
         return g
@@ -2507,10 +2511,10 @@ _lr_signature = %r
 
                 for s,nd in self.lr_action.items():
                    for name,v in nd.items():
-                      i = items.get(name)
-                      if not i:
-                         i = ([],[])
-                         items[name] = i
+                      try:
+                         i = items[name]
+                      except KeyError:
+                         items[name] = i = ([],[])
                       i[0].append(s)
                       i[1].append(v)
 
@@ -2547,10 +2551,10 @@ del _lr_action_items
 
                 for s,nd in self.lr_goto.items():
                    for name,v in nd.items():
-                      i = items.get(name)
-                      if not i:
-                         i = ([],[])
-                         items[name] = i
+                      try:
+                         i = items[name]
+                      except KeyError:
+                         items[name] = i = ([],[])
                       i[0].append(s)
                       i[1].append(v)
 
