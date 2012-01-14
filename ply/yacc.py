@@ -1365,7 +1365,7 @@ class Grammar(object):
     def set_precedence(self,term,assoc,level):
         assert self.Productions == [None],"Must call set_precedence() before add_production()"
         if term in self.Precedence:
-            raise GrammarError("Precedence already specified for terminal '%s'" % term)
+            raise GrammarError("Precedence already specified for terminal %r" % term)
         if assoc not in ['left','right','nonassoc']:
             raise GrammarError("Associativity must be one of 'left','right', or 'nonassoc'")
         self.Precedence[term] = (assoc,level)
@@ -1390,11 +1390,11 @@ class Grammar(object):
     def add_production(self,prodname,syms,func=None,file='',line=0):
 
         if prodname in self.Terminals:
-            raise GrammarError("%s:%d: Illegal rule name '%s'. Already defined as a token" % (file,line,prodname))
+            raise GrammarError("%s:%d: Illegal rule name %r. Already defined as a token" % (file,line,prodname))
         if prodname == 'error':
-            raise GrammarError("%s:%d: Illegal rule name '%s'. error is a reserved word" % (file,line,prodname))
+            raise GrammarError("%s:%d: Illegal rule name %r. error is a reserved word" % (file,line,prodname))
         if not _is_identifier.match(prodname):
-            raise GrammarError("%s:%d: Illegal rule name '%s'" % (file,line,prodname))
+            raise GrammarError("%s:%d: Illegal rule name %r" % (file,line,prodname))
 
         # Look for literal tokens 
         for n,s in enumerate(syms):
@@ -1410,7 +1410,7 @@ class Grammar(object):
                  except SyntaxError:
                      pass
             if not _is_identifier.match(s) and s != '%prec':
-                raise GrammarError("%s:%d: Illegal name '%s' in rule '%s'" % (file,line,s, prodname))
+                raise GrammarError("%s:%d: Illegal name %r in rule %r" % (file,line,s, prodname))
         
         # Determine the precedence level
         if '%prec' in syms:
@@ -1421,7 +1421,7 @@ class Grammar(object):
             precname = syms[-1]
             prodprec = self.Precedence.get(precname)
             if not prodprec:
-                raise GrammarError("%s:%d: Nothing known about the precedence of '%s'" % (file,line,precname))
+                raise GrammarError("%s:%d: Nothing known about the precedence of %r" % (file,line,precname))
             else:
                 self.UsedPrecedence[precname] = 1
             del syms[-2:]     # Drop %prec from the rule
@@ -2652,7 +2652,7 @@ del _lr_goto_items
 
         except IOError:
             e = sys.exc_info()[1]
-            sys.stderr.write("Unable to create '%s'\n" % filename)
+            sys.stderr.write("Unable to create %r\n" % filename)
             sys.stderr.write(str(e)+"\n")
             return
 
@@ -2748,7 +2748,7 @@ def parse_grammar(doc,file,line):
         except SyntaxError:
             raise
         except Exception:
-            raise SyntaxError("%s:%d: Syntax error in rule '%s'" % (file,dline,ps.strip()))
+            raise SyntaxError("%s:%d: Syntax error in rule %r" % (file,dline,ps.strip()))
 
     return grammar
 
@@ -2916,7 +2916,7 @@ class ParserReflect(object):
         terminals = {}
         for n in self.tokens:
             if n in terminals:
-                self.log.warning("Token '%s' multiply defined", n)
+                self.log.warning("Token %r multiply defined", n)
             terminals[n] = 1
 
     # Get the precedence map (if any)
@@ -2986,13 +2986,13 @@ class ParserReflect(object):
             else:
                 reqargs = 1
             if func_code(func).co_argcount > reqargs:
-                self.log.error("%s:%d: Rule '%s' has too many arguments",file,line,func.__name__)
+                self.log.error("%s:%d: Rule %r has too many arguments",file,line,func.__name__)
                 self.error = 1
             elif func_code(func).co_argcount < reqargs:
-                self.log.error("%s:%d: Rule '%s' requires an argument",file,line,func.__name__)
+                self.log.error("%s:%d: Rule %r requires an argument",file,line,func.__name__)
                 self.error = 1
             elif not func.__doc__:
-                self.log.warning("%s:%d: No documentation string specified in function '%s' (ignored)",file,line,func.__name__)
+                self.log.warning("%s:%d: No documentation string specified in function %r (ignored)",file,line,func.__name__)
             else:
                 try:
                     parsed_g = parse_grammar(doc,file,line)
@@ -3014,13 +3014,13 @@ class ParserReflect(object):
             if n.startswith('p_') and isinstance(v, (types.FunctionType, types.MethodType)): continue
             if n.startswith('t_'): continue
             if n.startswith('p_') and n != 'p_error':
-                self.log.warning("'%s' not defined as a function", n)
+                self.log.warning("%r not defined as a function", n)
             if ((isinstance(v,types.FunctionType) and func_code(v).co_argcount == 1) or
                 (isinstance(v,types.MethodType) and func_code(v).co_argcount == 2)):
                 try:
                     doc = v.__doc__.split(" ")
                     if doc[1] == ':':
-                        self.log.warning("%s:%d: Possible grammar rule '%s' defined without p_ prefix",
+                        self.log.warning("%s:%d: Possible grammar rule %r defined without p_ prefix",
                                          func_code(v).co_filename, func_code(v).co_firstlineno,n)
                 except Exception:
                     pass
@@ -3142,7 +3142,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     # Verify the grammar structure
     undefined_symbols = grammar.undefined_symbols()
     for sym, prod in undefined_symbols:
-        errorlog.error("%s:%d: Symbol '%s' used, but not defined as a token or a rule",prod.file,prod.line,sym)
+        errorlog.error("%s:%d: Symbol %r used, but not defined as a token or a rule",prod.file,prod.line,sym)
         errors = 1
 
     unused_terminals = grammar.unused_terminals()
@@ -3151,7 +3151,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
         debuglog.info("Unused terminals:")
         debuglog.info("")
         for term in unused_terminals:
-            errorlog.warning("Token '%s' defined, but not used", term)
+            errorlog.warning("Token %r defined, but not used", term)
             debuglog.info("    %s", term)
 
     # Print out all productions to the debug log
@@ -3165,7 +3165,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     # Find unused non-terminals
     unused_rules = grammar.unused_rules()
     for prod in unused_rules:
-        errorlog.warning("%s:%d: Rule '%s' defined, but not used", prod.file, prod.line, prod.name)
+        errorlog.warning("%s:%d: Rule %r defined, but not used", prod.file, prod.line, prod.name)
 
     if len(unused_terminals) == 1:
         errorlog.warning("There is 1 unused token")
@@ -3198,16 +3198,16 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     if check_recursion:
         unreachable = grammar.find_unreachable()
         for u in unreachable:
-            errorlog.warning("Symbol '%s' is unreachable",u)
+            errorlog.warning("Symbol %r is unreachable",u)
 
         infinite = grammar.infinite_cycles()
         for inf in infinite:
-            errorlog.error("Infinite recursion detected for symbol '%s'", inf)
+            errorlog.error("Infinite recursion detected for symbol %r", inf)
             errors = 1
         
     unused_prec = grammar.unused_precedence()
     for term, assoc in unused_prec:
-        errorlog.error("Precedence rule '%s' defined for unknown symbol '%s'", assoc, term)
+        errorlog.error("Precedence rule %r defined for unknown symbol %r", assoc, term)
         errors = 1
 
     if errors:
