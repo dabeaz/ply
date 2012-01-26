@@ -380,14 +380,9 @@ class LRParser:
                     if errtoken.type == "$end":
                         errtoken = None               # End of file!
                     if self.errorfunc:
-                        global errok,token,restart
-                        errok = self.errok        # Set some special functions available in error recovery
-                        token = get_token
-                        restart = self.restart
                         if errtoken and not hasattr(errtoken,'lexer'):
                             errtoken.lexer = lexer
                         tok = self.errorfunc(errtoken)
-                        del errok, token, restart   # Delete special functions
 
                         if self.errorok:
                             # User must have done some kind of panic
@@ -675,14 +670,9 @@ class LRParser:
                     if errtoken.type == '$end':
                         errtoken = None               # End of file!
                     if self.errorfunc:
-                        global errok,token,restart
-                        errok = self.errok        # Set some special functions available in error recovery
-                        token = get_token
-                        restart = self.restart
                         if errtoken and not hasattr(errtoken,'lexer'):
                             errtoken.lexer = lexer
                         tok = self.errorfunc(errtoken)
-                        del errok, token, restart   # Delete special functions
 
                         if self.errorok:
                             # User must have done some kind of panic
@@ -946,14 +936,9 @@ class LRParser:
                     if errtoken.type == '$end':
                         errtoken = None               # End of file!
                     if self.errorfunc:
-                        global errok,token,restart
-                        errok = self.errok        # Set some special functions available in error recovery
-                        token = get_token
-                        restart = self.restart
                         if errtoken and not hasattr(errtoken,'lexer'):
                             errtoken.lexer = lexer
                         tok = self.errorfunc(errtoken)
-                        del errok, token, restart   # Delete special functions
 
                         if self.errorok:
                             # User must have done some kind of panic
