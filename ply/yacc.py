@@ -485,7 +485,6 @@ class LRParser:
                     if plen:
                         targ = symstack[-plen-1:]
                         targ[0] = sym
-
                         # --! TRACKING
                         if tracking:
                            t1 = targ[1]
@@ -494,79 +493,37 @@ class LRParser:
                            t1 = targ[-1]
                            sym.endlineno = getattr(t1,"endlineno",t1.lineno)
                            sym.endlexpos = getattr(t1,"endlexpos",t1.lexpos)
-
                         # --! TRACKING
-
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        # The code enclosed in this section is duplicated 
-                        # below as a performance optimization.  Make sure
-                        # changes get made in both locations.
-
-                        pslice.slice = targ
-                        
-                        try:
-                            # Call the grammar rule with our special slice object
-                            del symstack[-plen:]
-                            del statestack[-plen:]
-                            p.callable(pslice)
-                            # --! DEBUG
-                            debug.info("Result : %s", format_result(pslice[0]))
-                            # --! DEBUG
-                            symstack.append(sym)
-                            state = goto[statestack[-1]][pname]
-                            statestack.append(state)
-                        except SyntaxError:
-                            # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
-                            state = statestack[-1]
-                            sym.type = 'error'
-                            lookahead = sym
-                            errorcount = error_count
-                            self.errorok = 0
-                        continue
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    
+                        del symstack[-plen:]
+                        del statestack[-plen:]
                     else:
-
                         # --! TRACKING
                         if tracking:
                            sym.lineno = lexer.lineno
                            sym.lexpos = lexer.lexpos
                         # --! TRACKING
-
-                        targ = [ sym ]
-
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        # The code enclosed in this section is duplicated 
-                        # above as a performance optimization.  Make sure
-                        # changes get made in both locations.
-
-                        pslice.slice = targ
-
-                        try:
-                            # Call the grammar rule with our special slice object
-                            p.callable(pslice)
-                            # --! DEBUG
-                            debug.info("Result : %s", format_result(pslice[0]))
-                            # --! DEBUG
-                            symstack.append(sym)
-                            state = goto[statestack[-1]][pname]
-                            statestack.append(state)
-                        except SyntaxError:
-                            # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
-                            state = statestack[-1]
-                            sym.type = 'error'
-                            lookahead = sym
-                            errorcount = error_count
-                            self.errorok = 0
-                        continue
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+                        targ = [sym]
+                    pslice.slice = targ
+                    try:
+                        # Call the grammar rule with our special slice object
+                        p.callable(pslice)
+                        # --! DEBUG
+                        debug.info("Result : %s", format_result(pslice[0]))
+                        # --! DEBUG
+                        symstack.append(sym)
+                        state = goto[statestack[-1]][pname]
+                        statestack.append(state)
+                    except SyntaxError:
+                        # If an error was set. Enter error recovery state
+                        lookaheadstack.append(lookahead)
+                        symstack.pop()
+                        statestack.pop()
+                        state = statestack[-1]
+                        sym.type = 'error'
+                        lookahead = sym
+                        errorcount = error_count
+                        self.errorok = 0
+                    continue
                 if t == 0:
                     n = symstack[-1]
                     result = getattr(n,"value",None)
@@ -763,7 +720,6 @@ class LRParser:
                     if plen:
                         targ = symstack[-plen-1:]
                         targ[0] = sym
-
                         # --! TRACKING
                         if tracking:
                            t1 = targ[1]
@@ -772,73 +728,34 @@ class LRParser:
                            t1 = targ[-1]
                            sym.endlineno = getattr(t1,"endlineno",t1.lineno)
                            sym.endlexpos = getattr(t1,"endlexpos",t1.lexpos)
-
                         # --! TRACKING
-
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        # The code enclosed in this section is duplicated 
-                        # below as a performance optimization.  Make sure
-                        # changes get made in both locations.
-
-                        pslice.slice = targ
-                        
-                        try:
-                            # Call the grammar rule with our special slice object
-                            del symstack[-plen:]
-                            del statestack[-plen:]
-                            p.callable(pslice)
-                            symstack.append(sym)
-                            state = goto[statestack[-1]][pname]
-                            statestack.append(state)
-                        except SyntaxError:
-                            # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
-                            state = statestack[-1]
-                            sym.type = 'error'
-                            lookahead = sym
-                            errorcount = error_count
-                            self.errorok = 0
-                        continue
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    
+                        del symstack[-plen:]
+                        del statestack[-plen:]
                     else:
-
                         # --! TRACKING
                         if tracking:
                            sym.lineno = lexer.lineno
                            sym.lexpos = lexer.lexpos
                         # --! TRACKING
-
-                        targ = [ sym ]
-
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        # The code enclosed in this section is duplicated 
-                        # above as a performance optimization.  Make sure
-                        # changes get made in both locations.
-
-                        pslice.slice = targ
-
-                        try:
-                            # Call the grammar rule with our special slice object
-                            p.callable(pslice)
-                            symstack.append(sym)
-                            state = goto[statestack[-1]][pname]
-                            statestack.append(state)
-                        except SyntaxError:
-                            # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
-                            state = statestack[-1]
-                            sym.type = 'error'
-                            lookahead = sym
-                            errorcount = error_count
-                            self.errorok = 0
-                        continue
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+                        targ = [sym]
+                    pslice.slice = targ
+                    try:
+                        # Call the grammar rule with our special slice object
+                        p.callable(pslice)
+                        symstack.append(sym)
+                        state = goto[statestack[-1]][pname]
+                        statestack.append(state)
+                    except SyntaxError:
+                        # If an error was set. Enter error recovery state
+                        lookaheadstack.append(lookahead)
+                        symstack.pop()
+                        statestack.pop()
+                        state = statestack[-1]
+                        sym.type = 'error'
+                        lookahead = sym
+                        errorcount = error_count
+                        self.errorok = 0
+                    continue
                 if t == 0:
                     n = symstack[-1]
                     return getattr(n,"value",None)
@@ -1029,65 +946,28 @@ class LRParser:
                     if plen:
                         targ = symstack[-plen-1:]
                         targ[0] = sym
-
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        # The code enclosed in this section is duplicated 
-                        # below as a performance optimization.  Make sure
-                        # changes get made in both locations.
-
-                        pslice.slice = targ
-                        
-                        try:
-                            # Call the grammar rule with our special slice object
-                            del symstack[-plen:]
-                            del statestack[-plen:]
-                            p.callable(pslice)
-                            symstack.append(sym)
-                            state = goto[statestack[-1]][pname]
-                            statestack.append(state)
-                        except SyntaxError:
-                            # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
-                            state = statestack[-1]
-                            sym.type = 'error'
-                            lookahead = sym
-                            errorcount = error_count
-                            self.errorok = 0
-                        continue
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    
+                        del symstack[-plen:]
+                        del statestack[-plen:]
                     else:
-
-                        targ = [ sym ]
-
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        # The code enclosed in this section is duplicated 
-                        # above as a performance optimization.  Make sure
-                        # changes get made in both locations.
-
-                        pslice.slice = targ
-
-                        try:
-                            # Call the grammar rule with our special slice object
-                            p.callable(pslice)
-                            symstack.append(sym)
-                            state = goto[statestack[-1]][pname]
-                            statestack.append(state)
-                        except SyntaxError:
-                            # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
-                            state = statestack[-1]
-                            sym.type = 'error'
-                            lookahead = sym
-                            errorcount = error_count
-                            self.errorok = 0
-                        continue
-                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+                        targ = [sym]
+                    pslice.slice = targ
+                    try:
+                        # Call the grammar rule with our special slice object
+                        p.callable(pslice)
+                        symstack.append(sym)
+                        state = goto[statestack[-1]][pname]
+                        statestack.append(state)
+                    except SyntaxError:
+                        # If an error was set. Enter error recovery state
+                        lookaheadstack.append(lookahead)
+                        symstack.pop()
+                        statestack.pop()
+                        state = statestack[-1]
+                        sym.type = 'error'
+                        lookahead = sym
+                        errorcount = error_count
+                        self.errorok = 0
+                    continue
                 if t == 0:
                     n = symstack[-1]
                     return getattr(n,"value",None)
