@@ -417,6 +417,16 @@ class Lexer:
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
+# _get_regex(func)
+#
+# Returns the regular expression assigned to a function either as a doc string
+# or as a .regex attribute attached by the @TOKEN decorator.
+# -----------------------------------------------------------------------------
+
+def _get_regex(func):
+    return getattr(func,"regex",func.__doc__)
+
+# -----------------------------------------------------------------------------
 # get_caller_module_dict()
 #
 # This function returns a dictionary containing all of the symbols defined within
@@ -748,20 +758,20 @@ class LexerReflect(object):
                     self.error = 1
                     continue
 
-                if not f.__doc__:
+                if not _get_regex(f):
                     self.log.error("%s:%d: No regular expression defined for rule '%s'",file,line,f.__name__)
                     self.error = 1
                     continue
 
                 try:
-                    c = re.compile("(?P<%s>%s)" % (fname,f.__doc__), re.VERBOSE | self.reflags)
+                    c = re.compile("(?P<%s>%s)" % (fname, _get_regex(f)), re.VERBOSE | self.reflags)
                     if c.match(""):
                         self.log.error("%s:%d: Regular expression for rule '%s' matches empty string", file,line,f.__name__)
                         self.error = 1
                 except re.error:
                     _etype, e, _etrace = sys.exc_info()
                     self.log.error("%s:%d: Invalid regular expression for rule '%s'. %s", file,line,f.__name__,e)
-                    if '#' in f.__doc__:
+                    if '#' in _get_regex(f):
                         self.log.error("%s:%d. Make sure '#' in rule '%s' is escaped with '\\#'",file,line, f.__name__)
                     self.error = 1
 
@@ -934,9 +944,9 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
         for fname, f in linfo.funcsym[state]:
             line = func_code(f).co_firstlineno
             file = func_code(f).co_filename
-            regex_list.append("(?P<%s>%s)" % (fname,f.__doc__))
+            regex_list.append("(?P<%s>%s)" % (fname,_get_regex(f)))
             if debug:
-                debuglog.info("lex: Adding rule %s -> '%s' (state '%s')",fname,f.__doc__, state)
+                debuglog.info("lex: Adding rule %s -> '%s' (state '%s')",fname,_get_regex(f), state)
 
         # Now add all of the simple rules
         for name,r in linfo.strsym[state]:
@@ -1046,13 +1056,13 @@ def runmain(lexer=None,data=None):
 # -----------------------------------------------------------------------------
 
 def TOKEN(r):
-    def set_doc(f):
+    def set_regex(f):
         if hasattr(r,"__call__"):
-            f.__doc__ = r.__doc__
+            f.regex = _get_regex(r)
         else:
-            f.__doc__ = r
+            f.regex = r
         return f
-    return set_doc
+    return set_regex
 
 # Alternative spelling of the TOKEN decorator
 Token = TOKEN
