@@ -1,6 +1,13 @@
 Version 3.5
 ---------------------
 04/18/12: beazley
+          Change to doc string handling in lex module.  Regex patterns are now first
+          pulled from a function's .regex attribute.  If that doesn't exist, then
+	  .doc is checked as a fallback.   The @TOKEN decorator now sets the .regex
+	  attribute of a function instead of its doc string.
+	  Changed suggested by Kristoffer Ellersgaard Koch.
+
+04/18/12: beazley
           Fixed issue #1: Fixed _tabversion. It should use __tabversion__ instead of __version__
           Reported by Daniele Tricoli
 
