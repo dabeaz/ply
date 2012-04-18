@@ -31,8 +31,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-__version__    = "3.4"
-__tabversion__ = "3.2"       # Version of table file used
+__version__    = "3.5"
+__tabversion__ = "3.5"       # Version of table file used
 
 import re, sys, types, copy, os
 
@@ -175,7 +175,7 @@ class Lexer:
         filename = os.path.join(outputdir,basetabfilename)+".py"
         tf = open(filename,"w")
         tf.write("# %s.py. This file automatically created by PLY (version %s). Don't edit!\n" % (tabfile,__version__))
-        tf.write("_tabversion   = %s\n" % repr(__version__))
+        tf.write("_tabversion   = %s\n" % repr(__tabversion__))
         tf.write("_lextokens    = %s\n" % repr(self.lextokens))
         tf.write("_lexreflags   = %s\n" % repr(self.lexreflags))
         tf.write("_lexliterals  = %s\n" % repr(self.lexliterals))
@@ -222,7 +222,7 @@ class Lexer:
                 exec("import %s as lextab" % tabfile, env,env)
                 lextab = env['lextab']
 
-        if getattr(lextab,"_tabversion","0.0") != __version__:
+        if getattr(lextab,"_tabversion","0.0") != __tabversion__:
             raise ImportError("Inconsistent PLY version")
 
         self.lextokens      = lextab._lextokens
@@ -604,6 +604,8 @@ class LexerReflect(object):
     # Get the literals specifier
     def get_literals(self):
         self.literals = self.ldict.get("literals","")
+        if not self.literals:
+            self.literals = ""
 
     # Validate literals
     def validate_literals(self):
@@ -612,7 +614,6 @@ class LexerReflect(object):
                 if not isinstance(c,StringTypes) or len(c) > 1:
                     self.log.error("Invalid literal %s. Must be a single character", repr(c))
                     self.error = 1
-                    continue
 
         except TypeError:
             self.log.error("Invalid literals specification. literals must be a sequence of characters")
