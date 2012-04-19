@@ -1,5 +1,32 @@
 Version 3.5
 ---------------------
+04/19/12: beazley
+          Fixed some problems with line and position tracking and the use of error
+          symbols.   If you have a grammar rule involving an error rule like this:
+
+               def p_assignment_bad(p):
+                   '''assignment : location EQUALS error SEMI'''
+                   ...
+
+          You can now do line and position tracking on the error token.  For example:
+
+               def p_assignment_bad(p):
+                   '''assignment : location EQUALS error SEMI'''
+                   start_line = p.lineno(3)
+                   start_pos  = p.lexpos(3)
+
+          If the trackng=True option is supplied to parse(), you can additionally get
+          spans:
+
+               def p_assignment_bad(p):
+                   '''assignment : location EQUALS error SEMI'''
+                   start_line, end_line = p.linespan(3)
+                   start_pos, end_pos = p.lexspan(3)
+
+          Note that error handling is still a hairy thing in PLY. This won't work
+          unless your lexer is providing accurate information.   Please report bugs.
+          Suggested by a bug reported by Davis Herring.
+              
 04/18/12: beazley
           Change to doc string handling in lex module.  Regex patterns are now first
           pulled from a function's .regex attribute.  If that doesn't exist, then
