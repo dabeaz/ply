@@ -566,17 +566,25 @@ class LRParser:
                     if sym.type == 'error':
                         # Hmmm. Error is on top of stack, we'll just nuke input
                         # symbol and continue
+                        if tracking:
+                            sym.endlineno = getattr(lookahead,"lineno", sym.lineno)
+                            sym.endlexpos = getattr(lookahead,"lexpos", sym.lexpos)
                         lookahead = None
                         continue
                     t = YaccSymbol()
                     t.type = 'error'
                     if hasattr(lookahead,"lineno"):
                         t.lineno = lookahead.lineno
+                    if hasattr(lookahead,"lexpos"):
+                        t.lexpos = lookahead.lexpos
                     t.value = lookahead
                     lookaheadstack.append(lookahead)
                     lookahead = t
                 else:
-                    symstack.pop()
+                    sym = symstack.pop()
+                    if tracking:
+                        lookahead.lineno = sym.lineno
+                        lookahead.lexpos = sym.lexpos
                     statestack.pop()
                     state = statestack[-1]       # Potential bug fix
 
@@ -839,17 +847,25 @@ class LRParser:
                     if sym.type == 'error':
                         # Hmmm. Error is on top of stack, we'll just nuke input
                         # symbol and continue
+                        if tracking:
+                            sym.endlineno = getattr(lookahead,"lineno", sym.lineno)
+                            sym.endlexpos = getattr(lookahead,"lexpos", sym.lexpos)
                         lookahead = None
                         continue
                     t = YaccSymbol()
                     t.type = 'error'
                     if hasattr(lookahead,"lineno"):
                         t.lineno = lookahead.lineno
+                    if hasattr(lookahead,"lexpos"):
+                        t.lexpos = lookahead.lexpos
                     t.value = lookahead
                     lookaheadstack.append(lookahead)
                     lookahead = t
                 else:
-                    symstack.pop()
+                    sym = symstack.pop()
+                    if tracking:
+                        lookahead.lineno = sym.lineno
+                        lookahead.lexpos = sym.lexpos
                     statestack.pop()
                     state = statestack[-1]       # Potential bug fix
 
@@ -1100,6 +1116,8 @@ class LRParser:
                     t.type = 'error'
                     if hasattr(lookahead,"lineno"):
                         t.lineno = lookahead.lineno
+                    if hasattr(lookahead,"lexpos"):
+                        t.lexpos = lookahead.lexpos
                     t.value = lookahead
                     lookaheadstack.append(lookahead)
                     lookahead = t
