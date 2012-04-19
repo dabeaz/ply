@@ -172,7 +172,18 @@ class YaccErrorWarningTests(unittest.TestCase):
         self.assert_(check_expected(result,
                                     "yacc_error4.py:62: Illegal rule name 'error'. Already defined as a token\n"
                                     ))
-        
+
+
+    def test_yacc_error5(self):
+        run_import("yacc_error5")
+        result = sys.stdout.getvalue()
+        self.assert_(check_expected(result,
+                                    "Group at 3:10 to 3:12\n"
+                                    "Syntax error at 'b'\n"
+                                    "Syntax error at 4:18 to 4:22\n"
+                                    "Assignment Error at 2:5 to 5:33\n"
+            ))
+
     def test_yacc_inf(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_inf")
         result = sys.stderr.getvalue()
