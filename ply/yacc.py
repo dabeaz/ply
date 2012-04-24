@@ -179,6 +179,12 @@ class YaccSymbol:
     def __str__(self):    return self.type
     def __repr__(self):   return str(self)
 
+class YaccSymbolEnd(YaccSymbol):
+    type = '$end'
+
+class YaccSymbolError(YaccSymbol):
+    type = 'error'
+
 # This class is a wrapper around the objects actually passed to each
 # grammar rule.   Index lookup and assignment actually assign the
 # .value attribute of the underlying YaccSymbol object.
@@ -249,8 +255,7 @@ class LRParser:
     def restart(self):
         del self.statestack[:]
         del self.symstack[:]
-        sym = YaccSymbol()
-        sym.type = '$end'
+        sym = YaccSymbolEnd()
         self.symstack.append(sym)
         self.statestack.append(0)
 
@@ -324,8 +329,7 @@ class LRParser:
         # The start state is assumed to be (0,$end)
 
         statestack.append(0)
-        sym = YaccSymbol()
-        sym.type = "$end"
+        sym = YaccSymbolEnd()
         symstack.append(sym)
         state = 0
         while 1:
@@ -344,8 +348,7 @@ class LRParser:
                 else:
                     lookahead = lookaheadstack.pop()
                 if not lookahead:
-                    lookahead = YaccSymbol()
-                    lookahead.type = "$end"
+                    lookahead = YaccSymbolEnd()
 
             # --! DEBUG
             debug.debug('Stack  : %s',
@@ -433,8 +436,7 @@ class LRParser:
                         # symbol and continue
                         lookahead = None
                         continue
-                    t = YaccSymbol()
-                    t.type = 'error'
+                    t = YaccSymbolError()
                     if hasattr(lookahead,"lineno"):
                         t.lineno = lookahead.lineno
                     t.value = lookahead
@@ -586,8 +588,7 @@ class LRParser:
         # The start state is assumed to be (0,$end)
 
         statestack.append(0)
-        sym = YaccSymbol()
-        sym.type = '$end'
+        sym = YaccSymbolEnd()
         symstack.append(sym)
         state = 0
         while 1:
@@ -601,8 +602,7 @@ class LRParser:
                 else:
                     lookahead = lookaheadstack.pop()
                 if not lookahead:
-                    lookahead = YaccSymbol()
-                    lookahead.type = '$end'
+                    lookahead = YaccSymbolEnd()
 
             # Check the action table
             ltype = lookahead.type
@@ -680,8 +680,7 @@ class LRParser:
                         # symbol and continue
                         lookahead = None
                         continue
-                    t = YaccSymbol()
-                    t.type = 'error'
+                    t = YaccSymbolError()
                     if hasattr(lookahead,"lineno"):
                         t.lineno = lookahead.lineno
                     t.value = lookahead
@@ -812,8 +811,7 @@ class LRParser:
         # The start state is assumed to be (0,$end)
 
         statestack.append(0)
-        sym = YaccSymbol()
-        sym.type = '$end'
+        sym = YaccSymbolEnd()
         symstack.append(sym)
         state = 0
         while 1:
@@ -827,8 +825,7 @@ class LRParser:
                 else:
                     lookahead = lookaheadstack.pop()
                 if not lookahead:
-                    lookahead = YaccSymbol()
-                    lookahead.type = '$end'
+                    lookahead = YaccSymbolEnd()
 
             # Check the action table
             ltype = lookahead.type
@@ -906,8 +903,7 @@ class LRParser:
                         # symbol and continue
                         lookahead = None
                         continue
-                    t = YaccSymbol()
-                    t.type = 'error'
+                    t = YaccSymbolError()
                     if hasattr(lookahead,"lineno"):
                         t.lineno = lookahead.lineno
                     t.value = lookahead
