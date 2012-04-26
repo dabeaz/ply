@@ -89,7 +89,7 @@ def p_expression_name(p):
         print("Undefined name '%s'" % p[1])
         p[0] = 0
 
-def p_error(p,parser):
+def p_error(p):
     if p:
         print("Syntax error at '%s'" % p.value)
     else:
