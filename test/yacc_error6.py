@@ -51,7 +51,7 @@ def p_expression_number(t):
     'expression : NUMBER'
     t[0] = t[1]
 
-def p_error(p, parser):
+def p_error(p):
     if p:
         print("Line %d: Syntax error at '%s'" % (p.lineno, p.value))
     # Scan ahead looking for a name token
