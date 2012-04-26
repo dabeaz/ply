@@ -165,12 +165,14 @@ _errok = None
 _token = None
 _restart = None
 _warnmsg = """PLY: Don't use global functions errok(), token(), and restart() in p_error().
-Instead, define p_error() with two arguments and invoke methods on the supplied parser instance:
+Instead, invoke the methods on the associated parser instance:
 
-    def p_error(p, parser):
+    def p_error(p):
         ...
         # Use parser.errok(), parser.token(), parser.restart()
         ...
+
+    parser = yacc.yacc()
 """
 import warnings
 def errok():
@@ -185,16 +187,14 @@ def token():
     warnings.warn(_warnmsg)
     return _token()
 
-# Utility function to call the p_error() function with 1 or 2 arguments
+# Utility function to call the p_error() function with some deprecation hacks
 def call_errorfunc(errorfunc,token,parser):
     global _errok, _token, _restart
     _errok = parser.errok
     _token = parser.token
     _restart = parser.restart
-    try:
-        return errorfunc(token,parser)
-    except TypeError:
-        return errorfunc(token)
+    r = errorfunc(token)
+    del _errok, _token, _restart
 
 #-----------------------------------------------------------------------------
 #                        ===  LR Parsing Engine ===
@@ -2931,8 +2931,8 @@ class ParserReflect(object):
             self.files[efile] = 1
 
             argcount = func_code(self.error_func).co_argcount - ismethod
-            if argcount not in (1,2):
-                self.log.error("%s:%d: p_error() requires 1 or 2 arguments",efile,eline)
+            if argcount != 1:
+                self.log.error("%s:%d: p_error() requires 1 argument",efile,eline)
                 self.error = 1
 
     # Get the tokens map
