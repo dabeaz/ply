@@ -1,5 +1,26 @@
 Version 3.5
 ---------------------
+04/26/12: beazley
+          Changes to functions available in panic mode error recover.  In previous versions
+          of PLY, the following global functions were available for use in the p_error() rule:
+
+                 yacc.errok()       # Reset error state
+                 yacc.token()       # Get the next token
+                 yacc.restart()     # Reset the parsing stack
+
+          The use of global variables was problematic for code involving multiple parsers
+          and frankly was a poor design overall.   These functions have been moved to methods
+          of the parser instance created by the yacc() function.   To make it easier to
+          obtain an instance of the parser in error handling, it is now passed as an optional
+          parameter to p_error() like this:
+
+                def p_error(p, parser):
+                    ...
+                    parser.errok()
+
+          *** POTENTIAL INCOMPATIBILITY ***  The original global functions now issue a
+          DeprecationWarning.
+         
 04/19/12: beazley
           Fixed some problems with line and position tracking and the use of error
           symbols.   If you have a grammar rule involving an error rule like this:

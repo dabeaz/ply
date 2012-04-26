@@ -154,7 +154,7 @@ def t_error(t):
     print("Illegal character %s" % repr(t.value[0]))
     t.lexer.skip(1)
     
-lexer = lex.lex(optimize=1)
+lexer = lex.lex()
 if __name__ == "__main__":
     lex.runmain(lexer)
 

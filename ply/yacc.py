@@ -158,6 +158,44 @@ def format_stack_entry(r):
     else:
         return "<%s @ 0x%x>" % (type(r).__name__,id(r))
 
+# Panic mode error recovery support.   This feature is being reworked--much of the
+# code here is to offer a deprecation/backwards compatible transition
+
+_errok = None
+_token = None
+_restart = None
+_warnmsg = """PLY: Don't use global functions errok(), token(), and restart() in p_error().
+Instead, define p_error() with two arguments and invoke methods on the supplied parser instance:
+
+    def p_error(p, parser):
+        ...
+        # Use parser.errok(), parser.token(), parser.restart()
+        ...
+"""
+import warnings
+def errok():
+    warnings.warn(_warnmsg)
+    return _errok()
+
+def restart():
+    warnings.warn(_warnmsg)
+    return _restart()
+
+def token():
+    warnings.warn(_warnmsg)
+    return _token()
+
+# Utility function to call the p_error() function with 1 or 2 arguments
+def call_errorfunc(errorfunc,token,parser):
+    global _errok, _token, _restart
+    _errok = parser.errok
+    _token = parser.token
+    _restart = parser.restart
+    try:
+        return errorfunc(token,parser)
+    except TypeError:
+        return errorfunc(token)
+
 #-----------------------------------------------------------------------------
 #                        ===  LR Parsing Engine ===
 #
@@ -310,6 +348,9 @@ class LRParser:
            get_token = lexer.token
         else:
            get_token = tokenfunc
+
+        # Set the parser() token method (sometimes used in error recovery)
+        self.token = get_token
 
         # Set up the state and symbol stacks
 
@@ -510,15 +551,9 @@ class LRParser:
                     if errtoken.type == "$end":
                         errtoken = None               # End of file!
                     if self.errorfunc:
-                        global errok,token,restart
-                        errok = self.errok        # Set some special functions available in error recovery
-                        token = get_token
-                        restart = self.restart
                         if errtoken and not hasattr(errtoken,'lexer'):
                             errtoken.lexer = lexer
-                        tok = self.errorfunc(errtoken)
-                        del errok, token, restart   # Delete special functions
-
+                        tok = call_errorfunc(self.errorfunc, errtoken, self)
                         if self.errorok:
                             # User must have done some kind of panic
                             # mode recovery on their own.  The
@@ -629,6 +664,9 @@ class LRParser:
            get_token = lexer.token
         else:
            get_token = tokenfunc
+
+        # Set the parser() token method (sometimes used in error recovery)
+        self.token = get_token
 
         # Set up the state and symbol stacks
 
@@ -791,14 +829,9 @@ class LRParser:
                     if errtoken.type == '$end':
                         errtoken = None               # End of file!
                     if self.errorfunc:
-                        global errok,token,restart
-                        errok = self.errok        # Set some special functions available in error recovery
-                        token = get_token
-                        restart = self.restart
                         if errtoken and not hasattr(errtoken,'lexer'):
                             errtoken.lexer = lexer
-                        tok = self.errorfunc(errtoken)
-                        del errok, token, restart   # Delete special functions
+                        tok = call_errorfunc(self.errorfunc, errtoken, self)
 
                         if self.errorok:
                             # User must have done some kind of panic
@@ -909,6 +942,9 @@ class LRParser:
            get_token = lexer.token
         else:
            get_token = tokenfunc
+
+        # Set the parser() token method (sometimes used in error recovery)
+        self.token = get_token
 
         # Set up the state and symbol stacks
 
@@ -1054,14 +1090,9 @@ class LRParser:
                     if errtoken.type == '$end':
                         errtoken = None               # End of file!
                     if self.errorfunc:
-                        global errok,token,restart
-                        errok = self.errok        # Set some special functions available in error recovery
-                        token = get_token
-                        restart = self.restart
                         if errtoken and not hasattr(errtoken,'lexer'):
                             errtoken.lexer = lexer
-                        tok = self.errorfunc(errtoken)
-                        del errok, token, restart   # Delete special functions
+                        tok = call_errorfunc(self.errorfunc, errtoken, self)
 
                         if self.errorok:
                             # User must have done some kind of panic
@@ -2899,8 +2930,9 @@ class ParserReflect(object):
             efile = func_code(self.error_func).co_filename
             self.files[efile] = 1
 
-            if (func_code(self.error_func).co_argcount != 1+ismethod):
-                self.log.error("%s:%d: p_error() requires 1 argument",efile,eline)
+            argcount = func_code(self.error_func).co_argcount - ismethod
+            if argcount not in (1,2):
+                self.log.error("%s:%d: p_error() requires 1 or 2 arguments",efile,eline)
                 self.error = 1
 
     # Get the tokens map

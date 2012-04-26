@@ -184,6 +184,24 @@ class YaccErrorWarningTests(unittest.TestCase):
                                     "Assignment Error at 2:5 to 5:33\n"
             ))
 
+    def test_yacc_error6(self):
+        run_import("yacc_error6")
+        result = sys.stdout.getvalue()
+        self.assert_(check_expected(result,
+                                    "a=7\n"
+                                    "Line 3: Syntax error at '*'\n"
+                                    "c=21\n"
+            ))
+
+    def test_yacc_error7(self):
+        run_import("yacc_error7")
+        result = sys.stdout.getvalue()
+        self.assert_(check_expected(result,
+                                    "a=7\n"
+                                    "Line 3: Syntax error at '*'\n"
+                                    "c=21\n"
+            ))
+
     def test_yacc_inf(self):
         self.assertRaises(ply.yacc.YaccError,run_import,"yacc_inf")
         result = sys.stderr.getvalue()

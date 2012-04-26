@@ -12,7 +12,7 @@ dave@dabeaz.com<br>
 </b>
 
 <p>
-<b>PLY Version: 3.4</b>
+<b>PLY Version: 3.5</b>
 <p>
 
 <!-- INDEX -->
@@ -2449,8 +2449,12 @@ When a syntax error occurs, <tt>yacc.py</tt> performs the following steps:
 
 <ol>
 <li>On the first occurrence of an error, the user-defined <tt>p_error()</tt> function
-is called with the offending token as an argument.  However, if the syntax error is due to
-reaching the end-of-file, <tt>p_error()</tt> is called with an argument of <tt>None</tt>.
+is called with the offending token as an argument. However, if the syntax error is due to
+reaching the end-of-file, <tt>p_error()</tt> is called with an
+  argument of <tt>None</tt>.
+An optional second argument containing the instance of the parser
+that's running is also passed to <tt>p_error()</tt> which may be
+  useful in panic-mode recovery described below.
 Afterwards, the parser enters
 an "error-recovery" mode in which it will not make future calls to <tt>p_error()</tt> until it
 has successfully shifted at least 3 tokens onto the parsing stack.
@@ -2541,13 +2545,13 @@ parser in its initial state.
 
 <blockquote>
 <pre>
-def p_error(p):
+def p_error(p, parser):
     print "Whoa. You are seriously hosed."
     # Read ahead looking for a closing '}'
-    while 1:
-        tok = yacc.token()             # Get the next token
+    while True:
+        tok = parser.token()             # Get the next token
         if not tok or tok.type == 'RBRACE': break
-    yacc.restart()
+    parser.restart()
 </pre>
 </blockquote>
 
@@ -2556,32 +2560,30 @@ This function simply discards the bad token and tells the parser that the error 
 
 <blockquote>
 <pre>
-def p_error(p):
+def p_error(p, parser):
     print "Syntax error at token", p.type
     # Just discard the token and tell the parser it's okay.
-    yacc.errok()
+    parser.errok()
 </pre>
 </blockquote>
 
 <P>
-Within the <tt>p_error()</tt> function, three functions are available to control the behavior
-of the parser:
+More information on these methods is as follows:
+</p>
+
 <p>
 <ul>
-<li><tt>yacc.errok()</tt>.  This resets the parser state so it doesn't think it's in error-recovery
+<li><tt>parser.errok()</tt>.  This resets the parser state so it doesn't think it's in error-recovery
 mode.   This will prevent an <tt>error</tt> token from being generated and will reset the internal
 error counters so that the next syntax error will call <tt>p_error()</tt> again.
 
 <p>
-<li><tt>yacc.token()</tt>.  This returns the next token on the input stream.
+<li><tt>parser.token()</tt>.  This returns the next token on the input stream.
 
 <p>
-<li><tt>yacc.restart()</tt>.  This discards the entire parsing stack and resets the parser
+<li><tt>parser.restart()</tt>.  This discards the entire parsing stack and resets the parser
 to its initial state. 
 </ul>
-
-Note: these functions are only available when invoking <tt>p_error()</tt> and are not available
-at any other time.
 
 <p>
 To supply the next lookahead token to the parser, <tt>p_error()</tt> can return a token.  This might be
@@ -2589,17 +2591,25 @@ useful if trying to synchronize on special characters.  For example:
 
 <blockquote>
 <pre>
-def p_error(p):
+def p_error(p, parser):
     # Read ahead looking for a terminating ";"
-    while 1:
-        tok = yacc.token()             # Get the next token
+    while True:
+        tok = parser.token()             # Get the next token
         if not tok or tok.type == 'SEMI': break
-    yacc.errok()
+    parser.errok()
 
     # Return SEMI to the parser as the next lookahead token
     return tok  
 </pre>
 </blockquote>
+
+<p>
+<b>Compatibility note:</b>  Defining <tt>p_error()</tt> with two
+arguments was first supported in Ply-3.5 and is only needed if you
+need to manipulate the associated parser during error handling.
+A lot of PLY code uses a single argument which will continue to work
+for now.
+</p>
 
 <H4><a name="ply_nn35"></a>6.8.3 Signaling an error from a production</H4>
 

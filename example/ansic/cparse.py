@@ -854,7 +854,7 @@ def p_error(t):
 import profile
 # Build the grammar
 
-yacc.yacc(method='LALR')
+yacc.yacc(method='LALR',write_tables=False,debug=True)
 
 #profile.run("yacc.yacc(method='LALR')")
 

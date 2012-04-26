@@ -78,6 +78,8 @@ def p_error(t):
     print("Syntax error at '%s'" % t.value)
 
 parser = yacc.yacc()
+import calclex
+calclex.lexer.lineno=1
 parser.parse("""
 a = 3 +
 (4*5) +

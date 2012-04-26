@@ -43,7 +43,7 @@ def t_error(t):
     t.lexer.skip(1)
     
 # Build the lexer
-lex.lex()
+lexer = lex.lex()
 
 
 
