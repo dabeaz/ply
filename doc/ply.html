@@ -2452,9 +2452,6 @@ When a syntax error occurs, <tt>yacc.py</tt> performs the following steps:
 is called with the offending token as an argument. However, if the syntax error is due to
 reaching the end-of-file, <tt>p_error()</tt> is called with an
   argument of <tt>None</tt>.
-An optional second argument containing the instance of the parser
-that's running is also passed to <tt>p_error()</tt> which may be
-  useful in panic-mode recovery described below.
 Afterwards, the parser enters
 an "error-recovery" mode in which it will not make future calls to <tt>p_error()</tt> until it
 has successfully shifted at least 3 tokens onto the parsing stack.
@@ -2545,7 +2542,7 @@ parser in its initial state.
 
 <blockquote>
 <pre>
-def p_error(p, parser):
+def p_error(p):
     print "Whoa. You are seriously hosed."
     # Read ahead looking for a closing '}'
     while True:
@@ -2560,7 +2557,7 @@ This function simply discards the bad token and tells the parser that the error 
 
 <blockquote>
 <pre>
-def p_error(p, parser):
+def p_error(p):
     print "Syntax error at token", p.type
     # Just discard the token and tell the parser it's okay.
     parser.errok()
@@ -2591,7 +2588,7 @@ useful if trying to synchronize on special characters.  For example:
 
 <blockquote>
 <pre>
-def p_error(p, parser):
+def p_error(p):
     # Read ahead looking for a terminating ";"
     while True:
         tok = parser.token()             # Get the next token
@@ -2604,11 +2601,10 @@ def p_error(p, parser):
 </blockquote>
 
 <p>
-<b>Compatibility note:</b>  Defining <tt>p_error()</tt> with two
-arguments was first supported in Ply-3.5 and is only needed if you
-need to manipulate the associated parser during error handling.
-A lot of PLY code uses a single argument which will continue to work
-for now.
+Keep in mind in that the above error handling functions,
+<tt>parser</tt> is an instance of the parser created by
+<tt>yacc()</tt>.   You'll need to save this instance someplace in your
+code so that you can refer to it during error handling.
 </p>
 
 <H4><a name="ply_nn35"></a>6.8.3 Signaling an error from a production</H4>
