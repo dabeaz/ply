@@ -10,13 +10,14 @@ Version 3.5
 
           The use of global variables was problematic for code involving multiple parsers
           and frankly was a poor design overall.   These functions have been moved to methods
-          of the parser instance created by the yacc() function.   To make it easier to
-          obtain an instance of the parser in error handling, it is now passed as an optional
-          parameter to p_error() like this:
+          of the parser instance created by the yacc() function.   You should write code like
+          this:
 
-                def p_error(p, parser):
+                def p_error(p):
                     ...
                     parser.errok()
+
+                parser = yacc.yacc()
 
           *** POTENTIAL INCOMPATIBILITY ***  The original global functions now issue a
           DeprecationWarning.
