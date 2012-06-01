@@ -3104,6 +3104,15 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     else:
         pdict = get_caller_module_dict(2)
 
+    try:
+        fr = sys._getframe()
+        pre_n = os.path.basename(fr.f_back.f_code.co_filename)
+        pre_n = os.path.splitext(pre_n)[0].replace('.', '')
+        tabmodule = '%s_%s' % (pre_n, tabmodule)
+        debugfile = '%s_%s' % (pre_n, debugfile)
+    except:
+        pass
+
     # Collect parser information from the dictionary
     pinfo = ParserReflect(pdict,log=errorlog)
     pinfo.get_all()
