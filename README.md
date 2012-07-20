@@ -1,33 +1,36 @@
-PLY (Python Lex-Yacc)                   Version 3.5
+PLY (Python Lex-Yacc)
+=====================
+Version 3.5
+-----------
 
-Copyright (C) 2001-2012,
-David M. Beazley (Dabeaz LLC)
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.  
-* Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.  
-* Neither the name of the David Beazley or Dabeaz LLC may be used to
-  endorse or promote products derived from this software without
-  specific prior written permission. 
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+> Copyright (C) 2001-2012,
+> David M. Beazley (Dabeaz LLC)
+> All rights reserved.
+> 
+> Redistribution and use in source and binary forms, with or without
+> modification, are permitted provided that the following conditions are
+> met:
+> 
+> * Redistributions of source code must retain the above copyright notice,
+>   this list of conditions and the following disclaimer.  
+> * Redistributions in binary form must reproduce the above copyright notice, 
+>   this list of conditions and the following disclaimer in the documentation
+>   and/or other materials provided with the distribution.  
+> * Neither the name of the David Beazley or Dabeaz LLC may be used to
+>   endorse or promote products derived from this software without
+>   specific prior written permission. 
+> 
+> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+> "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+> LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+> A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+> OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+> SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+> LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+> DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+> THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+> (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+> OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Introduction
 ============
@@ -75,14 +78,14 @@ within the 'ply' directory which may also be used as a Python package.
 To use PLY, simply copy the 'ply' directory to your project and import
 lex and yacc from the associated 'ply' package.  For example:
 
-     import ply.lex as lex
-     import ply.yacc as yacc
+    import ply.lex as lex
+    import ply.yacc as yacc
 
 Alternatively, you can copy just the files lex.py and yacc.py
 individually and use them as modules.  For example:
 
-     import lex
-     import yacc
+    import lex
+    import yacc
 
 The file setup.py can be used to install ply using distutils.
 
@@ -105,7 +108,7 @@ Resources
 =========
 More information about PLY can be obtained on the PLY webpage at:
 
-     http://www.dabeaz.com/ply
+    http://www.dabeaz.com/ply
 
 For a detailed overview of parsing theory, consult the excellent
 book "Compilers : Principles, Techniques, and Tools" by Aho, Sethi, and
@@ -114,7 +117,7 @@ may also be useful.
 
 A Google group for PLY can be found at
 
-     http://groups.google.com/group/ply-hack
+    http://groups.google.com/group/ply-hack
 
 Acknowledgments
 ===============
@@ -141,109 +144,109 @@ Example
 Here is a simple example showing a PLY implementation of a calculator
 with variables.
 
-# -----------------------------------------------------------------------------
-# calc.py
-#
-# A simple calculator with variables.
-# -----------------------------------------------------------------------------
-
-tokens = (
-    'NAME','NUMBER',
-    'PLUS','MINUS','TIMES','DIVIDE','EQUALS',
-    'LPAREN','RPAREN',
-    )
-
-# Tokens
-
-t_PLUS    = r'\+'
-t_MINUS   = r'-'
-t_TIMES   = r'\*'
-t_DIVIDE  = r'/'
-t_EQUALS  = r'='
-t_LPAREN  = r'\('
-t_RPAREN  = r'\)'
-t_NAME    = r'[a-zA-Z_][a-zA-Z0-9_]*'
-
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
-    return t
-
-# Ignored characters
-t_ignore = " \t"
-
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += t.value.count("\n")
+    # -----------------------------------------------------------------------------
+    # calc.py
+    #
+    # A simple calculator with variables.
+    # -----------------------------------------------------------------------------
     
-def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
-    t.lexer.skip(1)
+    tokens = (
+        'NAME','NUMBER',
+        'PLUS','MINUS','TIMES','DIVIDE','EQUALS',
+        'LPAREN','RPAREN',
+        )
     
-# Build the lexer
-import ply.lex as lex
-lex.lex()
-
-# Precedence rules for the arithmetic operators
-precedence = (
-    ('left','PLUS','MINUS'),
-    ('left','TIMES','DIVIDE'),
-    ('right','UMINUS'),
-    )
-
-# dictionary of names (for storing variables)
-names = { }
-
-def p_statement_assign(p):
-    'statement : NAME EQUALS expression'
-    names[p[1]] = p[3]
-
-def p_statement_expr(p):
-    'statement : expression'
-    print(p[1])
-
-def p_expression_binop(p):
-    '''expression : expression PLUS expression
-                  | expression MINUS expression
-                  | expression TIMES expression
-                  | expression DIVIDE expression'''
-    if p[2] == '+'  : p[0] = p[1] + p[3]
-    elif p[2] == '-': p[0] = p[1] - p[3]
-    elif p[2] == '*': p[0] = p[1] * p[3]
-    elif p[2] == '/': p[0] = p[1] / p[3]
-
-def p_expression_uminus(p):
-    'expression : MINUS expression %prec UMINUS'
-    p[0] = -p[2]
-
-def p_expression_group(p):
-    'expression : LPAREN expression RPAREN'
-    p[0] = p[2]
-
-def p_expression_number(p):
-    'expression : NUMBER'
-    p[0] = p[1]
-
-def p_expression_name(p):
-    'expression : NAME'
-    try:
-        p[0] = names[p[1]]
-    except LookupError:
-        print("Undefined name '%s'" % p[1])
-        p[0] = 0
-
-def p_error(p):
-    print("Syntax error at '%s'" % p.value)
-
-import ply.yacc as yacc
-yacc.yacc()
-
-while 1:
-    try:
-        s = raw_input('calc > ')   # use input() on Python 3
-    except EOFError:
-        break
-    yacc.parse(s)
+    # Tokens
+    
+    t_PLUS    = r'\+'
+    t_MINUS   = r'-'
+    t_TIMES   = r'\*'
+    t_DIVIDE  = r'/'
+    t_EQUALS  = r'='
+    t_LPAREN  = r'\('
+    t_RPAREN  = r'\)'
+    t_NAME    = r'[a-zA-Z_][a-zA-Z0-9_]*'
+    
+    def t_NUMBER(t):
+        r'\d+'
+        t.value = int(t.value)
+        return t
+    
+    # Ignored characters
+    t_ignore = " \t"
+    
+    def t_newline(t):
+        r'\n+'
+        t.lexer.lineno += t.value.count("\n")
+        
+    def t_error(t):
+        print("Illegal character '%s'" % t.value[0])
+        t.lexer.skip(1)
+        
+    # Build the lexer
+    import ply.lex as lex
+    lex.lex()
+    
+    # Precedence rules for the arithmetic operators
+    precedence = (
+        ('left','PLUS','MINUS'),
+        ('left','TIMES','DIVIDE'),
+        ('right','UMINUS'),
+        )
+    
+    # dictionary of names (for storing variables)
+    names = { }
+    
+    def p_statement_assign(p):
+        'statement : NAME EQUALS expression'
+        names[p[1]] = p[3]
+    
+    def p_statement_expr(p):
+        'statement : expression'
+        print(p[1])
+    
+    def p_expression_binop(p):
+        '''expression : expression PLUS expression
+                      | expression MINUS expression
+                      | expression TIMES expression
+                      | expression DIVIDE expression'''
+        if p[2] == '+'  : p[0] = p[1] + p[3]
+        elif p[2] == '-': p[0] = p[1] - p[3]
+        elif p[2] == '*': p[0] = p[1] * p[3]
+        elif p[2] == '/': p[0] = p[1] / p[3]
+    
+    def p_expression_uminus(p):
+        'expression : MINUS expression %prec UMINUS'
+        p[0] = -p[2]
+    
+    def p_expression_group(p):
+        'expression : LPAREN expression RPAREN'
+        p[0] = p[2]
+    
+    def p_expression_number(p):
+        'expression : NUMBER'
+        p[0] = p[1]
+    
+    def p_expression_name(p):
+        'expression : NAME'
+        try:
+            p[0] = names[p[1]]
+        except LookupError:
+            print("Undefined name '%s'" % p[1])
+            p[0] = 0
+    
+    def p_error(p):
+        print("Syntax error at '%s'" % p.value)
+    
+    import ply.yacc as yacc
+    yacc.yacc()
+    
+    while 1:
+        try:
+            s = raw_input('calc > ')   # use input() on Python 3
+        except EOFError:
+            break
+        yacc.parse(s)
 
 
 Bug Reports and Patches
