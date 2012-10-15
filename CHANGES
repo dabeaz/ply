@@ -1,5 +1,13 @@
 Version 3.5
 ---------------------
+10/15/12: beazley
+          Fixed comment whitespace processing bugs in ply/cpp.py.
+          Reported by Alexei Pososin.
+
+10/15/12: beazley
+          Fixed token names in ply/ctokens.py to match rule names.
+          Reported by Alexei Pososin.
+
 04/26/12: beazley
           Changes to functions available in panic mode error recover.  In previous versions
           of PLY, the following global functions were available for use in the p_error() rule:
