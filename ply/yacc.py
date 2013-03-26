@@ -2907,7 +2907,7 @@ class ParserReflect(object):
     # Validate the start symbol
     def validate_start(self):
         if self.start is not None:
-            if not isinstance(self.start,str):
+            if not isinstance(self.start,basestring):
                 self.log.error("'start' must be a string")
 
     # Look for error handler
@@ -2992,12 +2992,12 @@ class ParserReflect(object):
                     self.error = 1
                     return
                 assoc = p[0]
-                if not isinstance(assoc,str):
+                if not isinstance(assoc,basestring):
                     self.log.error("precedence associativity must be a string")
                     self.error = 1
                     return
                 for term in p[1:]:
-                    if not isinstance(term,str):
+                    if not isinstance(term,basestring):
                         self.log.error("precedence items must be strings")
                         self.error = 1
                         return
