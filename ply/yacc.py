@@ -94,6 +94,9 @@ else:
     def func_code(f):
         return f.__code__
 
+# Compatibility library for checking for string types, etc
+import six
+
 # Compatibility
 try:
     MAXINT = sys.maxint
@@ -2907,7 +2910,7 @@ class ParserReflect(object):
     # Validate the start symbol
     def validate_start(self):
         if self.start is not None:
-            if not isinstance(self.start,basestring):
+            if not isinstance(self.start,six.string_types):
                 self.log.error("'start' must be a string")
 
     # Look for error handler
@@ -2992,12 +2995,12 @@ class ParserReflect(object):
                     self.error = 1
                     return
                 assoc = p[0]
-                if not isinstance(assoc,basestring):
+                if not isinstance(assoc,six.string_types):
                     self.log.error("precedence associativity must be a string")
                     self.error = 1
                     return
                 for term in p[1:]:
-                    if not isinstance(term,basestring):
+                    if not isinstance(term,six.string_types):
                         self.log.error("precedence items must be strings")
                         self.error = 1
                         return
