@@ -95,7 +95,10 @@ else:
         return f.__code__
 
 # Compatibility library for checking for string types, etc
-import six
+if sys.version > '3':
+    string_types = str
+else:
+    string_types = basestring
 
 # Compatibility
 try:
@@ -2910,7 +2913,7 @@ class ParserReflect(object):
     # Validate the start symbol
     def validate_start(self):
         if self.start is not None:
-            if not isinstance(self.start,six.string_types):
+            if not isinstance(self.start,string_types):
                 self.log.error("'start' must be a string")
 
     # Look for error handler
@@ -2995,12 +2998,12 @@ class ParserReflect(object):
                     self.error = 1
                     return
                 assoc = p[0]
-                if not isinstance(assoc,six.string_types):
+                if not isinstance(assoc,string_types):
                     self.log.error("precedence associativity must be a string")
                     self.error = 1
                     return
                 for term in p[1:]:
-                    if not isinstance(term,six.string_types):
+                    if not isinstance(term,string_types):
                         self.log.error("precedence items must be strings")
                         self.error = 1
                         return

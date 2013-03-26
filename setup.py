@@ -24,7 +24,6 @@ It is compatible with both Python 2 and Python 3.
             maintainer_email = "dave@dabeaz.com",
             url = "http://www.dabeaz.com/ply/",
             packages = ['ply'],
-            install_requires = ['six'],
             classifiers = [
               'Programming Language :: Python :: 3',
               'Programming Language :: Python :: 2',
