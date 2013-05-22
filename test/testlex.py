@@ -34,7 +34,7 @@ def pymodule_out_exists(filename):
 def pymodule_out_remove(filename):
     os.remove(make_pymodule_path(filename))
 
-def check_expected(result,expected):
+def check_expected(result, expected):
     if sys.version_info[0] >= 3:
         if isinstance(result,str):
             result = result.encode('ascii')
@@ -42,7 +42,6 @@ def check_expected(result,expected):
             expected = expected.encode('ascii')
     resultlines = result.splitlines()
     expectedlines = expected.splitlines()
-
 
     if len(resultlines) != len(expectedlines):
         return False

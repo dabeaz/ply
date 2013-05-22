@@ -34,7 +34,7 @@ def pymodule_out_exists(filename):
 def pymodule_out_remove(filename):
     os.remove(make_pymodule_path(filename))
 
-
+# Old implementation (not safe for Python 3.3)
 def check_expected(result,expected):
     resultlines = []
     for line in result.splitlines():
@@ -51,6 +51,26 @@ def check_expected(result,expected):
         if not rline.endswith(eline):
             return False
     return True
+
+# Check the output to see if it contains all of a set of expected output lines.
+# This alternate implementation looks weird, but is needed to properly handle
+# some variations in error message order that occurs due to dict hash table
+# randomization that was introduced in Python 3.3
+def check_expected(result, expected):
+    resultlines = set()
+    for line in result.splitlines():
+        if line.startswith("WARNING: "):
+            line = line[9:]
+        elif line.startswith("ERROR: "):
+            line = line[7:]
+        resultlines.add(line)
+
+    # Selectively remove expected lines from the output
+    for eline in expected.splitlines():
+        resultlines = set(line for line in resultlines if not line.endswith(eline))
+
+    # Return True if no result lines remain
+    return not bool(resultlines)
 
 def run_import(module):
     code = "import "+module
@@ -371,6 +391,4 @@ class YaccErrorWarningTests(unittest.TestCase):
                                     "Precedence rule 'left' defined for unknown symbol '/'\n"
                                     ))
 
-
-            
 unittest.main()

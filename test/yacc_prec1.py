@@ -12,8 +12,8 @@ from calclex import tokens
 
 # Parsing rules
 precedence = (
-    ('left','+','-'),
-    ('left','*','/'),
+    ('left', '+', '-'),
+    ('left', '*', '/'),
     ('right','UMINUS'),
     )
 
