@@ -9,6 +9,7 @@ except ImportError:
 import sys
 import os
 import warnings
+import re
 
 sys.path.insert(0,"..")
 sys.tracebacklimit = 0
@@ -57,6 +58,10 @@ def check_expected(result,expected):
 # some variations in error message order that occurs due to dict hash table
 # randomization that was introduced in Python 3.3
 def check_expected(result, expected):
+    # Normalize 'state n' text to account for randomization effects in Python 3.3
+    expected = re.sub(r' state \d+', 'state <n>', expected)
+    result = re.sub(r' state \d+', 'state <n>', result)
+
     resultlines = set()
     for line in result.splitlines():
         if line.startswith("WARNING: "):
