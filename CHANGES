@@ -3,7 +3,7 @@ Version 3.5
 05/21/13: beazley
           Fixed unit tests for yacc to eliminate random failures due to dict hash value
 	  randomization in Python 3.3
-	  Reported by jpakkane
+	  Reported by Arfrever
 
 10/15/12: beazley
           Fixed comment whitespace processing bugs in ply/cpp.py.
