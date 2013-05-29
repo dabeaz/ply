@@ -1,6 +1,10 @@
 Version 3.5
 ---------------------
 05/29/13: beazley
+          Added filter to make unit tests pass under 'python -3'.
+          Reported by Neil Muller.
+       
+05/29/13: beazley
           Fixed CPP_INTEGER regex in ply/cpp.py (Issue 21).
 	  Reported by @vbraun.
  

@@ -94,7 +94,8 @@ class YaccErrorWarningTests(unittest.TestCase):
             pass
         
         if sys.hexversion >= 0x3020000:
-            warnings.filterwarnings('ignore',category=ResourceWarning)
+            warnings.filterwarnings('ignore', category=ResourceWarning)
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
 
     def tearDown(self):
         sys.stderr = sys.__stderr__
