@@ -1,6 +1,10 @@
 Version 3.5
 ---------------------
 05/29/13: beazley
+          Fixed CPP_INTEGER regex in ply/cpp.py (Issue 21).
+	  Reported by @vbraun.
+ 
+05/29/13: beazley
           Fixed yacc validation bugs when from __future__ import unicode_literals
           is being used.  Reported by Kenn Knowles.
 

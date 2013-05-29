@@ -34,7 +34,7 @@ t_CPP_ID = r'[A-Za-z_][\w_]*'
 
 # Integer literal
 def CPP_INTEGER(t):
-    r'(((((0x)|(0X))[0-9a-fA-F]+)|(\d+))([uU]|[lL]|[uU][lL]|[lL][uU])?)'
+    r'(((((0x)|(0X))[0-9a-fA-F]+)|(\d+))([uU][lL]|[lL][uU]|[uU]|[lL])?)'
     return t
 
 t_CPP_INTEGER = CPP_INTEGER
