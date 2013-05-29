@@ -339,6 +339,7 @@ class YaccErrorWarningTests(unittest.TestCase):
         self.assert_(check_expected(result,
                                     "Generating LALR tables\n"
                                     ))
+
     def test_yacc_sr(self):
         run_import("yacc_sr")
         result = sys.stderr.getvalue()
@@ -352,6 +353,13 @@ class YaccErrorWarningTests(unittest.TestCase):
         result = sys.stderr.getvalue()
         self.assert_(check_expected(result,
                                     "yacc_term1.py:24: Illegal rule name 'NUMBER'. Already defined as a token\n"
+                                    ))
+
+    def test_yacc_unicode_literals(self):
+        run_import("yacc_unicode_literals")
+        result = sys.stderr.getvalue()
+        self.assert_(check_expected(result,
+                                    "Generating LALR tables\n"
                                     ))
 
     def test_yacc_unused(self):

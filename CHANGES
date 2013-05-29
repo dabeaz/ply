@@ -1,6 +1,10 @@
 Version 3.5
 ---------------------
 05/29/13: beazley
+          Fixed yacc validation bugs when from __future__ import unicode_literals
+          is being used.  Reported by Kenn Knowles.
+
+05/29/13: beazley
           Added support for Travis-CI.  Contributed by Kenn Knowles.
 
 05/29/13: beazley
