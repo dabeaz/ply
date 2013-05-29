@@ -1,6 +1,9 @@
 Version 3.5
 ---------------------
 05/29/13: beazley
+          Added a .gitignore file.  Suggested by Kenn Knowles.
+
+05/29/13: beazley
 	  Fixed validation problems for source files that include a 
           different source code encoding specifier.  Fix relies on
           the inspect module.  Should work on Python 2.6 and newer.
