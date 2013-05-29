@@ -1,5 +1,12 @@
 Version 3.5
 ---------------------
+05/29/13: beazley
+	  Fixed validation problems for source files that include a 
+          different source code encoding specifier.  Fix relies on
+          the inspect module.  Should work on Python 2.6 and newer.
+          Not sure about older versions of Python.
+          Contributed by Michael Droettboom
+
 05/21/13: beazley
           Fixed unit tests for yacc to eliminate random failures due to dict hash value
 	  randomization in Python 3.3
