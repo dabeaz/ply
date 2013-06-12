@@ -200,7 +200,7 @@ def call_errorfunc(errorfunc,token,parser):
     _token = parser.token
     _restart = parser.restart
     r = errorfunc(token)
-    del _errok, _token, _restart
+    _errok = _token = _restart = None
     return r
 
 #-----------------------------------------------------------------------------
