@@ -3173,7 +3173,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
             grammar.set_precedence(term,assoc,level)
         except GrammarError:
             e = sys.exc_info()[1]
-            errorlog.warning("%s",str(e))
+            errorlog.warning("%s",e)
 
     # Add productions to the grammar
     for funcname, gram in pinfo.grammar:
@@ -3182,7 +3182,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
             grammar.add_production(prodname,syms,funcname,file,line)
         except GrammarError:
             e = sys.exc_info()[1]
-            errorlog.error("%s",str(e))
+            errorlog.error("%s",e)
             errors = 1
 
     # Set the grammar start symbols
