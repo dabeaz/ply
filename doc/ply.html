@@ -2061,7 +2061,7 @@ of UMINUS in the precedence specifier.
 
 <p>
 At first, the use of UMINUS in this example may appear very confusing.
-UMINUS is not an input token or a grammer rule.  Instead, you should
+UMINUS is not an input token or a grammar rule.  Instead, you should
 think of it as the name of a special marker in the precedence table.   When you use the <tt>%prec</tt> qualifier, you're simply
 telling yacc that you want the precedence of the expression to be the same as for this special marker instead of the usual precedence.
 
@@ -2124,7 +2124,7 @@ the rule <tt>assignment : ID EQUALS expression</tt>.
 
 <p>
 It should be noted that reduce/reduce conflicts are notoriously
-difficult to spot simply looking at the input grammer.  When a
+difficult to spot simply looking at the input grammar.  When a
 reduce/reduce conflict occurs, <tt>yacc()</tt> will try to help by
 printing a warning message such as this:
 
