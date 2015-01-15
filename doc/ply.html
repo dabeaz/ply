@@ -354,7 +354,7 @@ accessing these attributes:
 while True:
     tok = lexer.token()
     if not tok: break      # No more input
-    print tok.type, tok.value, tok.line, tok.lexpos
+    print tok.type, tok.value, tok.lineno, tok.lexpos
 </pre>
 </blockquote>
 
