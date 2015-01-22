@@ -1007,8 +1007,6 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
     # Set up eof functions
     lexobj.lexstateeoff = linfo.eoff
     lexobj.lexeoff = linfo.eoff.get("INITIAL", None)
-    if not lexobj.lexeoff:
-        errorlog.warning("No t_eof rule is defined")
 
     # Check state information for ignore and error rules
     for s,stype in stateinfo.items():
