@@ -14,6 +14,14 @@ import warnings
 sys.path.insert(0,"..")
 sys.tracebacklimit = 0
 
+# For pypy, we still test that calling the interpreter
+# with -O gives the correct output, but we skip testing
+# for the existance of pyo files, since we know they
+# won't be there
+test_pyo = True
+if hasattr(sys, 'pypy_version_info'):
+    test_pyo = False
+
 import ply.lex
 
 def make_pymodule_path(filename):
@@ -349,9 +357,10 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("lextab.pyo"))
+        if test_pyo:
+            self.assert_(pymodule_out_exists("lextab.pyo"))
 
-        pymodule_out_remove("lextab.pyo")
+            pymodule_out_remove("lextab.pyo")
         p = subprocess.Popen([sys.executable,'-OO','lex_optimize.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
@@ -359,7 +368,9 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("lextab.pyo"))
+
+        if test_pyo:
+            self.assert_(pymodule_out_exists("lextab.pyo"))
         try:
             os.remove("lextab.py")
         except OSError:
@@ -401,8 +412,9 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("opt2tab.pyo"))
-        pymodule_out_remove("opt2tab.pyo")
+        if test_pyo:
+            self.assert_(pymodule_out_exists("opt2tab.pyo"))
+            pymodule_out_remove("opt2tab.pyo")
         p = subprocess.Popen([sys.executable,'-OO','lex_optimize2.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
@@ -410,7 +422,9 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("opt2tab.pyo"))
+
+        if test_pyo:
+            self.assert_(pymodule_out_exists("opt2tab.pyo"))
         try:
             os.remove("opt2tab.py")
         except OSError:
@@ -449,8 +463,9 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("lexdir/sub/calctab.pyo"))
-        pymodule_out_remove("lexdir/sub/calctab.pyo")
+        if test_pyo:
+            self.assert_(pymodule_out_exists("lexdir/sub/calctab.pyo"))
+            pymodule_out_remove("lexdir/sub/calctab.pyo")
         p = subprocess.Popen([sys.executable,'-OO','lex_optimize3.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
@@ -458,7 +473,8 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("lexdir/sub/calctab.pyo"))
+        if test_pyo:
+            self.assert_(pymodule_out_exists("lexdir/sub/calctab.pyo"))
         try:
             shutil.rmtree("lexdir")
         except OSError:
@@ -492,8 +508,9 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(+,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("aliastab.pyo"))
-        pymodule_out_remove("aliastab.pyo")
+        if test_pyo:
+            self.assert_(pymodule_out_exists("aliastab.pyo"))
+            pymodule_out_remove("aliastab.pyo")
         p = subprocess.Popen([sys.executable,'-OO','lex_opt_alias.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
@@ -501,7 +518,8 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(+,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("aliastab.pyo"))
+        if test_pyo:
+            self.assert_(pymodule_out_exists("aliastab.pyo"))
         try:
             os.remove("aliastab.py")
         except OSError:
@@ -555,8 +573,9 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(TOK999,'TOK999:',1,47)\n"
                                     ))
 
-        self.assert_(pymodule_out_exists("manytab.pyo"))
-        pymodule_out_remove("manytab.pyo")
+        if test_pyo:
+            self.assert_(pymodule_out_exists("manytab.pyo"))
+            pymodule_out_remove("manytab.pyo")
         try:
             os.remove("manytab.py")
         except OSError:
