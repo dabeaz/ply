@@ -10,19 +10,23 @@ import sys
 import os
 import warnings
 import re
+import platform
 
 sys.path.insert(0,"..")
 sys.tracebacklimit = 0
 
 import ply.yacc
-import imp
 
 def make_pymodule_path(filename):
     path = os.path.dirname(filename)
     file = os.path.basename(filename)
     mod, ext = os.path.splitext(file)
 
-    if sys.hexversion >= 0x3020000:
+    if sys.hexversion >= 0x3040000:
+        import importlib.util
+        fullpath = importlib.util.cache_from_source(filename, ext=='.pyc')
+    elif sys.hexversion >= 0x3020000:
+        import imp
         modname = mod+"."+imp.get_tag()+ext
         fullpath = os.path.join(path,'__pycache__',modname)
     else:
@@ -35,23 +39,13 @@ def pymodule_out_exists(filename):
 def pymodule_out_remove(filename):
     os.remove(make_pymodule_path(filename))
 
-# Old implementation (not safe for Python 3.3)
-def check_expected(result,expected):
-    resultlines = []
-    for line in result.splitlines():
-        if line.startswith("WARNING: "):
-            line = line[9:]
-        elif line.startswith("ERROR: "):
-            line = line[7:]
-        resultlines.append(line)
-
-    expectedlines = expected.splitlines()
-    if len(resultlines) != len(expectedlines):
-        return False
-    for rline,eline in zip(resultlines,expectedlines):
-        if not rline.endswith(eline):
-            return False
-    return True
+def implementation():
+    if platform.system().startswith("Java"):
+        return "Jython"
+    elif hasattr(sys, "pypy_version_info"):
+        return "PyPy"
+    else:
+        return "CPython"
 
 # Check the output to see if it contains all of a set of expected output lines.
 # This alternate implementation looks weird, but is needed to properly handle
