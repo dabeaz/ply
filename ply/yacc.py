@@ -3109,6 +3109,10 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     else:
         pdict = get_caller_module_dict(2)
 
+    # Set start symbol if it's specified directly using an argument
+    if start is not None:
+        pdict['start'] = start
+
     # Collect parser information from the dictionary
     pinfo = ParserReflect(pdict,log=errorlog)
     pinfo.get_all()
