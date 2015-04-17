@@ -46,6 +46,8 @@ def implementation():
     else:
         return "CPython"
 
+test_pyo = (implementation() == 'CPython')
+
 def check_expected(result, expected, contains=False):
     if sys.version_info[0] >= 3:
         if isinstance(result,str):
@@ -341,7 +343,6 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
 
-    @unittest.skipUnless(implementation() == 'CPython', 'CPython only')
     def test_lex_optimize(self):
         try:
             os.remove("lextab.py")
@@ -373,9 +374,10 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("lextab.pyo"))
+        if test_pyo:
+            self.assert_(pymodule_out_exists("lextab.pyo"))
+            pymodule_out_remove("lextab.pyo")
 
-        pymodule_out_remove("lextab.pyo")
         p = subprocess.Popen([sys.executable,'-OO','lex_optimize.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
@@ -383,7 +385,9 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("lextab.pyo"))
+
+        if test_pyo:
+            self.assert_(pymodule_out_exists("lextab.pyo"))
         try:
             os.remove("lextab.py")
         except OSError:
@@ -397,7 +401,6 @@ class LexBuildOptionTests(unittest.TestCase):
         except OSError:
             pass
 
-    @unittest.skipUnless(implementation() == 'CPython', 'CPython only')
     def test_lex_optimize2(self):
         try:
             os.remove("opt2tab.py")
@@ -426,8 +429,9 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("opt2tab.pyo"))
-        pymodule_out_remove("opt2tab.pyo")
+        if test_pyo:
+            self.assert_(pymodule_out_exists("opt2tab.pyo"))
+            pymodule_out_remove("opt2tab.pyo")
         p = subprocess.Popen([sys.executable,'-OO','lex_optimize2.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
@@ -435,7 +439,8 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("opt2tab.pyo"))
+        if test_pyo:
+            self.assert_(pymodule_out_exists("opt2tab.pyo"))
         try:
             os.remove("opt2tab.py")
         except OSError:
@@ -449,7 +454,6 @@ class LexBuildOptionTests(unittest.TestCase):
         except OSError:
             pass
 
-    @unittest.skipUnless(implementation() == 'CPython', 'CPython only')
     def test_lex_optimize3(self):
         try:
             shutil.rmtree("lexdir")
@@ -475,8 +479,10 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("lexdir/sub/calctab.pyo"))
-        pymodule_out_remove("lexdir/sub/calctab.pyo")
+        if test_pyo:
+            self.assert_(pymodule_out_exists("lexdir/sub/calctab.pyo"))
+            pymodule_out_remove("lexdir/sub/calctab.pyo")
+
         p = subprocess.Popen([sys.executable,'-OO','lex_optimize3.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
@@ -484,13 +490,13 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("lexdir/sub/calctab.pyo"))
+        if test_pyo:
+            self.assert_(pymodule_out_exists("lexdir/sub/calctab.pyo"))
         try:
             shutil.rmtree("lexdir")
         except OSError:
             pass
 
-    @unittest.skipUnless(implementation() == 'CPython', 'CPython only')
     def test_lex_opt_alias(self):
         try:
             os.remove("aliastab.py")
@@ -519,8 +525,10 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(+,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("aliastab.pyo"))
-        pymodule_out_remove("aliastab.pyo")
+        if test_pyo:
+            self.assert_(pymodule_out_exists("aliastab.pyo"))
+            pymodule_out_remove("aliastab.pyo")
+
         p = subprocess.Popen([sys.executable,'-OO','lex_opt_alias.py'],
                              stdout=subprocess.PIPE)
         result = p.stdout.read()
@@ -528,7 +536,9 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(+,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        self.assert_(pymodule_out_exists("aliastab.pyo"))
+
+        if test_pyo:
+            self.assert_(pymodule_out_exists("aliastab.pyo"))
         try:
             os.remove("aliastab.py")
         except OSError:
