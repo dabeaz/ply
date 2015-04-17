@@ -680,8 +680,8 @@ class LexerReflect(object):
         # Now build up a list of functions and a list of strings
 
         self.toknames = { }        # Mapping of symbols to token names
-        self.funcsym =  { }        # Symbols defined as functions
-        self.strsym =   { }        # Symbols defined as strings
+        self.funcsym  = { }        # Symbols defined as functions
+        self.strsym   = { }        # Symbols defined as strings
         self.ignore   = { }        # Ignore strings by state
         self.errorf   = { }        # Error functions by state
         self.eoff     = { }        # EOF functions by state
