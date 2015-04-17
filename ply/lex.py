@@ -126,11 +126,13 @@ class Lexer:
         self.lexstateinfo = None      # State information
         self.lexstateignore = {}      # Dictionary of ignored characters for each state
         self.lexstateerrorf = {}      # Dictionary of error functions for each state
+        self.lexstateeoff = {}        # Dictionary of eof functions for each state
         self.lexreflags = 0           # Optional re compile flags
         self.lexdata = None           # Actual input data (as a string)
         self.lexpos = 0               # Current position in input text
         self.lexlen = 0               # Length of the input text
         self.lexerrorf = None         # Error rule (if any)
+        self.lexeoff = None           # EOF rule (if any)
         self.lextokens = None         # List of valid tokens
         self.lexignore = ""           # Ignored characters
         self.lexliterals = ""         # Literal characters that can be passed through
@@ -267,6 +269,7 @@ class Lexer:
         self.lexretext = self.lexstateretext[state]
         self.lexignore = self.lexstateignore.get(state,"")
         self.lexerrorf = self.lexstateerrorf.get(state,None)
+        self.lexeoff = self.lexstateeoff.get(state, None)
         self.lexstate = state
 
     # ------------------------------------------------------------
@@ -391,6 +394,17 @@ class Lexer:
 
                 self.lexpos = lexpos
                 raise LexError("Illegal character '%s' at index %d" % (lexdata[lexpos],lexpos), lexdata[lexpos:])
+
+        if self.lexeoff:
+            tok = LexToken()
+            tok.type = "eof"
+            tok.value = ''
+            tok.lineno = self.lineno
+            tok.lexpos = lexpos
+            tok.lexer = self
+            self.lexpos = lexpos
+            newtok = self.lexeoff(tok)
+            return newtok
 
         self.lexpos = lexpos + 1
         if self.lexdata is None:
@@ -670,6 +684,7 @@ class LexerReflect(object):
         self.strsym =   { }        # Symbols defined as strings
         self.ignore   = { }        # Ignore strings by state
         self.errorf   = { }        # Error functions by state
+        self.eoff     = { }        # EOF functions by state
 
         for s in self.stateinfo:
              self.funcsym[s] = []
@@ -689,6 +704,9 @@ class LexerReflect(object):
                 if tokname == 'error':
                     for s in states:
                         self.errorf[s] = t
+                elif tokname == 'eof':
+                    for s in states:
+                        self.eoff[s] = t
                 elif tokname == 'ignore':
                     line = func_code(t).co_firstlineno
                     file = func_code(t).co_filename
@@ -985,6 +1003,10 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
     lexobj.lexerrorf = linfo.errorf.get("INITIAL",None)
     if not lexobj.lexerrorf:
         errorlog.warning("No t_error rule is defined")
+
+    # Set up eof functions
+    lexobj.lexstateeoff = linfo.eoff
+    lexobj.lexeoff = linfo.eoff.get("INITIAL", None)
 
     # Check state information for ignore and error rules
     for s,stype in stateinfo.items():
