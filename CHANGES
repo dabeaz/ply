@@ -1,6 +1,9 @@
 Version 3.5
 ---------------------
 04/16/15: beazley
+          Fixed Issue #44 call_errorfunc() should return the result of errorfunc()
+
+04/16/15: beazley
           Support for versions of Python <2.7 is officially dropped.  PLY may work, but
           the unit tests requires Python 2.7 or newer.
 

@@ -201,6 +201,7 @@ def call_errorfunc(errorfunc,token,parser):
     _restart = parser.restart
     r = errorfunc(token)
     del _errok, _token, _restart
+    return r
 
 #-----------------------------------------------------------------------------
 #                        ===  LR Parsing Engine ===
