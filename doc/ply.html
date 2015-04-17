@@ -869,7 +869,7 @@ The <tt>module</tt> option can also be used to define lexers from instances of a
 <pre>
 import ply.lex as lex
 
-class MyLexer:
+class MyLexer(object):
     # List of token names.   This is always required
     tokens = (
        'NUMBER',
@@ -991,6 +991,11 @@ def MyLexer():
 </pre>
 </blockquote>
 
+<p>
+<b>Important note:</b> If you are defining a lexer using a class or closure, be aware that PLY still requires you to only
+define a single lexer per module (source file).   There are extensive validation/error checking parts of the PLY that 
+may falsely report error messages if you don't follow this rule.
+</p>
 
 <H3><a name="ply_nn18"></a>4.15 Maintaining state</H3>
 
@@ -3055,7 +3060,8 @@ p.parse()
 </pre>
 </blockquote>
 
-Note: The function <tt>yacc.parse()</tt> is bound to the last parser that was generated.
+Note: The function <tt>yacc.parse()</tt> is bound to the last parser that was generated.</li>
+
 
 <p>
 <li>Since the generation of the LALR tables is relatively expensive, previously generated tables are
@@ -3065,12 +3071,25 @@ checksum of all grammar rules and precedence rules.  Only in the event of a mism
 <p>
 It should be noted that table generation is reasonably efficient, even for grammars that involve around a 100 rules
 and several hundred states.  For more complex languages such as C, table generation may take 30-60 seconds on a slow
-machine.  Please be patient.
+machine.  Please be patient.</li>
 
 <p>
 <li>Since LR parsing is driven by tables, the performance of the parser is largely independent of the
 size of the grammar.   The biggest bottlenecks will be the lexer and the complexity of the code in your grammar rules.
+</li>
+</p>
+
+<p>
+<li><tt>yacc()</tt> also allows parsers to be defined as classes and as closures (see the section on alternative specification of
+lexers).  However, be aware that only one parser may be defined in a single module (source file).  There are various 
+error checks and validation steps that may issue confusing error messages if you try to define multiple parsers
+in the same source file.
+</li>
+</p>
+
 </ul>
+</p>
+
 
 <H2><a name="ply_nn37"></a>7. Multiple Parsers and Lexers</H2>
 
