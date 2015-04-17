@@ -92,7 +92,7 @@ t_LSHIFTEQUAL      = r'<<='
 t_RSHIFTEQUAL      = r'>>='
 t_ANDEQUAL         = r'&='
 t_OREQUAL          = r'\|='
-t_XOREQUAL         = r'^='
+t_XOREQUAL         = r'\^='
 
 # Increment/decrement
 t_PLUSPLUS         = r'\+\+'
