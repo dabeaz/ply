@@ -1,5 +1,16 @@
 Version 3.5
 ---------------------
+04/16/15: beazley
+          Support for versions of Python <2.7 is officially dropped.  PLY may work, but
+          the unit tests requires Python 2.7 or newer.
+
+04/16/15: beazley
+          Fixed bug related to calling yacc(start=...).   PLY wasn't regenerating the
+          table file correctly for this case.
+
+04/16/15: beazley
+          Added skipped tests for PyPy and Java.  Related to use of Python's -O option.
+
 05/29/13: beazley
           Added filter to make unit tests pass under 'python -3'.
           Reported by Neil Muller.

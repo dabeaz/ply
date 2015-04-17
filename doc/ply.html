@@ -392,7 +392,7 @@ tokens = (
 <H3><a name="ply_nn6"></a>4.3 Specification of tokens</H3>
 
 
-Each token is specified by writing a regular expression rule.  Each of these rules are
+Each token is specified by writing a regular expression rule compatible with Python's <tt>re</tt> module.  Each of these rules are
 are defined by  making declarations with a special prefix <tt>t_</tt> to indicate that it
 defines a token.  For simple tokens, the regular expression can
 be specified as strings such as this (note: Python raw strings are used since they are the
@@ -429,8 +429,17 @@ when it is done, the resulting token should be returned.  If no value is returne
 function, the token is simply discarded and the next token read.
 
 <p>
-Internally, <tt>lex.py</tt> uses the <tt>re</tt> module to do its patten matching.  When building the master regular expression,
+Internally, <tt>lex.py</tt> uses the <tt>re</tt> module to do its patten matching.  Patterns are compiled
+using the <tt>re.VERBOSE</tt> flag which can be used to help readability.  However, be aware that unescaped
+whitespace is ignored and comments are allowed in this mode.  If your pattern involves whitespace, make sure you
+use <tt>\s</tt>.  If you need to match the <tt>#</tt> character, use <tt>[#]</tt>.
+</p>
+
+<p>
+When building the master regular expression,
 rules are added in the following order:
+</p>
+
 <p>
 <ol>
 <li>All tokens defined by functions are added in the same order as they appear in the lexer file.
