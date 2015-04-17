@@ -57,7 +57,7 @@ dave@dabeaz.com<br>
 <ul>
 <li><a href="#ply_nn30">Recovery and resynchronization with error rules</a>
 <li><a href="#ply_nn31">Panic mode recovery</a>
-<li><a href="#ply_nn35">Signaling an error from a production</a>
+<li><a href="#ply_nn35">Signalling an error from a production</a>
 <li><a href="#ply_nn32">General comments on error handling</a>
 </ul>
 <li><a href="#ply_nn33">Line Number and Position Tracking</a>
@@ -137,10 +137,10 @@ to be a parsing framework.  Instead, you will find a bare-bones, yet
 fully capable lex/yacc implementation written entirely in Python.
 
 <p>
-The rest of this document assumes that you are somewhat familar with
+The rest of this document assumes that you are somewhat familiar with
 parsing theory, syntax directed translation, and the use of compiler
 construction tools such as lex and yacc in other programming
-languages. If you are unfamilar with these topics, you will probably
+languages. If you are unfamiliar with these topics, you will probably
 want to consult an introductory text such as "Compilers: Principles,
 Techniques, and Tools", by Aho, Sethi, and Ullman.  O'Reilly's "Lex
 and Yacc" by John Levine may also be handy.  In fact, the O'Reilly book can be
@@ -392,7 +392,7 @@ tokens = (
 <H3><a name="ply_nn6"></a>4.3 Specification of tokens</H3>
 
 
-Each token is specified by writing a regular expression rule compatible with Python's <tt>re</tt> module.  Each of these rules are
+Each token is specified by writing a regular expression rule compatible with Python's <tt>re</tt> module.  Each of these rules
 are defined by  making declarations with a special prefix <tt>t_</tt> to indicate that it
 defines a token.  For simple tokens, the regular expression can
 be specified as strings such as this (note: Python raw strings are used since they are the
@@ -429,7 +429,7 @@ when it is done, the resulting token should be returned.  If no value is returne
 function, the token is simply discarded and the next token read.
 
 <p>
-Internally, <tt>lex.py</tt> uses the <tt>re</tt> module to do its patten matching.  Patterns are compiled
+Internally, <tt>lex.py</tt> uses the <tt>re</tt> module to do its pattern matching.  Patterns are compiled
 using the <tt>re.VERBOSE</tt> flag which can be used to help readability.  However, be aware that unescaped
 whitespace is ignored and comments are allowed in this mode.  If your pattern involves whitespace, make sure you
 use <tt>\s</tt>.  If you need to match the <tt>#</tt> character, use <tt>[#]</tt>.
@@ -642,7 +642,7 @@ In this case, we simply print the offending character and skip ahead one charact
 
 <p>
 To build the lexer, the function <tt>lex.lex()</tt> is used.  This function
-uses Python reflection (or introspection) to read the the regular expression rules
+uses Python reflection (or introspection) to read the regular expression rules
 out of the calling context and build the lexer. Once the lexer has been built, two methods can
 be used to control the lexer.
 
@@ -917,7 +917,7 @@ class MyLexer(object):
     def test(self,data):
         self.lexer.input(data)
         while True:
-             tok = lexer.token()
+             tok = self.lexer.token()
              if not tok: break
              print tok
 
@@ -1047,7 +1047,7 @@ Just to put your mind at some ease, all
 internal attributes of the lexer (with the exception of <tt>lineno</tt>) have names that are prefixed
 by <tt>lex</tt> (e.g., <tt>lexdata</tt>,<tt>lexpos</tt>, etc.).  Thus,
 it is perfectly safe to store attributes in the lexer that
-don't have names starting with that prefix or a name that conlicts with one of the
+don't have names starting with that prefix or a name that conflicts with one of the
 predefined methods (e.g., <tt>input()</tt>, <tt>token()</tt>, etc.).
 
 <p>
@@ -2075,7 +2075,7 @@ of UMINUS in the precedence specifier.
 
 <p>
 At first, the use of UMINUS in this example may appear very confusing.
-UMINUS is not an input token or a grammer rule.  Instead, you should
+UMINUS is not an input token or a grammar rule.  Instead, you should
 think of it as the name of a special marker in the precedence table.   When you use the <tt>%prec</tt> qualifier, you're simply
 telling yacc that you want the precedence of the expression to be the same as for this special marker instead of the usual precedence.
 
@@ -2138,7 +2138,7 @@ the rule <tt>assignment : ID EQUALS expression</tt>.
 
 <p>
 It should be noted that reduce/reduce conflicts are notoriously
-difficult to spot simply looking at the input grammer.  When a
+difficult to spot simply looking at the input grammar.  When a
 reduce/reduce conflict occurs, <tt>yacc()</tt> will try to help by
 printing a warning message such as this:
 
@@ -2621,7 +2621,7 @@ Keep in mind in that the above error handling functions,
 code so that you can refer to it during error handling.
 </p>
 
-<H4><a name="ply_nn35"></a>6.8.3 Signaling an error from a production</H4>
+<H4><a name="ply_nn35"></a>6.8.3 Signalling an error from a production</H4>
 
 
 If necessary, a production rule can manually force the parser to enter error recovery.  This
@@ -3186,7 +3186,7 @@ specified and works).
 
 <p>
 Debugging a compiler is typically not an easy task. PLY provides some
-advanced diagonistic capabilities through the use of Python's
+advanced diagostic capabilities through the use of Python's
 <tt>logging</tt> module.   The next two sections describe this:
 
 <H3><a name="ply_nn45"></a>9.1 Debugging the lex() and yacc() commands</H3>
