@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # ply: yacc.py
 #
-# Copyright (C) 2001-2011,
+# Copyright (C) 2001-2015,
 # David M. Beazley (Dabeaz LLC)
 # All rights reserved.
 #
@@ -2707,9 +2707,10 @@ del _lr_goto_items
             f.write("_lr_productions = [\n")
             for p in self.lr_productions:
                 if p.func:
-                    f.write("  (%r,%r,%d,%r,%r,%d),\n" % (p.str,p.name, p.len, p.func,p.file,p.line))
+                    f.write("  (%r,%r,%d,%r,%r,%d),\n" % (p.str, p.name, p.len, 
+                                                          p.func, os.path.basename(p.file), p.line))
                 else:
-                    f.write("  (%r,%r,%d,None,None,None),\n" % (str(p),p.name, p.len))
+                    f.write("  (%r,%r,%d,None,None,None),\n" % (str(p), p.name, p.len))
             f.write("]\n")
             f.close()
 
