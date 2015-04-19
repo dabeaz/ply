@@ -59,8 +59,8 @@
 # own risk!
 # ----------------------------------------------------------------------------
 
-__version__    = "3.5"
-__tabversion__ = "3.2"       # Table version
+__version__    = '3.5'
+__tabversion__ = '3.5'       # Table version
 
 #-----------------------------------------------------------------------------
 #                     === User configurable parameters ===
@@ -84,7 +84,7 @@ resultlimit = 40               # Size limit of results when running in debug mod
 
 pickle_protocol = 0            # Protocol to use when writing pickle files
 
-import re, types, sys, os.path, inspect
+import re, types, sys, os.path, inspect, base64
 
 # Compatibility function for python 2.6/3.0
 if sys.version_info[0] < 3:
@@ -280,7 +280,6 @@ class YaccProduction:
 
     def error(self):
        raise SyntaxError
-
 
 # -----------------------------------------------------------------------------
 #                               == LRParser ==
@@ -1881,16 +1880,16 @@ class LRTable(object):
         self.lr_productions = None
         self.lr_method = None
 
-    def read_table(self,module):
+    def read_table(self, outputdir, module):
         if isinstance(module,types.ModuleType):
             parsetab = module
         else:
-            if sys.version_info[0] < 3:
-                exec("import %s as parsetab" % module)
-            else:
-                env = { }
-                exec("import %s as parsetab" % module, env, env)
-                parsetab = env['parsetab']
+            oldpath = sys.path
+            sys.path = [outputdir]
+            try:
+                parsetab = __import__(module)
+            finally:
+                sys.path = oldpath
 
         if parsetab._tabversion != __tabversion__:
             raise VersionError("yacc table file version is out of date")
@@ -2742,7 +2741,7 @@ del _lr_goto_items
         outp = []
         for p in self.lr_productions:
             if p.func:
-                outp.append((p.str,p.name, p.len, p.func,p.file,p.line))
+                outp.append((p.str,p.name, p.len, p.func,os.path.basename(p.file),p.line))
             else:
                 outp.append((str(p),p.name,p.len,None,None,None))
         pickle.dump(outp,outf,pickle_protocol)
@@ -2875,7 +2874,11 @@ class ParserReflect(object):
                     sig.update(f[3].encode('latin-1'))
         except (TypeError,ValueError):
             pass
-        return sig.digest()
+
+        digest = base64.b16encode(sig.digest())
+        if sys.version_info[0] >= 3:
+            digest = digest.decode('latin-1')
+        return digest
 
     # -----------------------------------------------------------------------------
     # validate_modules()
@@ -3094,13 +3097,13 @@ class ParserReflect(object):
 # -----------------------------------------------------------------------------
 
 def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, start=None, 
-         check_recursion=1, optimize=0, write_tables=1, debugfile=debug_file,outputdir='',
-         debuglog=None, errorlog = None, picklefile=None):
+         check_recursion=True, optimize=False, write_tables=True, debugfile=debug_file, 
+         outputdir=None, debuglog=None, errorlog=None, picklefile=None):
 
-    global parse                 # Reference to the parsing method of the last built parser
+    # Reference to the parsing method of the last built parser
+    global parse
 
     # If pickling is enabled, table files are not created
-
     if picklefile:
         write_tables = 0
 
@@ -3111,8 +3114,16 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     if module:
         _items = [(k,getattr(module,k)) for k in dir(module)]
         pdict = dict(_items)
+        if outputdir is None:
+            srcfile = getattr(module, '__file__', None)
+            if srcfile is None:
+                if hasattr(module, '__module__'):
+                    srcfile = getattr(sys.modules[module.__module__], '__file__', '')
+            outputdir = os.path.dirname(srcfile)
     else:
         pdict = get_caller_module_dict(2)
+        if outputdir is None:
+            outputdir = os.path.dirname(pdict.get('__file__', ''))
 
     # Set start symbol if it's specified directly using an argument
     if start is not None:
@@ -3134,7 +3145,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
         if picklefile:
             read_signature = lr.read_pickle(picklefile)
         else:
-            read_signature = lr.read_table(tabmodule)
+            read_signature = lr.read_table(outputdir, tabmodule)
         if optimize or (read_signature == signature):
             try:
                 lr.bind_callables(pinfo.pdict)
@@ -3146,18 +3157,17 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
                 errorlog.warning("There was a problem loading the table file: %s", repr(e))
     except VersionError:
         e = sys.exc_info()
-        errorlog.warning(str(e))
+        errorlog.warning(str(e[1]))
     except Exception:
         pass
 
     if debuglog is None:
         if debug:
-            debuglog = PlyLogger(open(debugfile,"w"))
+            debuglog = PlyLogger(open(os.path.join(outputdir, debugfile),"w"))
         else:
             debuglog = NullLogger()
 
     debuglog.info("Created by PLY version %s (http://www.dabeaz.com/ply)", __version__)
-
 
     errors = 0
 

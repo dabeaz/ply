@@ -1,5 +1,24 @@
 Version 3.5
 ---------------------
+04/19/15: beazley
+          Import of the 'parsetab.py' file is now constrained to only consider the
+          directory specified by the outputdir argument to yacc().  If not supplied,
+          the import will only consider the directory in which the grammar is defined.
+          This should greatly reduce problems with the wrong parsetab.py file being
+          imported by mistake. For example, if it's found somewhere else on the path
+          by accident.
+
+04/19/15: beazley
+          Changed default output directory to be the same as that in which the
+          yacc grammar is defined.  If your grammar is in a file 'calc.py',
+          then the parsetab.py and parser.out files should be generated in the
+          same directory as that file.  
+
+04/19/15: beazley
+          Changed the parsetab.py file signature slightly so that the parsetab won't
+          regenerate if created on a different major version of Python (ie., a 
+          parsetab created on Python 2 will work with Python 3).
+
 04/16/15: beazley
           Fixed Issue #44 call_errorfunc() should return the result of errorfunc()
 

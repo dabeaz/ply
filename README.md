@@ -96,7 +96,7 @@ A simple example is found at the end of this document
 
 Requirements
 ============
-PLY requires the use of Python 2.2 or greater.  However, you should
+PLY requires the use of Python 2.6 or greater.  However, you should
 use the latest Python release if possible.  It should work on just
 about any platform.  PLY has been tested with both CPython and Jython.
 It also seems to work with IronPython.

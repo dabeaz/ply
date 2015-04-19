@@ -31,8 +31,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-__version__    = "3.5"
-__tabversion__ = "3.5"       # Version of table file used
+__version__    = '3.5'
+__tabversion__ = '3.5'       # Version of table file used
 
 import re, sys, types, copy, os, inspect
 
@@ -208,21 +208,38 @@ class Lexer:
              else:
                   taberr[key] = None
         tf.write("_lexstateerrorf = %s\n" % repr(taberr))
+
+        tabeof = { }
+        for key, ef in self.lexstateeoff.items():
+             if ef:
+                  tabeof[key] = ef.__name__
+             else:
+                  tabeof[key] = None
+        tf.write("_lexstateeoff = %s\n" % repr(tabeof))
         tf.close()
 
     # ------------------------------------------------------------
     # readtab() - Read lexer information from a tab file
     # ------------------------------------------------------------
-    def readtab(self,tabfile,fdict):
+    def readtab(self, outputdir, tabfile, fdict):
         if isinstance(tabfile,types.ModuleType):
             lextab = tabfile
         else:
+            basetabname = tabfile.split(".")[-1]
+            oldpath = sys.path
+            sys.path = [outputdir]
+            try:
+                lextab = __import__(basetabname)
+            finally:
+                sys.path = oldpath
+            '''
             if sys.version_info[0] < 3:
                 exec("import %s as lextab" % tabfile)
             else:
                 env = { }
                 exec("import %s as lextab" % tabfile, env,env)
                 lextab = env['lextab']
+                '''
 
         if getattr(lextab,"_tabversion","0.0") != __tabversion__:
             raise ImportError("Inconsistent PLY version")
@@ -245,6 +262,10 @@ class Lexer:
         self.lexstateerrorf = { }
         for key,ef in lextab._lexstateerrorf.items():
              self.lexstateerrorf[key] = fdict[ef]
+        self.lexstateeoff = { }
+        for key,ef in lextab._lexstateeoff.items():
+             self.lexstateeoff[key] = fdict[ef]
+
         self.begin('INITIAL')
 
     # ------------------------------------------------------------
@@ -885,13 +906,16 @@ class LexerReflect(object):
 #
 # Build all of the regular expression rules from definitions in the supplied module
 # -----------------------------------------------------------------------------
-def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,nowarn=0,outputdir="", debuglog=None, errorlog=None):
+
+def lex(module=None, object=None, debug=False, optimize=False, lextab="lextab",
+        reflags=0, nowarn=False, outputdir=None, debuglog=None, errorlog=None):
     global lexer
+
     ldict = None
     stateinfo  = { 'INITIAL' : 'inclusive'}
     lexobj = Lexer()
     lexobj.lexoptimize = optimize
-    global token,input
+    global token, input
 
     if errorlog is None:
         errorlog = PlyLogger(sys.stderr)
@@ -901,16 +925,25 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
             debuglog = PlyLogger(sys.stderr)
 
     # Get the module dictionary used for the lexer
-    if object: module = object
+    if object: 
+        module = object
 
     if module:
         _items = [(k,getattr(module,k)) for k in dir(module)]
         ldict = dict(_items)
+        if outputdir is None:
+            srcfile = getattr(module, '__file__', None)
+            if srcfile is None:
+                if hasattr(module, '__module__'):
+                    srcfile = getattr(sys.modules[module.__module__], '__file__', '')
+            outputdir = os.path.dirname(srcfile)
     else:
         ldict = get_caller_module_dict(2)
+        if outputdir is None:
+            outputdir = os.path.dirname(ldict.get('__file__', ''))
 
     # Collect parser information from the dictionary
-    linfo = LexerReflect(ldict,log=errorlog,reflags=reflags)
+    linfo = LexerReflect(ldict, log=errorlog, reflags=reflags)
     linfo.get_all()
     if not optimize:
         if linfo.validate_all():
@@ -918,7 +951,7 @@ def lex(module=None,object=None,debug=0,optimize=0,lextab="lextab",reflags=0,now
 
     if optimize and lextab:
         try:
-            lexobj.readtab(lextab,ldict)
+            lexobj.readtab(outputdir, lextab, ldict)
             token = lexobj.token
             input = lexobj.input
             lexer = lexobj
