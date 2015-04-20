@@ -1,5 +1,22 @@
 Version 3.5
 ---------------------
+04/20/15: beazley
+          Added actions to be defined to character literals (Issue #32).  For example:
+
+              literals = [ '{', '}' ]
+
+              def t_lbrace(t):
+                  r'\{'
+                  # Some action
+                  t.type = '{'
+                  return t
+
+              def t_rbrace(t):
+                  r'\}'
+                  # Some action
+                  t.type = '}'
+                  return t
+
 04/19/15: beazley
           Import of the 'parsetab.py' file is now constrained to only consider the
           directory specified by the outputdir argument to yacc().  If not supplied,
