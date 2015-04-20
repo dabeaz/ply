@@ -1092,7 +1092,7 @@ def runmain(lexer=None,data=None):
     else:
         _token = token
 
-    while 1:
+    while True:
         tok = _token()
         if not tok: break
         sys.stdout.write("(%s,%r,%d,%d)\n" % (tok.type, tok.value, tok.lineno,tok.lexpos))
