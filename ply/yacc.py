@@ -288,6 +288,7 @@ class LRParser:
         self.action = lrtab.lr_action
         self.goto = lrtab.lr_goto
         self.errorfunc = errorf
+        self.defaulted_states = { }
 
     def errok(self):
         self.errorok = True
@@ -299,6 +300,20 @@ class LRParser:
         sym.type = '$end'
         self.symstack.append(sym)
         self.statestack.append(0)
+
+    # Defaulted state support (Experimental)
+    # This method identifies parser states where there is only one possible reduction action.
+    # For such states, the parser can make a choose to make a rule reduction without consuming
+    # the next look-ahead token.  This delayed invocation of the tokenizer can be useful in
+    # certain kinds of advanced parsing situations where the lexer and parser interact with
+    # each other or change states (i.e., manipulation of scope, lexer states, etc.).
+    #
+    # See:  http://www.gnu.org/software/bison/manual/html_node/Default-Reductions.html#Default-Reductions
+    def use_defaulted_states(self):
+        for state, actions in self.action.items():
+            rules = list(actions.values())
+            if rules and rules[0] < 0 and all(rules[0] == rule for rule in rules):
+                self.defaulted_states[state] = rules[0]
 
     def parse(self, input=None, lexer=None, debug=False, tracking=False, tokenfunc=None):
         if debug or yaccdevel:
@@ -327,13 +342,14 @@ class LRParser:
 
     def parsedebug(self, input=None, lexer=None, debug=False, tracking=False, tokenfunc=None):
         #--! parsedebug-start
-        lookahead = None                 # Current lookahead symbol
-        lookaheadstack = []             # Stack of lookahead symbols
-        actions = self.action            # Local reference to action table (to avoid lookup on self.)
-        goto    = self.goto              # Local reference to goto table (to avoid lookup on self.)
-        prod    = self.productions       # Local reference to production list (to avoid lookup on self.)
-        pslice  = YaccProduction(None)   # Production object passed to grammar rules
-        errorcount = 0                   # Used during error recovery
+        lookahead = None                         # Current lookahead symbol
+        lookaheadstack = []                      # Stack of lookahead symbols
+        actions = self.action                    # Local reference to action table (to avoid lookup on self.)
+        goto    = self.goto                      # Local reference to goto table (to avoid lookup on self.)
+        prod    = self.productions               # Local reference to production list (to avoid lookup on self.)
+        defaulted_states = self.defaulted_states # Local reference to defaulted states
+        pslice  = YaccProduction(None)           # Production object passed to grammar rules
+        errorcount = 0                           # Used during error recovery
 
         #--! DEBUG
         debug.info('PLY: PARSE DEBUG START')
@@ -388,23 +404,29 @@ class LRParser:
             debug.debug('State  : %s', state)
             #--! DEBUG
 
-            if not lookahead:
-                if not lookaheadstack:
-                    lookahead = get_token()     # Get the next token
-                else:
-                    lookahead = lookaheadstack.pop()
+            if state not in defaulted_states:
                 if not lookahead:
-                    lookahead = YaccSymbol()
-                    lookahead.type = '$end'
+                    if not lookaheadstack:
+                        lookahead = get_token()     # Get the next token
+                    else:
+                        lookahead = lookaheadstack.pop()
+                    if not lookahead:
+                        lookahead = YaccSymbol()
+                        lookahead.type = '$end'
+
+                # Check the action table
+                ltype = lookahead.type
+                t = actions[state].get(ltype)
+            else:
+                t = defaulted_states[state]
+                #--! DEBUG
+                debug.debug('Defaulted state %s: Reduce using %d', state, -t)
+                #--! DEBUG
 
             #--! DEBUG
             debug.debug('Stack  : %s',
                         ('%s . %s' % (' '.join([xx.type for xx in symstack][1:]), str(lookahead))).lstrip())
             #--! DEBUG
-
-            # Check the action table
-            ltype = lookahead.type
-            t = actions[state].get(ltype)
 
             if t is not None:
                 if t > 0:
@@ -437,10 +459,12 @@ class LRParser:
 
                     #--! DEBUG
                     if plen:
-                        debug.info('Action : Reduce rule [%s] with %s and goto state %d', p.str, 
-                                   '['+','.join([format_stack_entry(_v.value) for _v in symstack[-plen:]])+']', -t)
+                        debug.info('Action : Reduce rule [%s] with %s and goto state %d', p.str,
+                                   '['+','.join([format_stack_entry(_v.value) for _v in symstack[-plen:]])+']',
+                                   goto[statestack[-1-plen]][pname])
                     else:
-                        debug.info('Action : Reduce rule [%s] with %s and goto state %d', p.str, [], -t)
+                        debug.info('Action : Reduce rule [%s] with %s and goto state %d', p.str, [],
+                                   goto[statestack[-1]][pname])
 
                     #--! DEBUG
 
@@ -652,13 +676,14 @@ class LRParser:
 
     def parseopt(self, input=None, lexer=None, debug=False, tracking=False, tokenfunc=None):
         #--! parseopt-start
-        lookahead = None                 # Current lookahead symbol
-        lookaheadstack = []             # Stack of lookahead symbols
-        actions = self.action            # Local reference to action table (to avoid lookup on self.)
-        goto    = self.goto              # Local reference to goto table (to avoid lookup on self.)
-        prod    = self.productions       # Local reference to production list (to avoid lookup on self.)
-        pslice  = YaccProduction(None)   # Production object passed to grammar rules
-        errorcount = 0                   # Used during error recovery
+        lookahead = None                         # Current lookahead symbol
+        lookaheadstack = []                      # Stack of lookahead symbols
+        actions = self.action                    # Local reference to action table (to avoid lookup on self.)
+        goto    = self.goto                      # Local reference to goto table (to avoid lookup on self.)
+        prod    = self.productions               # Local reference to production list (to avoid lookup on self.)
+        defaulted_states = self.defaulted_states # Local reference to defaulted states
+        pslice  = YaccProduction(None)           # Production object passed to grammar rules
+        errorcount = 0                           # Used during error recovery
 
 
         # If no lexer was given, we will try to use the lex module
@@ -706,19 +731,22 @@ class LRParser:
             # the next token off of the lookaheadstack or from the lexer
 
 
-            if not lookahead:
-                if not lookaheadstack:
-                    lookahead = get_token()     # Get the next token
-                else:
-                    lookahead = lookaheadstack.pop()
+            if state not in defaulted_states:
                 if not lookahead:
-                    lookahead = YaccSymbol()
-                    lookahead.type = '$end'
+                    if not lookaheadstack:
+                        lookahead = get_token()     # Get the next token
+                    else:
+                        lookahead = lookaheadstack.pop()
+                    if not lookahead:
+                        lookahead = YaccSymbol()
+                        lookahead.type = '$end'
 
+                # Check the action table
+                ltype = lookahead.type
+                t = actions[state].get(ltype)
+            else:
+                t = defaulted_states[state]
 
-            # Check the action table
-            ltype = lookahead.type
-            t = actions[state].get(ltype)
 
             if t is not None:
                 if t > 0:
@@ -941,13 +969,14 @@ class LRParser:
 
     def parseopt_notrack(self, input=None, lexer=None, debug=False, tracking=False, tokenfunc=None):
         #--! parseopt-notrack-start
-        lookahead = None                 # Current lookahead symbol
-        lookaheadstack = []             # Stack of lookahead symbols
-        actions = self.action            # Local reference to action table (to avoid lookup on self.)
-        goto    = self.goto              # Local reference to goto table (to avoid lookup on self.)
-        prod    = self.productions       # Local reference to production list (to avoid lookup on self.)
-        pslice  = YaccProduction(None)   # Production object passed to grammar rules
-        errorcount = 0                   # Used during error recovery
+        lookahead = None                         # Current lookahead symbol
+        lookaheadstack = []                      # Stack of lookahead symbols
+        actions = self.action                    # Local reference to action table (to avoid lookup on self.)
+        goto    = self.goto                      # Local reference to goto table (to avoid lookup on self.)
+        prod    = self.productions               # Local reference to production list (to avoid lookup on self.)
+        defaulted_states = self.defaulted_states # Local reference to defaulted states
+        pslice  = YaccProduction(None)           # Production object passed to grammar rules
+        errorcount = 0                           # Used during error recovery
 
 
         # If no lexer was given, we will try to use the lex module
@@ -995,19 +1024,22 @@ class LRParser:
             # the next token off of the lookaheadstack or from the lexer
 
 
-            if not lookahead:
-                if not lookaheadstack:
-                    lookahead = get_token()     # Get the next token
-                else:
-                    lookahead = lookaheadstack.pop()
+            if state not in defaulted_states:
                 if not lookahead:
-                    lookahead = YaccSymbol()
-                    lookahead.type = '$end'
+                    if not lookaheadstack:
+                        lookahead = get_token()     # Get the next token
+                    else:
+                        lookahead = lookaheadstack.pop()
+                    if not lookahead:
+                        lookahead = YaccSymbol()
+                        lookahead.type = '$end'
 
+                # Check the action table
+                ltype = lookahead.type
+                t = actions[state].get(ltype)
+            else:
+                t = defaulted_states[state]
 
-            # Check the action table
-            ltype = lookahead.type
-            t = actions[state].get(ltype)
 
             if t is not None:
                 if t > 0:
@@ -1495,7 +1527,7 @@ class Grammar(object):
                 try:
                     c = eval(s)
                     if (len(c) > 1):
-                        raise GrammarError('%s:%d: Literal token %s in rule %r may only be a single character' % 
+                        raise GrammarError('%s:%d: Literal token %s in rule %r may only be a single character' %
                                            (file, line, s, prodname))
                     if c not in self.Terminals:
                         self.Terminals[c] = []
@@ -1511,7 +1543,7 @@ class Grammar(object):
             if syms[-1] == '%prec':
                 raise GrammarError('%s:%d: Syntax error. Nothing follows %%prec' % (file, line))
             if syms[-2] != '%prec':
-                raise GrammarError('%s:%d: Syntax error. %%prec can only appear at the end of a grammar rule' % 
+                raise GrammarError('%s:%d: Syntax error. %%prec can only appear at the end of a grammar rule' %
                                    (file, line))
             precname = syms[-1]
             prodprec = self.Precedence.get(precname)
@@ -1961,6 +1993,7 @@ class LRTable(object):
     def bind_callables(self, pdict):
         for p in self.lr_productions:
             p.bind(pdict)
+
 
 # -----------------------------------------------------------------------------
 #                           === LR Generator ===
@@ -2550,7 +2583,7 @@ class LRGeneratedTable(LRTable):
                                         else:
                                             chosenp, rejectp = oldp, pp
                                         self.rr_conflicts.append((st, chosenp, rejectp))
-                                        log.info('  ! reduce/reduce conflict for %s resolved using rule %d (%s)', 
+                                        log.info('  ! reduce/reduce conflict for %s resolved using rule %d (%s)',
                                                  a, st_actionp[a].number, st_actionp[a])
                                     else:
                                         raise LALRError('Unknown conflict in state %d' % st)
@@ -2943,7 +2976,7 @@ class ParserReflect(object):
                         counthash[name] = linen
                     else:
                         filename = inspect.getsourcefile(module)
-                        self.log.warning('%s:%d: Function %s redefined. Previously defined on line %d', 
+                        self.log.warning('%s:%d: Function %s redefined. Previously defined on line %d',
                                          filename, linen, name, prev)
 
     # Get the start symbol
@@ -3089,7 +3122,7 @@ class ParserReflect(object):
                 self.log.error('%s:%d: Rule %r requires an argument', file, line, func.__name__)
                 self.error = True
             elif not func.__doc__:
-                self.log.warning('%s:%d: No documentation string specified in function %r (ignored)', 
+                self.log.warning('%s:%d: No documentation string specified in function %r (ignored)',
                                  file, line, func.__name__)
             else:
                 try:
