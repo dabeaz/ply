@@ -437,7 +437,8 @@ class LRParser:
 
                     #--! DEBUG
                     if plen:
-                        debug.info('Action : Reduce rule [%s] with %s and goto state %d', p.str, '['+','.join([format_stack_entry(_v.value) for _v in symstack[-plen:]])+']', -t)
+                        debug.info('Action : Reduce rule [%s] with %s and goto state %d', p.str, 
+                                   '['+','.join([format_stack_entry(_v.value) for _v in symstack[-plen:]])+']', -t)
                     else:
                         debug.info('Action : Reduce rule [%s] with %s and goto state %d', p.str, [], -t)
 
@@ -1494,7 +1495,8 @@ class Grammar(object):
                 try:
                     c = eval(s)
                     if (len(c) > 1):
-                        raise GrammarError('%s:%d: Literal token %s in rule %r may only be a single character' % (file, line, s, prodname))
+                        raise GrammarError('%s:%d: Literal token %s in rule %r may only be a single character' % 
+                                           (file, line, s, prodname))
                     if c not in self.Terminals:
                         self.Terminals[c] = []
                     syms[n] = c
@@ -1509,7 +1511,8 @@ class Grammar(object):
             if syms[-1] == '%prec':
                 raise GrammarError('%s:%d: Syntax error. Nothing follows %%prec' % (file, line))
             if syms[-2] != '%prec':
-                raise GrammarError('%s:%d: Syntax error. %%prec can only appear at the end of a grammar rule' % (file, line))
+                raise GrammarError('%s:%d: Syntax error. %%prec can only appear at the end of a grammar rule' % 
+                                   (file, line))
             precname = syms[-1]
             prodprec = self.Precedence.get(precname)
             if not prodprec:
@@ -1823,8 +1826,7 @@ class Grammar(object):
             didadd = False
             for p in self.Productions[1:]:
                 # Here is the production set
-                for i in range(len(p.prod)):
-                    B = p.prod[i]
+                for i, B in enumerate(p.prod):
                     if B in self.Nonterminals:
                         # Okay. We got a non-terminal in a production
                         fst = self._first(p.prod[i+1:])
@@ -2214,14 +2216,13 @@ class LRGeneratedTable(LRTable):
 
     def find_nonterminal_transitions(self, C):
         trans = []
-        for state in range(len(C)):
-            for p in C[state]:
+        for stateno, state in enumerate(C):
+            for p in state:
                 if p.lr_index < p.len - 1:
-                    t = (state, p.prod[p.lr_index+1])
+                    t = (stateno, p.prod[p.lr_index+1])
                     if t[1] in self.grammar.Nonterminals:
                         if t not in trans:
                             trans.append(t)
-            state = state + 1
         return trans
 
     # -----------------------------------------------------------------------------
@@ -2549,7 +2550,8 @@ class LRGeneratedTable(LRTable):
                                         else:
                                             chosenp, rejectp = oldp, pp
                                         self.rr_conflicts.append((st, chosenp, rejectp))
-                                        log.info('  ! reduce/reduce conflict for %s resolved using rule %d (%s)', a, st_actionp[a].number, st_actionp[a])
+                                        log.info('  ! reduce/reduce conflict for %s resolved using rule %d (%s)', 
+                                                 a, st_actionp[a].number, st_actionp[a])
                                     else:
                                         raise LALRError('Unknown conflict in state %d' % st)
                                 else:
@@ -2860,7 +2862,7 @@ class ParserReflect(object):
         self.start      = None
         self.error_func = None
         self.tokens     = None
-        self.modules    = {}
+        self.modules    = set()
         self.grammar    = []
         self.error      = False
 
@@ -2927,7 +2929,7 @@ class ParserReflect(object):
         # Match def p_funcname(
         fre = re.compile(r'\s*def\s+(p_[a-zA-Z_0-9]*)\(')
 
-        for module in self.modules.keys():
+        for module in self.modules:
             lines, linen = inspect.getsourcelines(module)
 
             counthash = {}
@@ -2941,7 +2943,8 @@ class ParserReflect(object):
                         counthash[name] = linen
                     else:
                         filename = inspect.getsourcefile(module)
-                        self.log.warning('%s:%d: Function %s redefined. Previously defined on line %d', filename, linen, name, prev)
+                        self.log.warning('%s:%d: Function %s redefined. Previously defined on line %d', 
+                                         filename, linen, name, prev)
 
     # Get the start symbol
     def get_start(self):
@@ -2972,7 +2975,7 @@ class ParserReflect(object):
             eline = self.error_func.__code__.co_firstlineno
             efile = self.error_func.__code__.co_filename
             module = inspect.getmodule(self.error_func)
-            self.modules[module] = 1
+            self.modules.add(module)
 
             argcount = self.error_func.__code__.co_argcount - ismethod
             if argcount != 1:
@@ -3086,7 +3089,8 @@ class ParserReflect(object):
                 self.log.error('%s:%d: Rule %r requires an argument', file, line, func.__name__)
                 self.error = True
             elif not func.__doc__:
-                self.log.warning('%s:%d: No documentation string specified in function %r (ignored)', file, line, func.__name__)
+                self.log.warning('%s:%d: No documentation string specified in function %r (ignored)', 
+                                 file, line, func.__name__)
             else:
                 try:
                     parsed_g = parse_grammar(doc, file, line)
@@ -3098,7 +3102,7 @@ class ParserReflect(object):
 
                 # Looks like a valid grammar rule
                 # Mark the file in which defined.
-                self.modules[module] = 1
+                self.modules.add(module)
 
         # Secondary validation step that looks for p_ definitions that are not functions
         # or functions that look like they might be grammar rules.

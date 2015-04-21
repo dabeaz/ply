@@ -184,32 +184,25 @@ class Lexer:
             tf.write('_lexliterals  = %s\n' % repr(self.lexliterals))
             tf.write('_lexstateinfo = %s\n' % repr(self.lexstateinfo))
 
+            # Rewrite the lexstatere table, replacing function objects with function names 
             tabre = {}
-            # Collect all functions in the initial state
-            initial = self.lexstatere['INITIAL']
-            initialfuncs = []
-            for part in initial:
-                for f in part[1]:
-                    if f and f[0]:
-                        initialfuncs.append(f)
-
-            for key, lre in self.lexstatere.items():
+            for statename, lre in self.lexstatere.items():
                 titem = []
-                for i in range(len(lre)):
-                    titem.append((self.lexstateretext[key][i], _funcs_to_names(lre[i][1], self.lexstaterenames[key][i])))
-                tabre[key] = titem
+                for (pat, func), retext, renames in zip(lre, self.lexstateretext[statename], self.lexstaterenames[statename]):
+                    titem.append((retext, _funcs_to_names(func, renames)))
+                tabre[statename] = titem
 
             tf.write('_lexstatere   = %s\n' % repr(tabre))
             tf.write('_lexstateignore = %s\n' % repr(self.lexstateignore))
 
             taberr = {}
-            for key, ef in self.lexstateerrorf.items():
-                taberr[key] = ef.__name__ if ef else None
+            for statename, ef in self.lexstateerrorf.items():
+                taberr[statename] = ef.__name__ if ef else None
             tf.write('_lexstateerrorf = %s\n' % repr(taberr))
 
             tabeof = {}
-            for key, ef in self.lexstateeoff.items():
-                tabeof[key] = ef.__name__ if ef else None
+            for statename, ef in self.lexstateeoff.items():
+                tabeof[statename] = ef.__name__ if ef else None
             tf.write('_lexstateeoff = %s\n' % repr(tabeof))
 
     # ------------------------------------------------------------
@@ -238,22 +231,22 @@ class Lexer:
         self.lexstateignore = lextab._lexstateignore
         self.lexstatere     = {}
         self.lexstateretext = {}
-        for key, lre in lextab._lexstatere.items():
+        for statename, lre in lextab._lexstatere.items():
             titem = []
             txtitem = []
-            for i in range(len(lre)):
-                titem.append((re.compile(lre[i][0], lextab._lexreflags | re.VERBOSE), _names_to_funcs(lre[i][1], fdict)))
-                txtitem.append(lre[i][0])
-            self.lexstatere[key] = titem
-            self.lexstateretext[key] = txtitem
+            for pat, func_name in lre:
+                titem.append((re.compile(pat, lextab._lexreflags | re.VERBOSE), _names_to_funcs(func_name, fdict)))
+
+            self.lexstatere[statename] = titem
+            self.lexstateretext[statename] = txtitem
 
         self.lexstateerrorf = {}
-        for key, ef in lextab._lexstateerrorf.items():
-            self.lexstateerrorf[key] = fdict[ef]
+        for statename, ef in lextab._lexstateerrorf.items():
+            self.lexstateerrorf[statename] = fdict[ef]
 
         self.lexstateeoff = {}
-        for key, ef in lextab._lexstateeoff.items():
-            self.lexstateeoff[key] = fdict[ef]
+        for statename, ef in lextab._lexstateeoff.items():
+            self.lexstateeoff[statename] = fdict[ef]
 
         self.begin('INITIAL')
 
@@ -545,9 +538,10 @@ def _form_master_re(relist, reflags, ldict, toknames):
 def _statetoken(s, names):
     nonstate = 1
     parts = s.split('_')
-    for i in range(1, len(parts)):
-        if not parts[i] in names and parts[i] != 'ANY':
+    for i, part in enumerate(parts[1:], 1):
+        if part not in names and part != 'ANY':
             break
+    
     if i > 1:
         states = tuple(parts[1:i])
     else:
@@ -573,7 +567,7 @@ class LexerReflect(object):
         self.tokens     = []
         self.reflags    = reflags
         self.stateinfo  = {'INITIAL': 'inclusive'}
-        self.modules    = {}
+        self.modules    = set()
         self.error      = False
         self.log        = PlyLogger(sys.stderr) if log is None else log
 
@@ -745,7 +739,7 @@ class LexerReflect(object):
                 line = f.__code__.co_firstlineno
                 file = f.__code__.co_filename
                 module = inspect.getmodule(f)
-                self.modules[module] = 1
+                self.modules.add(module)
 
                 tokname = self.toknames[fname]
                 if isinstance(f, types.MethodType):
@@ -814,7 +808,7 @@ class LexerReflect(object):
                 line = f.__code__.co_firstlineno
                 file = f.__code__.co_filename
                 module = inspect.getmodule(f)
-                self.modules[module] = 1
+                self.modules.add(module)
 
                 if isinstance(f, types.MethodType):
                     reqargs = 2
