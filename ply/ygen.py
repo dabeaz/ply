@@ -59,6 +59,7 @@ def main():
     lines[parseopt_notrack_start:parseopt_notrack_end] = parseopt_notrack_lines
     lines[parseopt_start:parseopt_end] = parseopt_lines
 
+    lines = [line.rstrip()+'\n' for line in lines]
     with open(os.path.join(dirname, 'yacc.py'), 'w') as f:
         f.writelines(lines)
 
