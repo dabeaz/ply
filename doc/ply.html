@@ -32,6 +32,7 @@ dave@dabeaz.com<br>
 <li><a href="#ply_nn10">Ignored characters</a>
 <li><a href="#ply_nn11">Literal characters</a>
 <li><a href="#ply_nn12">Error handling</a>
+<li><a href="#ply_nn14">EOF Handling</a>
 <li><a href="#ply_nn13">Building and using the lexer</a>
 <li><a href="#ply_nn14">The @TOKEN decorator</a>
 <li><a href="#ply_nn15">Optimized mode</a>
@@ -58,6 +59,7 @@ dave@dabeaz.com<br>
 <li><a href="#ply_nn30">Recovery and resynchronization with error rules</a>
 <li><a href="#ply_nn31">Panic mode recovery</a>
 <li><a href="#ply_nn35">Signalling an error from a production</a>
+<li><a href="#ply_nn38">When Do Syntax Errors Get Reported</a>
 <li><a href="#ply_nn32">General comments on error handling</a>
 </ul>
 <li><a href="#ply_nn33">Line Number and Position Tracking</a>
@@ -79,6 +81,7 @@ dave@dabeaz.com<br>
 
 
 
+
 <H2><a name="ply_nn1"></a>1. Preface and Requirements</H2>
 
 
@@ -91,7 +94,7 @@ into a big development project with PLY.
 
 <p>
 PLY-3.5 is compatible with both Python 2 and Python 3.  If you are using
-Python 2, you should use Python 2.6 or newer.
+Python 2, you have to use Python 2.6 or newer.
 </p>
 
 <H2><a name="ply_nn1"></a>2. Introduction</H2>
@@ -107,19 +110,7 @@ relatively straightforward to use PLY.
 
 <p>
 Early versions of PLY were developed to support an Introduction to
-Compilers Course I taught in 2001 at the University of Chicago.  In this course,
-students built a fully functional compiler for a simple Pascal-like
-language.  Their compiler, implemented entirely in Python, had to
-include lexical analysis, parsing, type checking, type inference,
-nested scoping, and code generation for the SPARC processor.
-Approximately 30 different compiler implementations were completed in
-this course.  Most of PLY's interface and operation has been influenced by common
-usability problems encountered by students.   Since 2001, PLY has
-continued to be improved as feedback has been received from users.
-PLY-3.0 represents a major refactoring of the original implementation
-with an eye towards future enhancements.
-
-<p>
+Compilers Course I taught in 2001 at the University of Chicago. 
 Since PLY was primarily developed as an instructional tool, you will
 find it to be fairly picky about token and grammar rule
 specification. In part, this
@@ -145,13 +136,14 @@ used as a reference for PLY as the concepts are virtually identical.
 <H2><a name="ply_nn2"></a>3. PLY Overview</H2>
 
 
+<p>
 PLY consists of two separate modules; <tt>lex.py</tt> and
 <tt>yacc.py</tt>, both of which are found in a Python package
 called <tt>ply</tt>. The <tt>lex.py</tt> module is used to break input text into a
 collection of tokens specified by a collection of regular expression
 rules.  <tt>yacc.py</tt> is used to recognize language syntax that has
-been specified in the form of a context free grammar. <tt>yacc.py</tt> uses LR parsing and generates its parsing tables
-using either the LALR(1) (the default) or SLR table generation algorithms.
+been specified in the form of a context free grammar.
+</p>
 
 <p>
 The two tools are meant to work together.  Specifically,
@@ -167,7 +159,7 @@ simple one-pass compilers.
 Like its Unix counterpart, <tt>yacc.py</tt> provides most of the
 features you expect including extensive error checking, grammar
 validation, support for empty productions, error tokens, and ambiguity
-resolution via precedence rules.  In fact, everything that is possible in traditional yacc 
+resolution via precedence rules.  In fact, almost everything that is possible in traditional yacc 
 should be supported in PLY.
 
 <p>
@@ -278,7 +270,7 @@ t_ignore  = ' \t'
 
 # Error handling rule
 def t_error(t):
-    print "Illegal character '%s'" % t.value[0]
+    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 # Build the lexer
@@ -306,8 +298,9 @@ lexer.input(data)
 # Tokenize
 while True:
     tok = lexer.token()
-    if not tok: break      # No more input
-    print tok
+    if not tok: 
+        break      # No more input
+    print(tok)
 </pre>
 </blockquote>
 
@@ -334,7 +327,7 @@ Lexers also support the iteration protocol.    So, you can write the above loop 
 <blockquote>
 <pre>
 for tok in lexer:
-    print tok
+    print(tok)
 </pre>
 </blockquote>
 
@@ -349,8 +342,9 @@ accessing these attributes:
 # Tokenize
 while True:
     tok = lexer.token()
-    if not tok: break      # No more input
-    print tok.type, tok.value, tok.lineno, tok.lexpos
+    if not tok: 
+        break      # No more input
+    print(tok.type, tok.value, tok.lineno, tok.lexpos)
 </pre>
 </blockquote>
 
@@ -363,10 +357,12 @@ token relative to the start of the input text.
 <H3><a name="ply_nn5"></a>4.2 The tokens list</H3>
 
 
+<p>
 All lexers must provide a list <tt>tokens</tt> that defines all of the possible token
 names that can be produced by the lexer.  This list is always required
 and is used to perform a variety of validation checks.  The tokens list is also used by the
 <tt>yacc.py</tt> module to identify terminals.
+</p>
 
 <p>
 In the example, the following code specified the token names:
@@ -585,6 +581,15 @@ Although it is possible to define a regular expression rule for whitespace in a 
 similar to <tt>t_newline()</tt>, the use of <tt>t_ignore</tt> provides substantially better
 lexing performance because it is handled as a special case and is checked in a much
 more efficient manner than the normal regular expression rules.
+</p>
+
+<p>
+The characters given in <tt>t_ignore</tt> are not ignored when such characters are part of
+other regular expression patterns.  For example, if you had a rule to capture quoted text,
+that pattern can include the ignored characters (which will be captured in the normal way).  The
+main purpose of <tt>t_ignore</tt> is to ignore whitespace and other padding between the
+tokens that you actually want to parse.
+</p>
 
 <H3><a name="ply_nn11"></a>4.8 Literal characters</H3>
 
@@ -609,14 +614,38 @@ literals = "+-*/"
 A literal character is simply a single character that is returned "as is" when encountered by the lexer.  Literals are checked
 after all of the defined regular expression rules.  Thus, if a rule starts with one of the literal characters, it will always 
 take precedence.
+
 <p>
 When a literal token is returned, both its <tt>type</tt> and <tt>value</tt> attributes are set to the character itself. For example, <tt>'+'</tt>.
+</p>
+
+<p>
+It's possible to write token functions that perform additional actions
+when literals are matched.  However, you'll need to set the token type
+appropriately. For example:
+</p>
+
+<blockquote>
+<pre>
+literals = [ '{', '}' ]
+
+def t_lbrace(t):
+    r'\{'
+    t.type = '{'      # Set token type to the expected literal
+    return t
+
+def t_rbrace(t):
+    r'\}'
+    t.type = '}'      # Set token type to the expected literal
+    return t
+</pre>
+</blockquote>
 
 <H3><a name="ply_nn12"></a>4.9 Error handling</H3>
 
 
 <p>
-Finally, the <tt>t_error()</tt>
+The <tt>t_error()</tt>
 function is used to handle lexing errors that occur when illegal
 characters are detected.  In this case, the <tt>t.value</tt> attribute contains the
 rest of the input string that has not been tokenized.  In the example, the error function
@@ -626,49 +655,67 @@ was defined as follows:
 <pre>
 # Error handling rule
 def t_error(t):
-    print "Illegal character '%s'" % t.value[0]
+    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 </pre>
 </blockquote>
 
 In this case, we simply print the offending character and skip ahead one character by calling <tt>t.lexer.skip(1)</tt>.
 
-<H3><a name="ply_nn13"></a>4.10 Building and using the lexer</H3>
+<H3><a name="ply_nn14"></a>4.10 EOF Handling</H3>
 
 
 <p>
-To build the lexer, the function <tt>lex.lex()</tt> is used.  This function
+The <tt>t_eof()</tt> function is used to handle an end-of-file (EOF) condition in the input.   As input, it
+receives a token type <tt>'eof'</tt> with the <tt>lineno</tt> and <tt>lexpos</tt> attributes set appropriately.
+The main use of this function is provide more input to the lexer so that it can continue to parse.  Here is an
+example of how this works:
+</p>
+
+<blockquote>
+<pre>
+# EOF handling rule
+def t_eof(t):
+    # Get more input (Example)
+    more = raw_input('... ')
+    if more:
+        self.lexer.input(more)
+        return self.lexer.token()
+    return None
+</pre>
+</blockquote>
+
+<p>
+The EOF function should return the next available token (by calling <tt>self.lexer.token())</tt> or <tt>None</tt> to
+indicate no more data.   Be aware that setting more input with the <tt>self.lexer.input()</tt> method does
+NOT reset the lexer state or the <tt>lineno</tt> attribute used for position tracking.   The <tt>lexpos</tt> 
+attribute is reset so be aware of that if you're using it in error reporting.
+</p>
+
+<H3><a name="ply_nn13"></a>4.11 Building and using the lexer</H3>
+
+
+<p>
+To build the lexer, the function <tt>lex.lex()</tt> is used.  For example:</p>
+
+<blockquote>
+<pre>
+lexer = lex.lex()
+</pre>
+</blockquote>
+
+<p>This function
 uses Python reflection (or introspection) to read the regular expression rules
 out of the calling context and build the lexer. Once the lexer has been built, two methods can
 be used to control the lexer.
-
+</p>
 <ul>
 <li><tt>lexer.input(data)</tt>.   Reset the lexer and store a new input string.
 <li><tt>lexer.token()</tt>.  Return the next token.  Returns a special <tt>LexToken</tt> instance on success or
 None if the end of the input text has been reached.
 </ul>
 
-The preferred way to use PLY is to invoke the above methods directly on the lexer object returned by the
-<tt>lex()</tt> function.   The legacy interface to PLY involves module-level functions <tt>lex.input()</tt> and <tt>lex.token()</tt>.
-For example:
-
-<blockquote>
-<pre>
-lex.lex()
-lex.input(sometext)
-while 1:
-    tok = lex.token()
-    if not tok: break
-    print tok
-</pre>
-</blockquote>
-
-<p>
-In this example, the module-level functions <tt>lex.input()</tt> and <tt>lex.token()</tt> are bound to the <tt>input()</tt> 
-and <tt>token()</tt> methods of the last lexer created by the lex module.    This interface may go away at some point so
-it's probably best not to use it.
-
-<H3><a name="ply_nn14"></a>4.11 The @TOKEN decorator</H3>
+<H3><a name="ply_nn14"></a>4.12 The @TOKEN decorator</H3>
 
 
 In some applications, you may want to define build tokens from as a series of
@@ -700,22 +747,11 @@ def t_ID(t):
 </pre>
 </blockquote>
 
-This will attach <tt>identifier</tt> to the docstring for <tt>t_ID()</tt> allowing <tt>lex.py</tt> to work normally.  An alternative
-approach this problem is to set the docstring directly like this:
+<p>
+This will attach <tt>identifier</tt> to the docstring for <tt>t_ID()</tt> allowing <tt>lex.py</tt> to work normally. 
+</p>
 
-<blockquote>
-<pre>
-def t_ID(t):
-    ...
-
-t_ID.__doc__ = identifier
-</pre>
-</blockquote>
-
-<b>NOTE:</b> Use of <tt>@TOKEN</tt> requires Python-2.4 or newer.  If you're concerned about backwards compatibility with older
-versions of Python, use the alternative approach of setting the docstring directly.
-
-<H3><a name="ply_nn15"></a>4.12 Optimized mode</H3>
+<H3><a name="ply_nn15"></a>4.13 Optimized mode</H3>
 
 
 For improved performance, it may be desirable to use Python's
@@ -732,8 +768,9 @@ lexer = lex.lex(optimize=1)
 </blockquote>
 
 Next, run Python in its normal operating mode.  When you do
-this, <tt>lex.py</tt> will write a file called <tt>lextab.py</tt> to
-the current directory.  This file contains all of the regular
+this, <tt>lex.py</tt> will write a file called <tt>lextab.py</tt> in
+the same directory as the module containing the lexer specification.
+This file contains all of the regular
 expression rules and tables used during lexing.  On subsequent
 executions,
 <tt>lextab.py</tt> will simply be imported to build the lexer.  This
@@ -742,6 +779,7 @@ works in Python's optimized mode.
 
 <p>
 To change the name of the lexer-generated file, use the <tt>lextab</tt> keyword argument.  For example:
+</p>
 
 <blockquote>
 <pre>
@@ -749,10 +787,19 @@ lexer = lex.lex(optimize=1,lextab="footab")
 </pre>
 </blockquote>
 
+<p>To change the output directory of the file, use the <tt>outputdir</tt> keyword argument. For example:
+</p>
+
+<blockquote>
+<pre>
+lexer = lex.lex(optimize=1, outputdir="/some/directory")
+</pre>
+</blockquote>
+
 When running in optimized mode, it is important to note that lex disables most error checking.  Thus, this is really only recommended
 if you're sure everything is working correctly and you're ready to start releasing production code.
 
-<H3><a name="ply_nn16"></a>4.13 Debugging</H3>
+<H3><a name="ply_nn16"></a>4.14 Debugging</H3>
 
 
 For the purpose of debugging, you can run <tt>lex()</tt> in a debugging mode as follows:
@@ -784,7 +831,7 @@ if __name__ == '__main__':
 Please refer to the "Debugging" section near the end for some more advanced details 
 of debugging.
 
-<H3><a name="ply_nn17"></a>4.14 Alternative specification of lexers</H3>
+<H3><a name="ply_nn17"></a>4.15 Alternative specification of lexers</H3>
 
 
 As shown in the example, lexers are specified all within one Python module.   If you want to
@@ -835,7 +882,7 @@ t_ignore  = ' \t'
 
 # Error handling rule
 def t_error(t):
-    print "Illegal character '%s'" % t.value[0]
+    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 </pre>
 </blockquote>
@@ -902,7 +949,7 @@ class MyLexer(object):
 
     # Error handling rule
     def t_error(self,t):
-        print "Illegal character '%s'" % t.value[0]
+        print("Illegal character '%s'" % t.value[0])
         t.lexer.skip(1)
 
     <b># Build the lexer
@@ -914,8 +961,9 @@ class MyLexer(object):
         self.lexer.input(data)
         while True:
              tok = self.lexer.token()
-             if not tok: break
-             print tok
+             if not tok: 
+                 break
+             print(tok)
 
 # Build the lexer and try it out
 m = MyLexer()
@@ -933,7 +981,7 @@ PLY only works properly if the lexer actions are defined by bound-methods.
 When using the <tt>module</tt> option to <tt>lex()</tt>, PLY collects symbols
 from the underlying object using the <tt>dir()</tt> function. There is no
 direct access to the <tt>__dict__</tt> attribute of the object supplied as a 
-module value.
+module value. </p>
 
 <P>
 Finally, if you want to keep things nicely encapsulated, but don't want to use a 
@@ -979,7 +1027,7 @@ def MyLexer():
 
     # Error handling rule
     def t_error(t):
-        print "Illegal character '%s'" % t.value[0]
+        print("Illegal character '%s'" % t.value[0])
         t.lexer.skip(1)
 
     # Build the lexer from my environment and return it    
@@ -993,7 +1041,7 @@ define a single lexer per module (source file).   There are extensive validation
 may falsely report error messages if you don't follow this rule.
 </p>
 
-<H3><a name="ply_nn18"></a>4.15 Maintaining state</H3>
+<H3><a name="ply_nn18"></a>4.16 Maintaining state</H3>
 
 
 In your lexer, you may want to maintain a variety of state
@@ -1090,7 +1138,7 @@ def MyLexer():
 </pre>
 </blockquote>
 
-<H3><a name="ply_nn19"></a>4.16 Lexer cloning</H3>
+<H3><a name="ply_nn19"></a>4.17 Lexer cloning</H3>
 
 
 <p>
@@ -1115,7 +1163,7 @@ cloned lexers could be used to handle different input files.
 
 <p>
 Creating a clone is different than calling <tt>lex.lex()</tt> in that
-PLY doesn't regenerate any of the internal tables or regular expressions.  So,
+PLY doesn't regenerate any of the internal tables or regular expressions.
 
 <p>
 Special considerations need to be made when cloning lexers that also
@@ -1139,7 +1187,7 @@ important to emphasize that <tt>clone()</tt> is only meant to create a new lexer
 that reuses the regular expressions and environment of another lexer.  If you
 need to make a totally new copy of a lexer, then call <tt>lex()</tt> again.
 
-<H3><a name="ply_nn20"></a>4.17 Internal lexer state</H3>
+<H3><a name="ply_nn20"></a>4.18 Internal lexer state</H3>
 
 
 A Lexer object <tt>lexer</tt> has a number of internal attributes that may be useful in certain
@@ -1177,7 +1225,7 @@ current token.  If you have written a regular expression that contains named gro
 Note: This attribute is only updated when tokens are defined and processed by functions.  
 </blockquote>
 
-<H3><a name="ply_nn21"></a>4.18 Conditional lexing and start conditions</H3>
+<H3><a name="ply_nn21"></a>4.19 Conditional lexing and start conditions</H3>
 
 
 In advanced parsing applications, it may be useful to have different
@@ -1254,8 +1302,8 @@ t_INITIAL_NUMBER = r'\d+'
 </blockquote>
 
 <p>
-States are also associated with the special <tt>t_ignore</tt> and <tt>t_error()</tt> declarations.  For example, if a state treats
-these differently, you can declare:
+States are also associated with the special <tt>t_ignore</tt>, <tt>t_error()</tt>, and <tt>t_eof()</tt> declarations.  For example, if a state treats
+these differently, you can declare:</p>
 
 <blockquote>
 <pre>
@@ -1376,13 +1424,16 @@ However, if the closing right brace is encountered, the rule <tt>t_ccode_rbrace<
 position), stores it, and returns a token 'CCODE' containing all of that text.  When returning the token, the lexing state is restored back to its
 initial state.
 
-<H3><a name="ply_nn21"></a>4.19 Miscellaneous Issues</H3>
+<H3><a name="ply_nn21"></a>4.20 Miscellaneous Issues</H3>
 
 
 <P>
 <li>The lexer requires input to be supplied as a single input string.  Since most machines have more than enough memory, this 
 rarely presents a performance concern.  However, it means that the lexer currently can't be used with streaming data
-such as open files or sockets.  This limitation is primarily a side-effect of using the <tt>re</tt> module.
+such as open files or sockets.  This limitation is primarily a side-effect of using the <tt>re</tt> module.  You might be
+able to work around this by implementing an appropriate <tt>def t_eof()</tt> end-of-file handling rule. The main complication
+here is that you'll probably need to ensure that data is fed to the lexer in a way so that it doesn't split in in the middle
+of a token.</p>
 
 <p>
 <li>The lexer should work properly with both Unicode strings given as token and pattern matching rules as
@@ -1606,7 +1657,7 @@ def p_factor_expr(p):
 
 # Error rule for syntax errors
 def p_error(p):
-    print "Syntax error in input!"
+    print("Syntax error in input!")
 
 # Build the parser
 parser = yacc.yacc()
@@ -1618,7 +1669,7 @@ while True:
        break
    if not s: continue
    result = parser.parse(s)
-   print result
+   print(result)
 </pre>
 </blockquote>
 
@@ -1688,15 +1739,20 @@ calc >
 </pre>
 </blockquote>
 
+<p>
 Since table construction is relatively expensive (especially for large
-grammars), the resulting parsing table is written to the current
-directory in a file called <tt>parsetab.py</tt>.  In addition, a
+grammars), the resulting parsing table is written to 
+a file called <tt>parsetab.py</tt>.  In addition, a
 debugging file called <tt>parser.out</tt> is created.  On subsequent
 executions, <tt>yacc</tt> will reload the table from
 <tt>parsetab.py</tt> unless it has detected a change in the underlying
 grammar (in which case the tables and <tt>parsetab.py</tt> file are
-regenerated).  Note: The names of parser output files can be changed
-if necessary.  See the <a href="reference.html">PLY Reference</a> for details.
+regenerated).  Both of these files are written to the same directory
+as the module in which the parser is specified.   The output directory
+can be changed by giving an <tt>outputdir</tt> keyword argument to <tt>yacc()</tt>. 
+The name of the <tt>parsetab</tt> module can also be changed using the
+<tt>tabmodule</tt> keyword argument to <tt>yacc()</tt>.
+</p>
 
 <p>
 If any errors are detected in your grammar specification, <tt>yacc.py</tt> will produce
@@ -1891,7 +1947,7 @@ an argument to <tt>yacc()</tt>. For example:
 
 <blockquote>
 <pre>
-yacc.yacc(start='foo')
+parser = yacc.yacc(start='foo')
 </pre>
 </blockquote>
 
@@ -2507,7 +2563,7 @@ To account for the possibility of a bad expression, you might write an additiona
 <pre>
 def p_statement_print_error(p):
      'statement : PRINT error SEMI'
-     print "Syntax error in print statement. Bad expression"
+     print("Syntax error in print statement. Bad expression")
 
 </pre>
 </blockquote>
@@ -2531,7 +2587,7 @@ on the right in an error rule.  For example:
 <pre>
 def p_statement_print_error(p):
     'statement : PRINT error'
-    print "Syntax error in print statement. Bad expression"
+    print("Syntax error in print statement. Bad expression")
 </pre>
 </blockquote>
 
@@ -2553,11 +2609,16 @@ parser in its initial state.
 <blockquote>
 <pre>
 def p_error(p):
-    print "Whoa. You are seriously hosed."
+    print("Whoa. You are seriously hosed.")
+    if not p:
+        print("End of File!")
+        return
+
     # Read ahead looking for a closing '}'
     while True:
         tok = parser.token()             # Get the next token
-        if not tok or tok.type == 'RBRACE': break
+        if not tok or tok.type == 'RBRACE': 
+            break
     parser.restart()
 </pre>
 </blockquote>
@@ -2568,9 +2629,12 @@ This function simply discards the bad token and tells the parser that the error 
 <blockquote>
 <pre>
 def p_error(p):
-    print "Syntax error at token", p.type
-    # Just discard the token and tell the parser it's okay.
-    parser.errok()
+    if p:
+         print("Syntax error at token", p.type)
+         # Just discard the token and tell the parser it's okay.
+         parser.errok()
+    else:
+         print("Syntax error at EOF")
 </pre>
 </blockquote>
 
@@ -2646,8 +2710,44 @@ raises <tt>SyntaxError</tt>.
 <P>
 Note: This feature of PLY is meant to mimic the behavior of the YYERROR macro in yacc.
 
+<H4><a name="ply_nn38"></a>6.8.4 When Do Syntax Errors Get Reported</H4>
 
-<H4><a name="ply_nn32"></a>6.8.4 General comments on error handling</H4>
+
+<p>
+In most cases, yacc will handle errors as soon as a bad input token is
+detected on the input.  However, be aware that yacc may choose to
+delay error handling until after it has reduced one or more grammar
+rules first.  This behavior might be unexpected, but it's related to
+special states in the underlying parsing table known as "defaulted
+states."  A defaulted state is parsing condition where the same
+grammar rule will be reduced regardless of what <em>valid</em> token
+comes next on the input.  For such states, yacc chooses to go ahead
+and reduce the grammar rule <em>without reading the next input
+token</em>.  If the next token is bad, yacc will eventually get around to reading it and 
+report a syntax error.  It's just a little unusual in that you might
+see some of your grammar rules firing immediately prior to the syntax 
+error.
+</p>
+
+<p>
+Usually, the delayed error reporting with defaulted states is harmless
+(and there are other reasons for wanting PLY to behave in this way).
+However, if you need to turn this behavior off for some reason.  You
+can clear the defaulted states table like this:
+</p>
+
+<blockquote>
+<pre>
+parser = yacc.yacc()
+parser.defaulted_states = {}
+</pre>
+</blockquote>
+
+<p>
+Disabling defaulted states is not recommended if your grammar makes use
+of embedded actions as described in Section 6.11.</p>
+
+<H4><a name="ply_nn32"></a>6.8.5 General comments on error handling</H4>
 
 
 For normal types of languages, error recovery with error rules and resynchronization characters is probably the most reliable
@@ -2730,7 +2830,7 @@ example:
 def p_bad_func(p):
     'funccall : fname LPAREN error RPAREN'
     # Line number reported from LPAREN token
-    print "Bad function call at line", p.lineno(2)
+    print("Bad function call at line", p.lineno(2))
 </pre>
 </blockquote>
 
@@ -2861,7 +2961,7 @@ suppose you have a rule like this:
 <pre>
 def p_foo(p):
     "foo : A B C D"
-    print "Parsed a foo", p[1],p[2],p[3],p[4]
+    print("Parsed a foo", p[1],p[2],p[3],p[4])
 </pre>
 </blockquote>
 
@@ -2877,12 +2977,12 @@ been parsed. To do this, write an empty rule like this:
 <pre>
 def p_foo(p):
     "foo : A seen_A B C D"
-    print "Parsed a foo", p[1],p[3],p[4],p[5]
-    print "seen_A returned", p[2]
+    print("Parsed a foo", p[1],p[3],p[4],p[5])
+    print("seen_A returned", p[2])
 
 def p_seen_A(p):
     "seen_A :"
-    print "Saw an A = ", p[-1]   # Access grammar symbol to left
+    print("Saw an A = ", p[-1])   # Access grammar symbol to left
     p[0] = some_value            # Assign value to seen_A
 
 </pre>
@@ -2973,25 +3073,13 @@ might undo the operations performed in the embedded action
 
 
 <ul>
-<li>The default parsing method is LALR. To use SLR instead, run yacc() as follows:
-
-<blockquote>
-<pre>
-yacc.yacc(method="SLR")
-</pre>
-</blockquote>
-Note: LALR table generation takes approximately twice as long as SLR table generation.   There is no
-difference in actual parsing performance---the same code is used in both cases.   LALR is preferred when working
-with more complicated grammars since it is more powerful.
-
-<p>
 
 <li>By default, <tt>yacc.py</tt> relies on <tt>lex.py</tt> for tokenizing.  However, an alternative tokenizer
 can be supplied as follows:
 
 <blockquote>
 <pre>
-yacc.parse(lexer=x)
+parser = yacc.parse(lexer=x)
 </pre>
 </blockquote>
 in this case, <tt>x</tt> must be a Lexer object that minimally has a <tt>x.token()</tt> method for retrieving the next
@@ -3003,7 +3091,7 @@ To disable this, use
 
 <blockquote>
 <pre>
-yacc.yacc(debug=0)
+parser = yacc.yacc(debug=False)
 </pre>
 </blockquote>
 
@@ -3012,7 +3100,7 @@ yacc.yacc(debug=0)
 
 <blockquote>
 <pre>
-yacc.yacc(tabmodule="foo")
+parser = yacc.yacc(tabmodule="foo")
 </pre>
 </blockquote>
 
@@ -3020,7 +3108,7 @@ yacc.yacc(tabmodule="foo")
 <li>To change the directory in which the <tt>parsetab.py</tt> file (and other output files) are written, use:
 <blockquote>
 <pre>
-yacc.yacc(tabmodule="foo",outputdir="somedirectory")
+parser = yacc.yacc(tabmodule="foo",outputdir="somedirectory")
 </pre>
 </blockquote>
 
@@ -3028,7 +3116,7 @@ yacc.yacc(tabmodule="foo",outputdir="somedirectory")
 <li>To prevent yacc from generating any kind of parser table file, use:
 <blockquote>
 <pre>
-yacc.yacc(write_tables=0)
+parser = yacc.yacc(write_tables=False)
 </pre>
 </blockquote>
 
@@ -3040,24 +3128,9 @@ each time it runs (which may take awhile depending on how large your grammar is)
 
 <blockquote>
 <pre>
-yacc.parse(debug=1)     
+parser = yacc.parse(debug=True)     
 </pre>
 </blockquote>
-
-<p>
-<li>The <tt>yacc.yacc()</tt> function really returns a parser object.  If you want to support multiple
-parsers in the same application, do this:
-
-<blockquote>
-<pre>
-p = yacc.yacc()
-...
-p.parse()
-</pre>
-</blockquote>
-
-Note: The function <tt>yacc.parse()</tt> is bound to the last parser that was generated.</li>
-
 
 <p>
 <li>Since the generation of the LALR tables is relatively expensive, previously generated tables are
@@ -3066,8 +3139,8 @@ checksum of all grammar rules and precedence rules.  Only in the event of a mism
 
 <p>
 It should be noted that table generation is reasonably efficient, even for grammars that involve around a 100 rules
-and several hundred states.  For more complex languages such as C, table generation may take 30-60 seconds on a slow
-machine.  Please be patient.</li>
+and several hundred states. </li>
+
 
 <p>
 <li>Since LR parsing is driven by tables, the performance of the parser is largely independent of the
@@ -3128,7 +3201,7 @@ the lexer object that triggered the rule. For example:
 def t_NUMBER(t):
    r'\d+'
    ...
-   print t.lexer           # Show lexer object
+   print(t.lexer)           # Show lexer object
 </pre>
 </blockquote>
 
@@ -3140,8 +3213,8 @@ and parser objects respectively.
 def p_expr_plus(p):
    'expr : expr PLUS expr'
    ...
-   print p.parser          # Show parser object
-   print p.lexer           # Show lexer object
+   print(p.parser)          # Show parser object
+   print(p.lexer)           # Show lexer object
 </pre>
 </blockquote>
 

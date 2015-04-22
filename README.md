@@ -1,6 +1,6 @@
 PLY (Python Lex-Yacc)                   Version 3.5
 
-Copyright (C) 2001-2012,
+Copyright (C) 2001-2015,
 David M. Beazley (Dabeaz LLC)
 All rights reserved.
 
@@ -112,7 +112,11 @@ book "Compilers : Principles, Techniques, and Tools" by Aho, Sethi, and
 Ullman.  The topics found in "Lex & Yacc" by Levine, Mason, and Brown
 may also be useful.
 
-A Google group for PLY can be found at
+The GitHub page for PLY can be found at:
+
+     https://github.com/dabeaz/ply
+
+An old and relatively inactive discussion group for PLY is found at:
 
      http://groups.google.com/group/ply-hack
 
@@ -130,7 +134,7 @@ and testing a revised LALR(1) implementation for PLY-2.0.
 Special Note for PLY-3.0
 ========================
 PLY-3.0 the first PLY release to support Python 3. However, backwards
-compatibility with Python 2.2 is still preserved. PLY provides dual
+compatibility with Python 2.6 is still preserved. PLY provides dual
 Python 2/3 compatibility by restricting its implementation to a common
 subset of basic language features. You should not convert PLY using
 2to3--it is not necessary and may in fact break the implementation.
@@ -238,7 +242,7 @@ with variables.
     import ply.yacc as yacc
     yacc.yacc()
 
-    while 1:
+    while True:
         try:
             s = raw_input('calc > ')   # use input() on Python 3
         except EOFError:
@@ -252,12 +256,10 @@ My goal with PLY is to simply have a decent lex/yacc implementation
 for Python.  As a general rule, I don't spend huge amounts of time
 working on it unless I receive very specific bug reports and/or
 patches to fix problems. I also try to incorporate submitted feature
-requests and enhancements into each new version.  To contact me about
-bugs and/or new features, please send email to dave@dabeaz.com.
-
-In addition there is a Google group for discussing PLY related issues at
-
-    http://groups.google.com/group/ply-hack
+requests and enhancements into each new version.  Please visit the PLY
+github page at https://github.com/dabeaz/ply to submit issues and pull
+requests.  To contact me about bugs and/or new features, please send
+email to dave@dabeaz.com.
  
 -- Dave
 
