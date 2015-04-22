@@ -314,7 +314,7 @@ class LRParser:
         self.defaulted_states = {}
         for state, actions in self.action.items():
             rules = list(actions.values())
-            if rules and rules[0] < 0 and all(rules[0] == rule for rule in rules):
+            if len(rules) == 1 and rules[0] < 0:
                 self.defaulted_states[state] = rules[0]
 
     def disable_defaulted_states(self):
