@@ -199,9 +199,11 @@ class YaccErrorWarningTests(unittest.TestCase):
         result = sys.stdout.getvalue()
         self.assert_(check_expected(result,
                                     "Group at 3:10 to 3:12\n"
+                                    "Undefined name 'a'\n"
                                     "Syntax error at 'b'\n"
                                     "Syntax error at 4:18 to 4:22\n"
                                     "Assignment Error at 2:5 to 5:33\n"
+                                    "13\n"
             ))
 
     def test_yacc_error6(self):

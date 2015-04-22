@@ -1,29 +1,34 @@
 Version 3.5
 ---------------------
 04/21/15: beazley
-          Added optional support for defaulted_states in the parser.
-          A defaulted_state is a state where the only legal action is
-          a reduction of a single grammar rule across all valid input
+          Added support for defaulted_states in the parser.  A
+          defaulted_state is a state where the only legal action is a
+          reduction of a single grammar rule across all valid input
           tokens.  For such states, the rule is reduced and the
           reading of the next lookahead token is delayed until it is
-          actually needed at a later point in time.  
+          actually needed at a later point in time.
 
-	  This delay in consuming the next lookahead token is a potentially
-	  important feature in advanced parsing applications that require tight
-	  interaction between the lexer and the parser.  For example, a grammar
-	  rule change modify the lexer state upon reduction and have such changes
+	  This delay in consuming the next lookahead token is a
+	  potentially important feature in advanced parsing
+	  applications that require tight interaction between the
+	  lexer and the parser.  For example, a grammar rule change
+	  modify the lexer state upon reduction and have such changes
 	  take effect before the next input token is read.
 
-	  One potential danger of defaulted_states is that syntax errors might
-	  be deferred to a a later point of processing than where they were detected
-	  in the past.   Thus, it's possible that your error handling could change
-          slightly over previous versions of PLY.
+	  *** POTENTIAL INCOMPATIBILITY ***
+	  One potential danger of defaulted_states is that syntax
+	  errors might be deferred to a a later point of processing
+	  than where they were detected in past versions of PLY.
+	  Thus, it's possible that your error handling could change
+	  slightly on the same inputs.  defaulted_states do not change
+	  the overall parsing of the input (i.e., the same grammar is
+	  accepted).
 
-	  In order to enable defaulted_state support. You need to activate it
-	  explicitly.  For example:
+	  If for some reason, you need to disable defaulted states,
+	  you can do this:
 
               parser = yacc.yacc()
-              parser.use_defaulted_states()
+              parser.defaulted_states = {}
 
 04/21/15: beazley
           Fixed debug logging in the parser.  It wasn't properly reporting goto states

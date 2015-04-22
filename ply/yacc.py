@@ -288,7 +288,8 @@ class LRParser:
         self.action = lrtab.lr_action
         self.goto = lrtab.lr_goto
         self.errorfunc = errorf
-        self.defaulted_states = { }
+        self.set_defaulted_states()
+        self.errorok = True
 
     def errok(self):
         self.errorok = True
@@ -301,7 +302,7 @@ class LRParser:
         self.symstack.append(sym)
         self.statestack.append(0)
 
-    # Defaulted state support (Experimental)
+    # Defaulted state support.
     # This method identifies parser states where there is only one possible reduction action.
     # For such states, the parser can make a choose to make a rule reduction without consuming
     # the next look-ahead token.  This delayed invocation of the tokenizer can be useful in
@@ -309,11 +310,15 @@ class LRParser:
     # each other or change states (i.e., manipulation of scope, lexer states, etc.).
     #
     # See:  http://www.gnu.org/software/bison/manual/html_node/Default-Reductions.html#Default-Reductions
-    def use_defaulted_states(self):
+    def set_defaulted_states(self):
+        self.defaulted_states = {}
         for state, actions in self.action.items():
             rules = list(actions.values())
             if rules and rules[0] < 0 and all(rules[0] == rule for rule in rules):
                 self.defaulted_states[state] = rules[0]
+
+    def disable_defaulted_states(self):
+        self.defaulted_states = {}
 
     def parse(self, input=None, lexer=None, debug=False, tracking=False, tokenfunc=None):
         if debug or yaccdevel:
