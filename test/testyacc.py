@@ -202,7 +202,7 @@ class YaccErrorWarningTests(unittest.TestCase):
                                     "Undefined name 'a'\n"
                                     "Syntax error at 'b'\n"
                                     "Syntax error at 4:18 to 4:22\n"
-                                    "Assignment Error at 2:5 to 5:33\n"
+                                    "Assignment Error at 2:5 to 5:27\n"
                                     "13\n"
             ))
 
