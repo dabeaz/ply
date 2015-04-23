@@ -3417,7 +3417,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
 
     # Write the table file if requested
     if write_tables:
-        lr.write_table(tabmodule, outputdir, signature)
+        lr.write_table(tabmodule.__name__, outputdir, signature)
 
     # Write a pickled version of the tables
     if picklefile:
