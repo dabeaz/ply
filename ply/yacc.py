@@ -1957,16 +1957,12 @@ class LRTable(object):
         self.lr_productions = None
         self.lr_method = None
 
-    def read_table(self, outputdir, module):
+    def read_table(self, module):
         if isinstance(module, types.ModuleType):
             parsetab = module
         else:
-            oldpath = sys.path
-            sys.path = [outputdir]
-            try:
-                parsetab = __import__(module)
-            finally:
-                sys.path = oldpath
+            exec('import %s' % module)
+            parsetab = sys.modules[module]
 
         if parsetab._tabversion != __tabversion__:
             raise VersionError('yacc table file version is out of date')
@@ -2697,7 +2693,14 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def write_table(self, modulename, outputdir='', signature=''):
-        basemodulename = modulename.split('.')[-1]
+        parts = modulename.split('.')
+        basemodulename = parts[-1]
+        if not outputdir and len(parts) > 1:
+            # If no explicit output directory was given, then set it to the location of the tabfile
+            packagename = '.'.join(parts[:-1])
+            exec('import %s' % packagename)
+            package = sys.modules[packagename]
+            outputdir = os.path.dirname(package.__file__)
         filename = os.path.join(outputdir, basemodulename) + '.py'
         try:
             f = open(filename, 'w')
@@ -3231,7 +3234,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
         if picklefile:
             read_signature = lr.read_pickle(picklefile)
         else:
-            read_signature = lr.read_table(outputdir, tabmodule)
+            read_signature = lr.read_table(tabmodule)
         if optimize or (read_signature == signature):
             try:
                 lr.bind_callables(pinfo.pdict)

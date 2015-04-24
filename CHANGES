@@ -1,3 +1,19 @@
+Version 3.6
+---------------------
+04/24/15: beazley
+          Fixed some problems related to use of packages and table file
+          modules.  Just to emphasize, if you use a command such as this:
+
+              # lexer.py
+              parser = yacc.yacc(tabmodule='foo.bar.parsetab')
+
+          You need to make sure that the file 'lexer.py' is located at
+          foo/bar/lexer.py.  If this is not the same location, then
+          you need to also include the outputdir option
+
+              parse = yacc.yacc(tabmodule='foo.bar.parsetab', 
+	                        outputdir='foo/bar')
+
 Version 3.5
 ---------------------
 04/21/15: beazley

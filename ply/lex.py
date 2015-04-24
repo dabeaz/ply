@@ -174,7 +174,15 @@ class Lexer:
     def writetab(self, tabfile, outputdir=''):
         if isinstance(tabfile, types.ModuleType):
             return
-        basetabfilename = tabfile.split('.')[-1]
+        parts = tabfile.split('.')
+        basetabfilename = parts[-1]
+        if not outputdir and len(parts) > 1:
+            # If no explicit output directory was given, then set it to the location of the tabfile
+            packagename = '.'.join(parts[:-1])
+            exec('import %s' % packagename)
+            package = sys.modules[packagename]
+            outputdir = os.path.dirname(package.__file__)
+            
         filename = os.path.join(outputdir, basetabfilename) + '.py'
         with open(filename, 'w') as tf:
             tf.write('# %s.py. This file automatically created by PLY (version %s). Don\'t edit!\n' % (tabfile, __version__))
@@ -208,17 +216,12 @@ class Lexer:
     # ------------------------------------------------------------
     # readtab() - Read lexer information from a tab file
     # ------------------------------------------------------------
-    def readtab(self, outputdir, tabfile, fdict):
+    def readtab(self, tabfile, fdict):
         if isinstance(tabfile, types.ModuleType):
             lextab = tabfile
         else:
-            basetabname = tabfile.split('.')[-1]
-            oldpath = sys.path
-            sys.path = [outputdir]
-            try:
-                lextab = __import__(basetabname)
-            finally:
-                sys.path = oldpath
+            exec('import %s' % tabfile)
+            lextab = sys.modules[tabfile]
 
         if getattr(lextab, '_tabversion', '0.0') != __tabversion__:
             raise ImportError('Inconsistent PLY version')
@@ -906,7 +909,7 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
 
     if optimize and lextab:
         try:
-            lexobj.readtab(outputdir, lextab, ldict)
+            lexobj.readtab(lextab, ldict)
             token = lexobj.token
             input = lexobj.input
             lexer = lexobj

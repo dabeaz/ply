@@ -45,7 +45,7 @@ def t_error(t):
     t.lexer.skip(1)
     
 # Build the lexer
-lex.lex(optimize=1,lextab="lexdir.sub.calctab",outputdir="lexdir/sub")
+lex.lex(optimize=1,lextab="lexdir.sub.calctab" ,outputdir="lexdir/sub")
 lex.runmain(data="3+4")
 
 
