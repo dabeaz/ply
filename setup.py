@@ -1,8 +1,10 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup
+import sys
 
+install_requires = []
+if sys.version_info < (2, 7):
+    install_requires.append('importlib')
+    
 setup(name = "ply",
             description="Python Lex & Yacc",
             long_description = """
@@ -27,5 +29,6 @@ It is compatible with both Python 2 and Python 3.
             classifiers = [
               'Programming Language :: Python :: 3',
               'Programming Language :: Python :: 2',
-              ]
+              ],
+            install_requires = install_requires
             )
