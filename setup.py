@@ -1,8 +1,10 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup
+import sys
 
+install_requires = []
+if sys.version[:2] < (2,7):
+    install_requires.append('importlib')
+    
 setup(name = "ply",
             description="Python Lex & Yacc",
             long_description = """

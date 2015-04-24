@@ -66,6 +66,7 @@ import os.path
 import inspect
 import base64
 import warnings
+import importlib
 
 __version__    = '3.5'
 __tabversion__ = '3.5'
@@ -1964,7 +1965,7 @@ class LRTable(object):
             oldpath = sys.path
             sys.path = [outputdir]
             try:
-                parsetab = __import__(module)
+                parsetab = importlib.import_module(module)
             finally:
                 sys.path = oldpath
 
