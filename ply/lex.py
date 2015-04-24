@@ -171,21 +171,10 @@ class Lexer:
     # ------------------------------------------------------------
     # writetab() - Write lexer information to a table file
     # ------------------------------------------------------------
-    def writetab(self, tabfile, outputdir=''):
-        if isinstance(tabfile, types.ModuleType):
-            return
-        parts = tabfile.split('.')
-        basetabfilename = parts[-1]
-        if not outputdir and len(parts) > 1:
-            # If no explicit output directory was given, then set it to the location of the tabfile
-            packagename = '.'.join(parts[:-1])
-            exec('import %s' % packagename)
-            package = sys.modules[packagename]
-            outputdir = os.path.dirname(package.__file__)
-            
-        filename = os.path.join(outputdir, basetabfilename) + '.py'
+    def writetab(self, basetabmodule, outputdir=''):
+        filename = os.path.join(outputdir, basetabmodule) + '.py'
         with open(filename, 'w') as tf:
-            tf.write('# %s.py. This file automatically created by PLY (version %s). Don\'t edit!\n' % (tabfile, __version__))
+            tf.write('# %s.py. This file automatically created by PLY (version %s). Don\'t edit!\n' % (basetabmodule, __version__))
             tf.write('_tabversion   = %s\n' % repr(__tabversion__))
             tf.write('_lextokens    = %s\n' % repr(self.lextokens))
             tf.write('_lexreflags   = %s\n' % repr(self.lexreflags))
@@ -886,19 +875,38 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
     if object:
         module = object
 
+    # Get the module dictionary used for the parser
     if module:
         _items = [(k, getattr(module, k)) for k in dir(module)]
         ldict = dict(_items)
-        if outputdir is None:
-            srcfile = getattr(module, '__file__', None)
-            if srcfile is None:
-                if hasattr(module, '__module__'):
-                    srcfile = getattr(sys.modules[module.__module__], '__file__', '')
-            outputdir = os.path.dirname(srcfile)
+        # If no __file__ attribute is available, try to obtain it from the __module__ instead
+        if '__file__' not in ldict:
+            ldict['__file__'] = sys.modules[ldict['__module__']].__file__
     else:
         ldict = get_caller_module_dict(2)
-        if outputdir is None:
-            outputdir = os.path.dirname(ldict.get('__file__', ''))
+
+    if outputdir is None:
+        # If no output directory is set, the location of the output files
+        # is determined according to the following rules:
+        #     - If lextab specifies a package, files go into that package directory
+        #     - Otherwise, files go in the same directory as the specifying module
+        if '.' not in lextab:
+            srcfile = ldict['__file__']
+        else:
+            parts = lextab.split('.')
+            pkgname = '.'.join(parts[:-1])
+            exec('import %s' % pkgname)
+            srcfile = getattr(sys.modules[pkgname], '__file__', '')
+        outputdir = os.path.dirname(srcfile)
+
+    # Determine if the module is package of a package or not.
+    # If so, fix the tabmodule setting so that tables load correctly
+    pkg = ldict.get('__package__')
+    if pkg:
+        if '.' not in lextab:
+            lextab = pkg + '.' + lextab
+
+    baselextab = lextab.split('.')[-1]
 
     # Collect parser information from the dictionary
     linfo = LexerReflect(ldict, log=errorlog, reflags=reflags)
@@ -1021,7 +1029,7 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
 
     # If in optimize mode, we write the lextab
     if lextab and optimize:
-        lexobj.writetab(lextab, outputdir)
+        lexobj.writetab(baselextab, outputdir)
 
     return lexobj
 

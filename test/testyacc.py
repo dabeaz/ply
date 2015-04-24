@@ -401,4 +401,28 @@ class YaccErrorWarningTests(unittest.TestCase):
                                     "Precedence rule 'left' defined for unknown symbol '/'\n"
                                     ))
 
+    def test_pkg_test1(self):
+        from pkg_test1 import parser
+        self.assertTrue(os.path.exists('pkg_test1/parsing/parsetab.py'))
+        self.assertTrue(os.path.exists('pkg_test1/parsing/lextab.py'))
+        self.assertTrue(os.path.exists('pkg_test1/parsing/parser.out'))
+        r = parser.parse('3+4+5')
+        self.assertEqual(r, 12)
+
+    def test_pkg_test2(self):
+        from pkg_test2 import parser
+        self.assertTrue(os.path.exists('pkg_test2/parsing/calcparsetab.py'))
+        self.assertTrue(os.path.exists('pkg_test2/parsing/calclextab.py'))
+        self.assertTrue(os.path.exists('pkg_test2/parsing/parser.out'))
+        r = parser.parse('3+4+5')
+        self.assertEqual(r, 12)
+
+    def test_pkg_test3(self):
+        from pkg_test3 import parser
+        self.assertTrue(os.path.exists('pkg_test3/generated/parsetab.py'))
+        self.assertTrue(os.path.exists('pkg_test3/generated/lextab.py'))
+        self.assertTrue(os.path.exists('pkg_test3/generated/parser.out'))
+        r = parser.parse('3+4+5')
+        self.assertEqual(r, 12)
+
 unittest.main()

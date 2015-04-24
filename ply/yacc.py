@@ -2692,15 +2692,7 @@ class LRGeneratedTable(LRTable):
     # This function writes the LR parsing tables to a file
     # -----------------------------------------------------------------------------
 
-    def write_table(self, modulename, outputdir='', signature=''):
-        parts = modulename.split('.')
-        basemodulename = parts[-1]
-        if not outputdir and len(parts) > 1:
-            # If no explicit output directory was given, then set it to the location of the tabfile
-            packagename = '.'.join(parts[:-1])
-            exec('import %s' % packagename)
-            package = sys.modules[packagename]
-            outputdir = os.path.dirname(package.__file__)
+    def write_table(self, basemodulename, outputdir='', signature=''):
         filename = os.path.join(outputdir, basemodulename) + '.py'
         try:
             f = open(filename, 'w')
@@ -3203,16 +3195,33 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     if module:
         _items = [(k, getattr(module, k)) for k in dir(module)]
         pdict = dict(_items)
-        if outputdir is None:
-            srcfile = getattr(module, '__file__', None)
-            if srcfile is None:
-                if hasattr(module, '__module__'):
-                    srcfile = getattr(sys.modules[module.__module__], '__file__', '')
-            outputdir = os.path.dirname(srcfile)
+        # If no __file__ attribute is available, try to obtain it from the __module__ instead
+        if '__file__' not in pdict:
+            pdict['__file__'] = sys.modules[pdict['__module__']].__file__
     else:
         pdict = get_caller_module_dict(2)
-        if outputdir is None:
-            outputdir = os.path.dirname(pdict.get('__file__', ''))
+
+    if outputdir is None:
+        # If no output directory is set, the location of the output files
+        # is determined according to the following rules:
+        #     - If tabmodule specifies a package, files go into that package directory
+        #     - Otherwise, files go in the same directory as the specifying module
+        if '.' not in tabmodule:
+            srcfile = pdict['__file__']
+        else:
+            parts = tabmodule.split('.')
+            pkgname = '.'.join(parts[:-1])
+            exec('import %s' % pkgname)
+            srcfile = getattr(sys.modules[pkgname], '__file__', '')
+        outputdir = os.path.dirname(srcfile)
+
+    # Determine if the module is package of a package or not.
+    # If so, fix the tabmodule setting so that tables load correctly
+    pkg = pdict.get('__package__')
+    if pkg and '.' not in tabmodule:
+        tabmodule = pkg + '.' + tabmodule
+
+    basetabmodule = tabmodule.split('.')[-1]
 
     # Set start symbol if it's specified directly using an argument
     if start is not None:
@@ -3420,7 +3429,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
 
     # Write the table file if requested
     if write_tables:
-        lr.write_table(tabmodule, outputdir, signature)
+        lr.write_table(basetabmodule, outputdir, signature)
 
     # Write a pickled version of the tables
     if picklefile:
