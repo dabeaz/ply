@@ -2801,9 +2801,7 @@ del _lr_goto_items
             f.close()
 
         except IOError as e:
-            sys.stderr.write('Unable to create %r\n' % filename)
-            sys.stderr.write(str(e)+'\n')
-            return
+            raise
 
 
     # -----------------------------------------------------------------------------
@@ -3259,7 +3257,11 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
 
     if debuglog is None:
         if debug:
-            debuglog = PlyLogger(open(os.path.join(outputdir, debugfile), 'w'))
+            try:
+                debuglog = PlyLogger(open(os.path.join(outputdir, debugfile), 'w'))
+            except IOError as e:
+                errorlog.warning("Couldn't open %r. %s" % (debugfile, e))
+                debuglog = NullLogger()
         else:
             debuglog = NullLogger()
 
@@ -3429,11 +3431,17 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
 
     # Write the table file if requested
     if write_tables:
-        lr.write_table(basetabmodule, outputdir, signature)
+        try:
+            lr.write_table(basetabmodule, outputdir, signature)
+        except IOError as e:
+            errorlog.warning("Couldn't create %r. %s" % (tabmodule, e))
 
     # Write a pickled version of the tables
     if picklefile:
-        lr.pickle_table(picklefile, signature)
+        try:
+            lr.pickle_table(picklefile, signature)
+        except IOError as e:
+            errorlog.warning("Couldn't create %r. %s" % (picklefile, e))
 
     # Build the parser
     lr.bind_callables(pinfo.pdict)

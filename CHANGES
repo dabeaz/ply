@@ -1,5 +1,13 @@
 Version 3.6
 ---------------------
+04/25/15: beazley
+          If PLY is unable to create the 'parser.out' or 'parsetab.py' files due
+          to permission issues, it now just issues a warning message and
+          continues to operate. This could happen if a module using PLY
+	  is installed in a funny way where tables have to be regenerated, but
+          for whatever reason, the user doesn't have write permission on
+          the directory where PLY wants to put them.  
+
 04/24/15: beazley
           Fixed some issues related to use of packages and table file
           modules.  Just to emphasize, PLY now generates its special

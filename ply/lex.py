@@ -1029,7 +1029,10 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
 
     # If in optimize mode, we write the lextab
     if lextab and optimize:
-        lexobj.writetab(baselextab, outputdir)
+        try:
+            lexobj.writetab(baselextab, outputdir)
+        except IOError as e:
+            errorlog.warning("Couldn't write lextab module %r. %s" % (lextab, e))
 
     return lexobj
 
