@@ -433,4 +433,12 @@ class YaccErrorWarningTests(unittest.TestCase):
         r = parser.parse('3+4+5')
         self.assertEqual(r, 12)
 
+    def test_pkg_test5(self):
+        from pkg_test5 import parser
+        self.assertTrue(os.path.exists('pkg_test5/parsing/parsetab.py'))
+        self.assertTrue(os.path.exists('pkg_test5/parsing/lextab.py'))
+        self.assertTrue(os.path.exists('pkg_test5/parsing/parser.out'))
+        r = parser.parse('3+4+5')
+        self.assertEqual(r, 12)
+
 unittest.main()
