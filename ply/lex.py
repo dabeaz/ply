@@ -859,6 +859,10 @@ class LexerReflect(object):
 # -----------------------------------------------------------------------------
 def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
         reflags=0, nowarn=False, outputdir=None, debuglog=None, errorlog=None):
+
+    if lextab is None:
+        lextab = 'lextab'
+
     global lexer
 
     ldict = None
