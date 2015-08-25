@@ -3111,8 +3111,14 @@ class ParserReflect(object):
                 module = inspect.getmodule(item)
                 p_functions.append((line, module, name, item.__doc__))
 
-        # Sort all of the actions by line number
-        p_functions.sort()
+        # Sort all of the actions by line number; make sure to stringify
+        # modules to make them sortable, since `line` may not uniquely sort all
+        # p functions
+        p_functions.sort(key=lambda p_function: (
+            p_function[0],
+            str(p_function[1]),
+            p_function[2],
+            p_function[3]))
         self.pfuncs = p_functions
 
     # Validate all of the p_functions
