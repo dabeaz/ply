@@ -3170,7 +3170,7 @@ class ParserReflect(object):
             if n.startswith('p_') and n != 'p_error':
                 self.log.warning('%r not defined as a function', n)
             if ((isinstance(v, types.FunctionType) and v.__code__.co_argcount == 1) or
-                   (isinstance(v, types.MethodType) and v.__code__.co_argcount == 2)):
+                   (isinstance(v, types.MethodType) and v.__func__.__code__.co_argcount == 2)):
                 if v.__doc__:
                     try:
                         doc = v.__doc__.split(' ')
