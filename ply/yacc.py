@@ -1982,6 +1982,9 @@ class LRTable(object):
             import cPickle as pickle
         except ImportError:
             import pickle
+        
+        if not os.path.exists(filename):
+          raise ImportError
 
         in_f = open(filename, 'rb')
 
