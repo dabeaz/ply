@@ -1,5 +1,8 @@
 Version 3.7
 ---------------------
+08/25/15: beazley
+          Fixed problems when reading table files from pickled data.
+
 05/07/15: beazley
           Fixed regression in handling of table modules if specified as module
           objects.   See https://github.com/dabeaz/ply/issues/63

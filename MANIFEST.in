@@ -4,4 +4,4 @@ recursive-include test *
 include ANNOUNCE
 include CHANGES
 include TODO
-
+global-exclude *.pyc
