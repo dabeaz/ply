@@ -2,17 +2,18 @@
 # calc.py
 #
 # A calculator parser that makes use of closures. The function make_calculator()
-# returns a function that accepts an input string and returns a result.  All 
+# returns a function that accepts an input string and returns a result.  All
 # lexing rules, parsing rules, and internal state are held inside the function.
 # -----------------------------------------------------------------------------
 
 import sys
-sys.path.insert(0,"../..")
+sys.path.insert(0, "../..")
 
 if sys.version_info[0] >= 3:
     raw_input = input
 
 # Make a calculator function
+
 
 def make_calculator():
     import ply.lex as lex
@@ -20,19 +21,19 @@ def make_calculator():
 
     # ------- Internal calculator state
 
-    variables = { }       # Dictionary of stored variables
+    variables = {}       # Dictionary of stored variables
 
     # ------- Calculator tokenizing rules
 
     tokens = (
-        'NAME','NUMBER',
+        'NAME', 'NUMBER',
     )
 
-    literals = ['=','+','-','*','/', '(',')']
+    literals = ['=', '+', '-', '*', '/', '(', ')']
 
     t_ignore = " \t"
 
-    t_NAME    = r'[a-zA-Z_][a-zA-Z0-9_]*'
+    t_NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
     def t_NUMBER(t):
         r'\d+'
@@ -42,20 +43,20 @@ def make_calculator():
     def t_newline(t):
         r'\n+'
         t.lexer.lineno += t.value.count("\n")
-    
+
     def t_error(t):
         print("Illegal character '%s'" % t.value[0])
         t.lexer.skip(1)
-    
+
     # Build the lexer
     lexer = lex.lex()
 
     # ------- Calculator parsing rules
 
     precedence = (
-        ('left','+','-'),
-        ('left','*','/'),
-        ('right','UMINUS'),
+        ('left', '+', '-'),
+        ('left', '*', '/'),
+        ('right', 'UMINUS'),
     )
 
     def p_statement_assign(p):
@@ -72,10 +73,14 @@ def make_calculator():
                       | expression '-' expression
                       | expression '*' expression
                       | expression '/' expression'''
-        if p[2] == '+'  : p[0] = p[1] + p[3]
-        elif p[2] == '-': p[0] = p[1] - p[3]
-        elif p[2] == '*': p[0] = p[1] * p[3]
-        elif p[2] == '/': p[0] = p[1] / p[3]
+        if p[2] == '+':
+            p[0] = p[1] + p[3]
+        elif p[2] == '-':
+            p[0] = p[1] - p[3]
+        elif p[2] == '*':
+            p[0] = p[1] * p[3]
+        elif p[2] == '/':
+            p[0] = p[1] / p[3]
 
     def p_expression_uminus(p):
         "expression : '-' expression %prec UMINUS"
@@ -103,14 +108,13 @@ def make_calculator():
         else:
             print("Syntax error at EOF")
 
-
     # Build the parser
     parser = yacc.yacc()
 
-    # ------- Input function 
-    
+    # ------- Input function
+
     def input(text):
-        result = parser.parse(text,lexer=lexer)
+        result = parser.parse(text, lexer=lexer)
         return result
 
     return input
@@ -126,5 +130,3 @@ while True:
     r = calc(s)
     if r:
         print(r)
-
-    
