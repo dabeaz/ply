@@ -1,3 +1,8 @@
+Version 3.8
+---------------------
+10/02/15: beazley
+          Fixed issues related to Python 3.5. Patch contributed by Barry Warsaw.
+
 Version 3.7
 ---------------------
 08/25/15: beazley

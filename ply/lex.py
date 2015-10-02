@@ -31,8 +31,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-__version__    = '3.7'
-__tabversion__ = '3.5'
+__version__    = '3.8'
+__tabversion__ = '3.8'
 
 import re
 import sys
