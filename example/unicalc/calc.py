@@ -8,24 +8,25 @@
 # -----------------------------------------------------------------------------
 
 import sys
-sys.path.insert(0,"../..")
+sys.path.insert(0, "../..")
 
 tokens = (
-    'NAME','NUMBER',
-    'PLUS','MINUS','TIMES','DIVIDE','EQUALS',
-    'LPAREN','RPAREN',
-    )
+    'NAME', 'NUMBER',
+    'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'EQUALS',
+    'LPAREN', 'RPAREN',
+)
 
 # Tokens
 
-t_PLUS    = ur'\+'
-t_MINUS   = ur'-'
-t_TIMES   = ur'\*'
-t_DIVIDE  = ur'/'
-t_EQUALS  = ur'='
-t_LPAREN  = ur'\('
-t_RPAREN  = ur'\)'
-t_NAME    = ur'[a-zA-Z_][a-zA-Z0-9_]*'
+t_PLUS = ur'\+'
+t_MINUS = ur'-'
+t_TIMES = ur'\*'
+t_DIVIDE = ur'/'
+t_EQUALS = ur'='
+t_LPAREN = ur'\('
+t_RPAREN = ur'\)'
+t_NAME = ur'[a-zA-Z_][a-zA-Z0-9_]*'
+
 
 def t_NUMBER(t):
     ur'\d+'
@@ -38,14 +39,16 @@ def t_NUMBER(t):
 
 t_ignore = u" \t"
 
+
 def t_newline(t):
     ur'\n+'
     t.lexer.lineno += t.value.count("\n")
-    
+
+
 def t_error(t):
     print "Illegal character '%s'" % t.value[0]
     t.lexer.skip(1)
-    
+
 # Build the lexer
 import ply.lex as lex
 lex.lex()
@@ -53,43 +56,54 @@ lex.lex()
 # Parsing rules
 
 precedence = (
-    ('left','PLUS','MINUS'),
-    ('left','TIMES','DIVIDE'),
-    ('right','UMINUS'),
-    )
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE'),
+    ('right', 'UMINUS'),
+)
 
 # dictionary of names
-names = { }
+names = {}
+
 
 def p_statement_assign(p):
     'statement : NAME EQUALS expression'
     names[p[1]] = p[3]
 
+
 def p_statement_expr(p):
     'statement : expression'
     print p[1]
+
 
 def p_expression_binop(p):
     '''expression : expression PLUS expression
                   | expression MINUS expression
                   | expression TIMES expression
                   | expression DIVIDE expression'''
-    if p[2] == u'+'  : p[0] = p[1] + p[3]
-    elif p[2] == u'-': p[0] = p[1] - p[3]
-    elif p[2] == u'*': p[0] = p[1] * p[3]
-    elif p[2] == u'/': p[0] = p[1] / p[3]
+    if p[2] == u'+':
+        p[0] = p[1] + p[3]
+    elif p[2] == u'-':
+        p[0] = p[1] - p[3]
+    elif p[2] == u'*':
+        p[0] = p[1] * p[3]
+    elif p[2] == u'/':
+        p[0] = p[1] / p[3]
+
 
 def p_expression_uminus(p):
     'expression : MINUS expression %prec UMINUS'
     p[0] = -p[2]
 
+
 def p_expression_group(p):
     'expression : LPAREN expression RPAREN'
     p[0] = p[2]
 
+
 def p_expression_number(p):
     'expression : NUMBER'
     p[0] = p[1]
+
 
 def p_expression_name(p):
     'expression : NAME'
@@ -98,6 +112,7 @@ def p_expression_name(p):
     except LookupError:
         print "Undefined name '%s'" % p[1]
         p[0] = 0
+
 
 def p_error(p):
     if p:
@@ -113,5 +128,6 @@ while 1:
         s = raw_input('calc > ')
     except EOFError:
         break
-    if not s: continue
+    if not s:
+        continue
     yacc.parse(unicode(s))
