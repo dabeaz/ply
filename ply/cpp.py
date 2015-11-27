@@ -767,7 +767,9 @@ class Preprocessor(object):
         for p in path:
             iname = os.path.join(p,filename)
             try:
-                data = open(iname,"r").read()
+                with open(iname,"r") as infile:
+                    data = infile.read()
+
                 dname = os.path.dirname(iname)
                 if dname:
                     self.temp_path.insert(0,dname)
