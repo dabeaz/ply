@@ -9,6 +9,13 @@
 # -----------------------------------------------------------------------------
 from __future__ import generators
 
+import sys
+if sys.version_info >= (3,):
+    _string_types = (str,)
+else:
+    _string_types = (str, unicode)
+    range = xrange
+
 # -----------------------------------------------------------------------------
 # Default preprocessor lexer definitions.   These tokens are enough to get
 # a basic preprocessor working.   Other modules may import these if they want
@@ -271,7 +278,7 @@ class Preprocessor(object):
     def group_lines(self,input):
         lex = self.lexer.clone()
         lines = [x.rstrip() for x in input.splitlines()]
-        for i in xrange(len(lines)):
+        for i in range(len(lines)):
             j = i+1
             while lines[i].endswith('\\') and (j < len(lines)):
                 lines[i] = lines[i][:-1]+lines[j]
@@ -760,7 +767,9 @@ class Preprocessor(object):
         for p in path:
             iname = os.path.join(p,filename)
             try:
-                data = open(iname,"r").read()
+                with open(iname,"r") as infile:
+                    data = infile.read()
+
                 dname = os.path.dirname(iname)
                 if dname:
                     self.temp_path.insert(0,dname)
@@ -781,7 +790,7 @@ class Preprocessor(object):
     # ----------------------------------------------------------------------
 
     def define(self,tokens):
-        if isinstance(tokens,(str,unicode)):
+        if isinstance(tokens, _string_types):
             tokens = self.tokenize(tokens)
 
         linetok = tokens
