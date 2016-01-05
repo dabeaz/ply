@@ -3107,7 +3107,7 @@ class ParserReflect(object):
             if not name.startswith('p_') or name == 'p_error':
                 continue
             if isinstance(item, (types.FunctionType, types.MethodType)):
-                line = item.__code__.co_firstlineno
+                line = getattr(item, 'co_firstlineno', item.__code__.co_firstlineno)
                 module = inspect.getmodule(item)
                 p_functions.append((line, module, name, item.__doc__))
 
