@@ -536,6 +536,12 @@ class Preprocessor(object):
                                     r.lineno = t.lineno
                                 tokens[i:j+tokcount] = rep
                                 i += len(rep)
+                        else:
+                            # This is not a macro. It is just a word which
+                            # equals to name of the macro. Hence, go to the
+                            # next token.
+                            i += 1
+
                     del expanded[t.value]
                     continue
                 elif t.value == '__LINE__':
