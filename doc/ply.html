@@ -3167,6 +3167,42 @@ in the same source file.
 </li>
 </p>
 
+<p>
+<li>Decorators of production rules have to update the wrapped function's line number.  <tt>wrapper.co_firstlineno = func.__code__.co_firstlineno</tt>:
+
+<blockquote>
+<pre>
+from functools import wraps
+from nodes import Collection
+
+
+def strict(*types):
+    def decorate(func):
+        @wraps(func)
+        def wrapper(p):
+            func(p)
+            if not isinstance(p[0], types):
+                raise TypeError
+
+        wrapper.co_firstlineno = func.__code__.co_firstlineno
+        return wrapper
+
+    return decorate
+
+@strict(Collection)
+def p_collection(p):
+    """
+    collection  : sequence
+                | map
+    """
+    p[0] = p[1]
+</pre>
+</blockquote>
+
+</li>
+</p>
+
+
 </ul>
 </p>
 
