@@ -497,8 +497,8 @@ class LRParser:
                         try:
                             # Call the grammar rule with our special slice object
                             del symstack[-plen:]
-                            del statestack[-plen:]
                             p.callable(pslice)
+                            del statestack[-plen:]
                             #--! DEBUG
                             debug.info('Result : %s', format_result(pslice[0]))
                             #--! DEBUG
@@ -507,14 +507,16 @@ class LRParser:
                             statestack.append(state)
                         except SyntaxError:
                             # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
+                            lookaheadstack.append(lookahead)    # Save the current lookahead token
+                            symstack.extend(targ[1:-1])         # Put the production slice back on the stack
+                            statestack.pop()                    # Pop back one state (before the reduce)
                             state = statestack[-1]
                             sym.type = 'error'
+                            sym.value = 'error'
                             lookahead = sym
                             errorcount = error_count
                             self.errorok = False
+
                         continue
                         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -546,14 +548,15 @@ class LRParser:
                             statestack.append(state)
                         except SyntaxError:
                             # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
+                            lookaheadstack.append(lookahead)    # Save the current lookahead token
+                            statestack.pop()                    # Pop back one state (before the reduce)
                             state = statestack[-1]
                             sym.type = 'error'
+                            sym.value = 'error'
                             lookahead = sym
                             errorcount = error_count
                             self.errorok = False
+
                         continue
                         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -811,21 +814,23 @@ class LRParser:
                         try:
                             # Call the grammar rule with our special slice object
                             del symstack[-plen:]
-                            del statestack[-plen:]
                             p.callable(pslice)
+                            del statestack[-plen:]
                             symstack.append(sym)
                             state = goto[statestack[-1]][pname]
                             statestack.append(state)
                         except SyntaxError:
                             # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
+                            lookaheadstack.append(lookahead)    # Save the current lookahead token
+                            symstack.extend(targ[1:-1])         # Put the production slice back on the stack
+                            statestack.pop()                    # Pop back one state (before the reduce)
                             state = statestack[-1]
                             sym.type = 'error'
+                            sym.value = 'error'
                             lookahead = sym
                             errorcount = error_count
                             self.errorok = False
+
                         continue
                         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -854,14 +859,15 @@ class LRParser:
                             statestack.append(state)
                         except SyntaxError:
                             # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
+                            lookaheadstack.append(lookahead)    # Save the current lookahead token
+                            statestack.pop()                    # Pop back one state (before the reduce)
                             state = statestack[-1]
                             sym.type = 'error'
+                            sym.value = 'error'
                             lookahead = sym
                             errorcount = error_count
                             self.errorok = False
+
                         continue
                         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -1102,21 +1108,23 @@ class LRParser:
                         try:
                             # Call the grammar rule with our special slice object
                             del symstack[-plen:]
-                            del statestack[-plen:]
                             p.callable(pslice)
+                            del statestack[-plen:]
                             symstack.append(sym)
                             state = goto[statestack[-1]][pname]
                             statestack.append(state)
                         except SyntaxError:
                             # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
+                            lookaheadstack.append(lookahead)    # Save the current lookahead token
+                            symstack.extend(targ[1:-1])         # Put the production slice back on the stack
+                            statestack.pop()                    # Pop back one state (before the reduce)
                             state = statestack[-1]
                             sym.type = 'error'
+                            sym.value = 'error'
                             lookahead = sym
                             errorcount = error_count
                             self.errorok = False
+
                         continue
                         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -1140,14 +1148,15 @@ class LRParser:
                             statestack.append(state)
                         except SyntaxError:
                             # If an error was set. Enter error recovery state
-                            lookaheadstack.append(lookahead)
-                            symstack.pop()
-                            statestack.pop()
+                            lookaheadstack.append(lookahead)    # Save the current lookahead token
+                            statestack.pop()                    # Pop back one state (before the reduce)
                             state = statestack[-1]
                             sym.type = 'error'
+                            sym.value = 'error'
                             lookahead = sym
                             errorcount = error_count
                             self.errorok = False
+
                         continue
                         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -1982,7 +1991,7 @@ class LRTable(object):
             import cPickle as pickle
         except ImportError:
             import pickle
-        
+
         if not os.path.exists(filename):
           raise ImportError
 
