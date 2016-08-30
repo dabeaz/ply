@@ -1,5 +1,8 @@
 Version 3.9
 ---------------------
+08/30/16: beazley 
+          Fixed Issue #88. Python3 compatibility with ply/cpp.
+
 08/30/16: beazley
           Fixed Issue #93. Ply can crash if SyntaxError is raised inside
           a production.   Not actually sure if the original implementation

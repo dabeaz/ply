@@ -855,7 +855,7 @@ import profile
 # Build the grammar
 
 yacc.yacc()
-#yacc.yacc(method='LALR',write_tables=False,debug=True)
+#yacc.yacc(method='LALR',write_tables=False,debug=False)
 
 #profile.run("yacc.yacc(method='LALR')")
 
