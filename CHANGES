@@ -1,5 +1,17 @@
 Version 3.9
 ---------------------
+08/30/16: beazley
+          Exposed the parser state number as the parser.state attribute
+          in productions and error functions. For example:
+
+          def p_somerule(p):
+              '''
+              rule : A B C
+              '''
+              print('State:', p.parser.state)
+
+          May address issue #65 (publish current state in error callback).
+
 08/30/16: beazley 
           Fixed Issue #88. Python3 compatibility with ply/cpp.
 

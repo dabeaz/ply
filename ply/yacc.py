@@ -497,6 +497,7 @@ class LRParser:
                         try:
                             # Call the grammar rule with our special slice object
                             del symstack[-plen:]
+                            self.state = state
                             p.callable(pslice)
                             del statestack[-plen:]
                             #--! DEBUG
@@ -539,6 +540,7 @@ class LRParser:
 
                         try:
                             # Call the grammar rule with our special slice object
+                            self.state = state
                             p.callable(pslice)
                             #--! DEBUG
                             debug.info('Result : %s', format_result(pslice[0]))
@@ -595,6 +597,7 @@ class LRParser:
                     if self.errorfunc:
                         if errtoken and not hasattr(errtoken, 'lexer'):
                             errtoken.lexer = lexer
+                        self.state = state
                         tok = call_errorfunc(self.errorfunc, errtoken, self)
                         if self.errorok:
                             # User must have done some kind of panic
@@ -814,6 +817,7 @@ class LRParser:
                         try:
                             # Call the grammar rule with our special slice object
                             del symstack[-plen:]
+                            self.state = state
                             p.callable(pslice)
                             del statestack[-plen:]
                             symstack.append(sym)
@@ -853,6 +857,7 @@ class LRParser:
 
                         try:
                             # Call the grammar rule with our special slice object
+                            self.state = state
                             p.callable(pslice)
                             symstack.append(sym)
                             state = goto[statestack[-1]][pname]
@@ -898,6 +903,7 @@ class LRParser:
                     if self.errorfunc:
                         if errtoken and not hasattr(errtoken, 'lexer'):
                             errtoken.lexer = lexer
+                        self.state = state
                         tok = call_errorfunc(self.errorfunc, errtoken, self)
                         if self.errorok:
                             # User must have done some kind of panic
@@ -1108,6 +1114,7 @@ class LRParser:
                         try:
                             # Call the grammar rule with our special slice object
                             del symstack[-plen:]
+                            self.state = state
                             p.callable(pslice)
                             del statestack[-plen:]
                             symstack.append(sym)
@@ -1142,6 +1149,7 @@ class LRParser:
 
                         try:
                             # Call the grammar rule with our special slice object
+                            self.state = state
                             p.callable(pslice)
                             symstack.append(sym)
                             state = goto[statestack[-1]][pname]
@@ -1187,6 +1195,7 @@ class LRParser:
                     if self.errorfunc:
                         if errtoken and not hasattr(errtoken, 'lexer'):
                             errtoken.lexer = lexer
+                        self.state = state
                         tok = call_errorfunc(self.errorfunc, errtoken, self)
                         if self.errorok:
                             # User must have done some kind of panic
