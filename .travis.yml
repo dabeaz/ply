@@ -6,5 +6,5 @@ python:
   - "3.3"
   - "3.4"
 install:
-  - "pip install . --use-mirrors"
+  - "pip install . "
 script: "cd test && python testlex.py && python testyacc.py"
