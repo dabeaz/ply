@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # ply: yacc.py
 #
-# Copyright (C) 2001-2015,
+# Copyright (C) 2001-2016
 # David M. Beazley (Dabeaz LLC)
 # All rights reserved.
 #
@@ -67,7 +67,7 @@ import inspect
 import base64
 import warnings
 
-__version__    = '3.8'
+__version__    = '3.9'
 __tabversion__ = '3.8'
 
 #-----------------------------------------------------------------------------

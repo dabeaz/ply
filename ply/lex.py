@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # ply: lex.py
 #
-# Copyright (C) 2001-2015,
+# Copyright (C) 2001-2016
 # David M. Beazley (Dabeaz LLC)
 # All rights reserved.
 #
@@ -31,7 +31,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-__version__    = '3.8'
+__version__    = '3.9'
 __tabversion__ = '3.8'
 
 import re
