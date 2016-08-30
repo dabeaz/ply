@@ -1,6 +1,11 @@
 Version 3.9
 ---------------------
 08/30/16: beazley
+          Fixed Issue #97. Failure with code validation when the original
+          source files aren't present.   Validation step now ignores
+          the missing file.
+
+08/30/16: beazley
           Minor fixes to version numbers.
 
 Version 3.8

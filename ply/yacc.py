@@ -2979,7 +2979,10 @@ class ParserReflect(object):
         fre = re.compile(r'\s*def\s+(p_[a-zA-Z_0-9]*)\(')
 
         for module in self.modules:
-            lines, linen = inspect.getsourcelines(module)
+            try:
+                lines, linen = inspect.getsourcelines(module)
+            except IOError:
+                continue
 
             counthash = {}
             for linen, line in enumerate(lines):
