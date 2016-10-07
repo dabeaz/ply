@@ -1,3 +1,19 @@
+Version 3.10
+---------------------
+10/07/16: beazley
+          Fixed Issue #101: Incorrect shift-reduce conflict resolution with
+          precedence specifier.
+
+          PLY was incorrectly resolving shift-reduce conflicts in certain
+          cases.  For example, in the example/calc/calc.py example, you 
+          could trigger it doing this:
+
+          calc > -3 - 4            
+          1                         (correct answer should be -7)
+          calc >
+
+          Issue and suggested patch contributed by https://github.com/RomaVis
+           
 Version 3.9
 ---------------------
 08/30/16: beazley
