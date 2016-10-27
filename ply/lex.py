@@ -230,7 +230,7 @@ class Lexer:
             titem = []
             txtitem = []
             for pat, func_name in lre:
-                titem.append((re.compile(pat, lextab._lexreflags | re.VERBOSE), _names_to_funcs(func_name, fdict)))
+                titem.append((re.compile(pat, lextab._lexreflags), _names_to_funcs(func_name, fdict)))
 
             self.lexstatere[statename] = titem
             self.lexstateretext[statename] = txtitem
@@ -495,7 +495,7 @@ def _form_master_re(relist, reflags, ldict, toknames):
         return []
     regex = '|'.join(relist)
     try:
-        lexre = re.compile(regex, re.VERBOSE | reflags)
+        lexre = re.compile(regex, reflags)
 
         # Build the index to function map for the matching engine
         lexindexfunc = [None] * (max(lexre.groupindex.values()) + 1)
@@ -758,7 +758,7 @@ class LexerReflect(object):
                     continue
 
                 try:
-                    c = re.compile('(?P<%s>%s)' % (fname, _get_regex(f)), re.VERBOSE | self.reflags)
+                    c = re.compile('(?P<%s>%s)' % (fname, _get_regex(f)), self.reflags)
                     if c.match(''):
                         self.log.error("%s:%d: Regular expression for rule '%s' matches empty string", file, line, f.__name__)
                         self.error = True
@@ -782,7 +782,7 @@ class LexerReflect(object):
                     continue
 
                 try:
-                    c = re.compile('(?P<%s>%s)' % (name, r), re.VERBOSE | self.reflags)
+                    c = re.compile('(?P<%s>%s)' % (name, r), self.reflags)
                     if (c.match('')):
                         self.log.error("Regular expression for rule '%s' matches empty string", name)
                         self.error = True
@@ -861,7 +861,7 @@ class LexerReflect(object):
 # Build all of the regular expression rules from definitions in the supplied module
 # -----------------------------------------------------------------------------
 def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
-        reflags=0, nowarn=False, outputdir=None, debuglog=None, errorlog=None):
+        reflags=re.VERBOSE, nowarn=False, outputdir=None, debuglog=None, errorlog=None):
 
     if lextab is None:
         lextab = 'lextab'
