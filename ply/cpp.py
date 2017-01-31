@@ -77,6 +77,7 @@ def t_CPP_COMMENT2(t):
     r'(//.*?(\n|$))'
     # replace with '/n'
     t.type = 'CPP_WS'; t.value = '\n'
+    return t
     
 def t_error(t):
     t.type = t.value[0]
