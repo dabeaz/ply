@@ -1,5 +1,9 @@
 Version 3.10
 ---------------------
+01/31/17: beazley
+          Changed grammar signature computation to not involve hashing
+          functions. Parts are just combined into a big string.
+
 10/07/16: beazley
           Fixed Issue #101: Incorrect shift-reduce conflict resolution with
           precedence specifier.
