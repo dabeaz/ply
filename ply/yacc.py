@@ -2969,11 +2969,12 @@ class ParserReflect(object):
     # Compute a signature over the grammar
     def signature(self):
         try:
-            from hashlib import md5
+            from hashlib import sha256
         except ImportError:
-            from md5 import md5
+            # The system is too old, don't support it
+            raise RuntimeError("Cannot import sha256.")
         try:
-            sig = md5()
+            sig = sha256()
             if self.start:
                 sig.update(self.start.encode('latin-1'))
             if self.prec:
