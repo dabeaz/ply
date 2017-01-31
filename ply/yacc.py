@@ -2968,28 +2968,20 @@ class ParserReflect(object):
 
     # Compute a signature over the grammar
     def signature(self):
+        parts = []
         try:
-            from hashlib import md5
-        except ImportError:
-            from md5 import md5
-        try:
-            sig = md5()
             if self.start:
-                sig.update(self.start.encode('latin-1'))
+                parts.append(self.start)
             if self.prec:
-                sig.update(''.join([''.join(p) for p in self.prec]).encode('latin-1'))
+                parts.append(''.join([''.join(p) for p in self.prec]))
             if self.tokens:
-                sig.update(' '.join(self.tokens).encode('latin-1'))
+                parts.append(' '.join(self.tokens))
             for f in self.pfuncs:
                 if f[3]:
-                    sig.update(f[3].encode('latin-1'))
+                    parts.append(f[3])
         except (TypeError, ValueError):
             pass
-
-        digest = base64.b16encode(sig.digest())
-        if sys.version_info[0] >= 3:
-            digest = digest.decode('latin-1')
-        return digest
+        return ''.join(parts)
 
     # -----------------------------------------------------------------------------
     # validate_modules()
