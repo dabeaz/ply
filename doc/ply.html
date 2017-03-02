@@ -552,7 +552,7 @@ Within the rule, the <tt>lineno</tt> attribute of the underlying lexer <tt>t.lex
 After the line number is updated, the token is simply discarded since nothing is returned.
 
 <p>
-<tt>lex.py</tt> does not perform and kind of automatic column tracking.  However, it does record positional
+<tt>lex.py</tt> does not perform any kind of automatic column tracking.  However, it does record positional
 information related to each token in the <tt>lexpos</tt> attribute.   Using this, it is usually possible to compute 
 column information as a separate step.   For instance, just count backwards until you reach a newline.
 
