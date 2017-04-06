@@ -3476,6 +3476,8 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     if write_tables:
         try:
             lr.write_table(tabmodule, outputdir, signature)
+            if tabmodule in sys.modules:
+                del sys.modules[tabmodule]
         except IOError as e:
             errorlog.warning("Couldn't create %r. %s" % (tabmodule, e))
 
