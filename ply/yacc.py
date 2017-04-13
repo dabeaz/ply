@@ -66,7 +66,7 @@ import os.path
 import inspect
 import warnings
 
-__version__    = '3.10'
+__version__    = '3.11'
 __tabversion__ = '3.10'
 
 #-----------------------------------------------------------------------------

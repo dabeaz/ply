@@ -12,7 +12,7 @@ dave@dabeaz.com<br>
 </b>
 
 <p>
-<b>PLY Version: 3.10</b>
+<b>PLY Version: 3.11</b>
 <p>
 
 <!-- INDEX -->
@@ -1438,9 +1438,12 @@ well as for input text.
 
 <blockquote>
 <pre>
-lex.lex(reflags=re.UNICODE)
+lex.lex(reflags=re.UNICODE | re.VERBOSE)
 </pre>
 </blockquote>
+
+Note: by default, <tt>reflags</tt> is set to <tt>re.VERBOSE</tt>.  If you provide
+your own flags, you may need to include this for PLY to preserve its normal behavior.
 
 <p>
 <li>Since the lexer is written entirely in Python, its performance is
