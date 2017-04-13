@@ -1038,6 +1038,8 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
             outputdir = os.path.dirname(srcfile)
         try:
             lexobj.writetab(lextab, outputdir)
+            if lextab in sys.modules:
+                del sys.modules[lextab]
         except IOError as e:
             errorlog.warning("Couldn't write lextab module %r. %s" % (lextab, e))
 
