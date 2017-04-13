@@ -64,7 +64,6 @@ import types
 import sys
 import os.path
 import inspect
-import base64
 import warnings
 
 __version__    = '3.10'
@@ -1360,7 +1359,7 @@ class Production(object):
         p = LRItem(self, n)
         # Precompute the list of productions immediately following.
         try:
-            p.lr_after = Prodnames[p.prod[n+1]]
+            p.lr_after = self.Prodnames[p.prod[n+1]]
         except (IndexError, KeyError):
             p.lr_after = []
         try:
@@ -2301,7 +2300,6 @@ class LRGeneratedTable(LRTable):
     # -----------------------------------------------------------------------------
 
     def dr_relation(self, C, trans, nullable):
-        dr_set = {}
         state, N = trans
         terms = []
 
