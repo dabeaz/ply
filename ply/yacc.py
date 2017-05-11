@@ -3070,7 +3070,7 @@ class ParserReflect(object):
             self.error = True
             return
 
-        self.tokens = tokens
+        self.tokens = sorted(tokens)
 
     # Validate the tokens
     def validate_tokens(self):
