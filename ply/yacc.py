@@ -3295,6 +3295,8 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
         errorlog.warning(str(e))
     except ImportError:
         pass
+    except IOError:
+        pass
 
     if debuglog is None:
         if debug:
