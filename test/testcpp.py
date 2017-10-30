@@ -45,4 +45,27 @@ class CPPTests(TestCase):
         else:
             self.assertMultiLineEqual(out, expected)
 
+    def test_concatenation(self):
+        self.__test_preprocessing("""\
+#define a(x) x##_
+#define b(x) _##x
+#define c(x) _##x##_
+#define d(x,y) _##x##y##_
+
+a(i)
+b(j)
+c(k)
+d(q,s)"""
+            , """\
+
+
+
+
+
+i_
+_j
+_k_
+_qs_"""
+        )
+
 main()
