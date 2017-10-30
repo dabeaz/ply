@@ -83,4 +83,19 @@ a;"""
 a;"""
         )
 
+    def test_index_error(self):
+        # If there are no tokens after a word ("a") which equals to name of
+        # a parameterized macro, then attempt to expand this word leads to
+        # IndexError.
+
+        self.__test_preprocessing("""\
+#define a(x) x
+
+a"""
+            , """\
+
+
+a"""
+        )
+
 main()
