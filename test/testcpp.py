@@ -68,4 +68,19 @@ _k_
 _qs_"""
         )
 
+    def test_deadloop_macro(self):
+        # If there is a word which equals to name of a parametrized macro, then
+        # attempt to expand such word as a macro manages the parser to fall
+        # into an infinite loop.
+
+        self.__test_preprocessing("""\
+#define a(x) x
+
+a;"""
+            , """\
+
+
+a;"""
+        )
+
 main()
