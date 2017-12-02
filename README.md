@@ -1,4 +1,6 @@
-PLY (Python Lex-Yacc)                   Version 3.11
+# PLY (Python Lex-Yacc)                   Version 3.11
+
+[![Build Status](https://travis-ci.org/dabeaz/ply.svg?branch=master)](https://travis-ci.org/dabeaz/ply)
 
 Copyright (C) 2001-2017
 David M. Beazley (Dabeaz LLC)
