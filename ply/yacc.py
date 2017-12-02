@@ -3231,9 +3231,13 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     if module:
         _items = [(k, getattr(module, k)) for k in dir(module)]
         pdict = dict(_items)
-        # If no __file__ attribute is available, try to obtain it from the __module__ instead
+        # If no __file__ or __package__ attributes are available, try to obtain them
+        # from the __module__ instead
         if '__file__' not in pdict:
             pdict['__file__'] = sys.modules[pdict['__module__']].__file__
+        if '__package__' not in pdict and '__module__' in pdict:
+            if hasattr(sys.modules[pdict['__module__']], '__package__'):
+                pdict['__package__'] = sys.modules[pdict['__module__']].__package__
     else:
         pdict = get_caller_module_dict(2)
 
