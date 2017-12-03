@@ -712,6 +712,8 @@ class LexerReflect(object):
                 else:
                     for s in states:
                         self.strsym[s].append((f, t))
+            # issue 142: drop ignored members (for parser class inheritance)
+            elif t == None: pass
             else:
                 self.log.error('%s not defined as a function or string', f)
                 self.error = True
@@ -829,6 +831,9 @@ class LexerReflect(object):
     # -----------------------------------------------------------------------------
 
     def validate_module(self, module):
+        # issue 142: don't error on duplicate t_rules for multiple parser classes in one module 
+        if hasattr(module,'ply_class_inherit'): return
+        
         try:
             lines, linen = inspect.getsourcelines(module)
         except IOError:
@@ -850,8 +855,8 @@ class LexerReflect(object):
                     counthash[name] = linen
                 else:
                     filename = inspect.getsourcefile(module)
-                    self.log.warning('%s:%d: Rule %s redefined. Previously defined on line %d', filename, linen, name, prev)
-                    # self.error = True
+                    self.log.error('%s:%d: Rule %s redefined. Previously defined on line %d', filename, linen, name, prev)
+                    self.error = True
             linen += 1
 
 # -----------------------------------------------------------------------------
