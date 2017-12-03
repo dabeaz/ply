@@ -850,8 +850,8 @@ class LexerReflect(object):
                     counthash[name] = linen
                 else:
                     filename = inspect.getsourcefile(module)
-                    self.log.error('%s:%d: Rule %s redefined. Previously defined on line %d', filename, linen, name, prev)
-                    self.error = True
+                    self.log.warning('%s:%d: Rule %s redefined. Previously defined on line %d', filename, linen, name, prev)
+                    # self.error = True
             linen += 1
 
 # -----------------------------------------------------------------------------
