@@ -554,7 +554,7 @@ def _statetoken(s, names):
 # This class represents information needed to build a lexer as extracted from a
 # user's input file.
 # -----------------------------------------------------------------------------
-class LexerReflect(object): ##
+class LexerReflect(object):
     def __init__(self, ldict, log=None, reflags=0):
         self.ldict      = ldict
         self.error_func = None
@@ -725,14 +725,14 @@ class LexerReflect(object): ##
             s.sort(key=lambda x: len(x[1]), reverse=True)
 
     # Validate all of the t_rules collected
-    def validate_rules(self): ##
+    def validate_rules(self):
         for state in self.stateinfo:
             # Validate all rules defined by functions
 
             for fname, f in self.funcsym[state]:
                 line = f.__code__.co_firstlineno
                 file = f.__code__.co_filename
-                module = inspect.getmodule(f) ## should be .getouter()
+                module = inspect.getmodule(f)
                 self.modules.add(module)
 
                 tokname = self.toknames[fname]
@@ -796,13 +796,13 @@ class LexerReflect(object): ##
                 self.error = True
 
             # Validate the error function
-            efunc = self.errorf.get(state, None) ##
-            if efunc: ##
-                f = efunc ##
+            efunc = self.errorf.get(state, None)
+            if efunc:
+                f = efunc
                 line = f.__code__.co_firstlineno
                 file = f.__code__.co_filename
-                module = inspect.getmodule(f) ## should be .getouter()
-                self.modules.add(module) ##
+                module = inspect.getmodule(f)
+                self.modules.add(module)
 
                 if isinstance(f, types.MethodType):
                     reqargs = 2
@@ -817,8 +817,8 @@ class LexerReflect(object): ##
                     self.log.error("%s:%d: Rule '%s' requires an argument", file, line, f.__name__)
                     self.error = True
 
-        for module in self.modules: ##
-            self.validate_module(module) ##
+        for module in self.modules:
+            self.validate_module(module)
 
     # -----------------------------------------------------------------------------
     # validate_module()
@@ -828,9 +828,7 @@ class LexerReflect(object): ##
     # match on each line in the source code of the given module.
     # -----------------------------------------------------------------------------
 
-    def validate_module(self, module): ##
-    	if self.isobject: return ##+ don't check redefinition for lexer in class
-    	
+    def validate_module(self, module):
         try:
             lines, linen = inspect.getsourcelines(module)
         except IOError:
@@ -861,8 +859,8 @@ class LexerReflect(object): ##
 #
 # Build all of the regular expression rules from definitions in the supplied module
 # -----------------------------------------------------------------------------
-def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab', ##
-        reflags=int(re.VERBOSE), nowarn=False, outputdir=None, debuglog=None, errorlog=None): ##
+def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
+        reflags=int(re.VERBOSE), nowarn=False, outputdir=None, debuglog=None, errorlog=None):
 
     if lextab is None:
         lextab = 'lextab'
@@ -871,7 +869,7 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab', 
 
     ldict = None
     stateinfo  = {'INITIAL': 'inclusive'}
-    lexobj = Lexer() ##
+    lexobj = Lexer()
     lexobj.lexoptimize = optimize
     global token, input
 
@@ -882,12 +880,9 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab', 
         if debuglog is None:
             debuglog = PlyLogger(sys.stderr)
 
-    # Get the module dictionary used for the lexer ##
-    if object: ##
-        module = object ##
-        lexobj.isobject = True ##+
-    else: ##+
-    	lexobj.isobject = False ##+
+    # Get the module dictionary used for the lexer
+    if object:
+        module = object
 
     # Get the module dictionary used for the parser
     if module:
@@ -907,8 +902,7 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab', 
             lextab = pkg + '.' + lextab
 
     # Collect parser information from the dictionary
-    linfo = LexerReflect(ldict, log=errorlog, reflags=reflags) ##
-    linfo.isobject = lexobj.isobject ##+
+    linfo = LexerReflect(ldict, log=errorlog, reflags=reflags)
     linfo.get_all()
     if not optimize:
         if linfo.validate_all():
