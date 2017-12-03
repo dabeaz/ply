@@ -732,7 +732,7 @@ class LexerReflect(object): ##
             for fname, f in self.funcsym[state]:
                 line = f.__code__.co_firstlineno
                 file = f.__code__.co_filename
-                module = inspect.getmodule(f)
+                module = inspect.getmodule(f) ## should be .getouter()
                 self.modules.add(module)
 
                 tokname = self.toknames[fname]
@@ -797,11 +797,11 @@ class LexerReflect(object): ##
 
             # Validate the error function
             efunc = self.errorf.get(state, None) ##
-            if efunc:
-                f = efunc
+            if efunc: ##
+                f = efunc ##
                 line = f.__code__.co_firstlineno
                 file = f.__code__.co_filename
-                module = inspect.getmodule(f)
+                module = inspect.getmodule(f) ## should be .getouter()
                 self.modules.add(module) ##
 
                 if isinstance(f, types.MethodType):
@@ -871,7 +871,7 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab', 
 
     ldict = None
     stateinfo  = {'INITIAL': 'inclusive'}
-    lexobj = Lexer()
+    lexobj = Lexer() ##
     lexobj.lexoptimize = optimize
     global token, input
 
