@@ -1,3 +1,4 @@
+from __future__ import print_function
 # parser for Unix yacc-based grammars
 #
 # Author: David Beazley (dave@dabeaz.com)
@@ -22,9 +23,9 @@ def p_defsection(p):
     '''defsection : definitions SECTION
                   | SECTION'''
     p.lexer.lastsection = 1
-    print("tokens = ", repr(tokenlist))
+    print(("tokens = ", repr(tokenlist)))
     print()
-    print("precedence = ", repr(preclist))
+    print(("precedence = ", repr(preclist)))
     print()
     print("# -------------- RULES ----------------")
     print()

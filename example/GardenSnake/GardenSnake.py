@@ -36,6 +36,8 @@
 #  30 August - added link to CC license; removed the "swapcase" encoding
 
 # Modifications for inclusion in PLY distribution
+from __future__ import print_function
+
 import sys
 sys.path.insert(0, "../..")
 from ply import *
@@ -43,6 +45,11 @@ from ply import *
 ##### Lexer ######
 #import lex
 import decimal
+
+try:
+    basestring        # Python 2
+except NameError:
+    basestring = str  # Python 3
 
 tokens = (
     'DEF',
@@ -156,7 +163,7 @@ def t_RPAR(t):
 
 def t_error(t):
     raise SyntaxError("Unknown symbol %r" % (t.value[0],))
-    print "Skipping", repr(t.value[0])
+    print("Skipping", repr(t.value[0]))
     t.lexer.skip(1)
 
 # I implemented INDENT / DEDENT generation as a post-processing filter
@@ -346,7 +353,7 @@ class IndentLexer(object):
 
     def token(self):
         try:
-            return self.token_stream.next()
+            return next(self.token_stream)
         except StopIteration:
             return None
 
@@ -537,15 +544,18 @@ def p_stmts(p):
 # comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'|'is' 'not'
 
 
-def make_lt_compare((left, right)):
+def make_lt_compare(left__right):
+    (left, right) = left__right
     return ast.Compare(left, [('<', right), ])
 
 
-def make_gt_compare((left, right)):
+def make_gt_compare(left__right):
+    (left, right) = left__right
     return ast.Compare(left, [('>', right), ])
 
 
-def make_eq_compare((left, right)):
+def make_eq_compare(left__right):
+    (left, right) = left__right
     return ast.Compare(left, [('==', right), ])
 
 
@@ -730,7 +740,7 @@ compile = GardenSnakeCompiler().compile
 code = r"""
 
 print('LET\'S TRY THIS \\OUT')
-  
+
 #Comment here
 def x(a):
     print('called with',a)
@@ -767,11 +777,11 @@ print('BIG DECIMAL', 1.234567891234567e12345)
 
 
 def print_(*args):
-    print "-->", " ".join(map(str, args))
+    print("-->", " ".join(map(str, args)))
 
 globals()["print"] = print_
 
 compiled_code = compile(code)
 
-exec compiled_code in globals()
-print "Done"
+exec(compiled_code, globals())
+print("Done")

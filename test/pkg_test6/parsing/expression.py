@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This file contains definitions of expression grammar
 
 def p_expression_binop(t):

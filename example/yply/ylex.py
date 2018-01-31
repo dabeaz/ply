@@ -1,3 +1,4 @@
+from __future__ import print_function
 # lexer for yacc-grammars
 #
 # Author: David Beazley (dave@dabeaz.com)
