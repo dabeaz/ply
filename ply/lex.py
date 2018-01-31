@@ -44,7 +44,7 @@ import inspect
 # This tuple contains known string types
 try:
     # Python 2.6
-    StringTypes = (types.StringType, types.UnicodeType)
+    StringTypes = (bytes, str)
 except AttributeError:
     # Python 3.0
     StringTypes = (str, bytes)

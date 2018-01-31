@@ -4,6 +4,7 @@
 # Test for unicode literals on Python 2.x
 # -----------------------------------------------------------------------------
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import sys
 

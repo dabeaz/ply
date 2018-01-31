@@ -1,3 +1,4 @@
+from __future__ import print_function
 # GardenSnake - a parser generator demonstration program
 #
 # This implements a modified version of a subset of Python:
@@ -156,7 +157,7 @@ def t_RPAR(t):
 
 def t_error(t):
     raise SyntaxError("Unknown symbol %r" % (t.value[0],))
-    print "Skipping", repr(t.value[0])
+    print("Skipping", repr(t.value[0]))
     t.lexer.skip(1)
 
 # I implemented INDENT / DEDENT generation as a post-processing filter
@@ -346,7 +347,7 @@ class IndentLexer(object):
 
     def token(self):
         try:
-            return self.token_stream.next()
+            return next(self.token_stream)
         except StopIteration:
             return None
 
@@ -537,15 +538,18 @@ def p_stmts(p):
 # comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'|'is' 'not'
 
 
-def make_lt_compare((left, right)):
+def make_lt_compare(xxx_todo_changeme):
+    (left, right) = xxx_todo_changeme
     return ast.Compare(left, [('<', right), ])
 
 
-def make_gt_compare((left, right)):
+def make_gt_compare(xxx_todo_changeme1):
+    (left, right) = xxx_todo_changeme1
     return ast.Compare(left, [('>', right), ])
 
 
-def make_eq_compare((left, right)):
+def make_eq_compare(xxx_todo_changeme2):
+    (left, right) = xxx_todo_changeme2
     return ast.Compare(left, [('==', right), ])
 
 
@@ -767,11 +771,11 @@ print('BIG DECIMAL', 1.234567891234567e12345)
 
 
 def print_(*args):
-    print "-->", " ".join(map(str, args))
+    print("-->", " ".join(map(str, args)))
 
 globals()["print"] = print_
 
 compiled_code = compile(code)
 
-exec compiled_code in globals()
-print "Done"
+exec(compiled_code, globals())
+print("Done")

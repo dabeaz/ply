@@ -1,3 +1,4 @@
+from __future__ import print_function
 # ply: ygen.py
 #
 # This is a support program that auto-generates different versions of the YACC parsing

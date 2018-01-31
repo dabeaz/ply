@@ -8,6 +8,7 @@
 # This module implements an ANSI-C style lexical preprocessor for PLY. 
 # -----------------------------------------------------------------------------
 from __future__ import generators
+from __future__ import print_function
 
 import sys
 
@@ -911,7 +912,7 @@ if __name__ == '__main__':
     while True:
         tok = p.token()
         if not tok: break
-        print(p.source, tok)
+        print((p.source, tok))
 
 
 
