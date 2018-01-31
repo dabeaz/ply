@@ -1,4 +1,3 @@
-from __future__ import print_function
 # GardenSnake - a parser generator demonstration program
 #
 # This implements a modified version of a subset of Python:
@@ -37,6 +36,8 @@ from __future__ import print_function
 #  30 August - added link to CC license; removed the "swapcase" encoding
 
 # Modifications for inclusion in PLY distribution
+from __future__ import print_function
+
 import sys
 sys.path.insert(0, "../..")
 from ply import *
@@ -44,6 +45,11 @@ from ply import *
 ##### Lexer ######
 #import lex
 import decimal
+
+try:
+    basestring        # Python 2
+except NameError:
+    basestring = str  # Python 3
 
 tokens = (
     'DEF',
@@ -538,18 +544,18 @@ def p_stmts(p):
 # comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'|'is' 'not'
 
 
-def make_lt_compare(xxx_todo_changeme):
-    (left, right) = xxx_todo_changeme
+def make_lt_compare(left__right):
+    (left, right) = left__right
     return ast.Compare(left, [('<', right), ])
 
 
-def make_gt_compare(xxx_todo_changeme1):
-    (left, right) = xxx_todo_changeme1
+def make_gt_compare(left__right):
+    (left, right) = left__right
     return ast.Compare(left, [('>', right), ])
 
 
-def make_eq_compare(xxx_todo_changeme2):
-    (left, right) = xxx_todo_changeme2
+def make_eq_compare(left__right):
+    (left, right) = left__right
     return ast.Compare(left, [('==', right), ])
 
 
@@ -734,7 +740,7 @@ compile = GardenSnakeCompiler().compile
 code = r"""
 
 print('LET\'S TRY THIS \\OUT')
-  
+
 #Comment here
 def x(a):
     print('called with',a)
