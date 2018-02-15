@@ -1,6 +1,10 @@
 Version 3.11
 ---------------------
 02/15/18  beazley
+          Fixed some minor bugs related to re flags and token order.  
+          Github pull requests #151 and #153.
+
+02/15/18  beazley
           Added a set_lexpos() method to grammar symbols.  Github issue #148.
 
 
