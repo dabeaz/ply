@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # ply: lex.py
 #
-# Copyright (C) 2001-2017
+# Copyright (C) 2001-2018
 # David M. Beazley (Dabeaz LLC)
 # All rights reserved.
 #
