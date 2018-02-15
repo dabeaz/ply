@@ -1,5 +1,9 @@
 Version 3.11
 ---------------------
+02/15/18  beazley
+          Added a set_lexpos() method to grammar symbols.  Github issue #148.
+
+
 04/13/17  beazley
           Mostly minor bug fixes and small code cleanups.
 
