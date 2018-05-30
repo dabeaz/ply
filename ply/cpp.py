@@ -460,16 +460,16 @@ class Preprocessor(object):
         # has been sorted in reverse order of patch location since replacements will cause the
         # size of the replacement sequence to expand from the patch point.
 
-        expanded = { }
+        expanded_args = { }
         for ptype, argnum, i in macro.patch:
             # Concatenation.   Argument is left unexpanded
             if ptype == 'c':
                 rep[i:i+1] = args[argnum]
             # Normal expansion.  Argument is macro expanded first
             elif ptype == 'e':
-                if argnum not in expanded:
-                    expanded[argnum] = self.expand_macros(args[argnum])
-                rep[i:i+1] = expanded[argnum]
+                if argnum not in expanded_args:
+                    expanded_args[argnum] = self.expand_macros(args[argnum])
+                rep[i:i+1] = expanded_args[argnum]
 
         # Get rid of removed comma if necessary
         if comma_patch:
