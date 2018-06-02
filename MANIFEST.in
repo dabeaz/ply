@@ -5,4 +5,5 @@ include ANNOUNCE
 include README.md
 include CHANGES
 include TODO
+include LICENSE
 global-exclude *.pyc
