@@ -517,7 +517,7 @@ class LexBuildOptionTests(unittest.TestCase):
 
         for extension in ['py', 'pyc']:
             try:
-                os.remove("opt4tab.{0}".format(extension))
+                os.remove("opt4tab.{}".format(extension))
             except OSError:
                 pass
 
@@ -526,7 +526,7 @@ class LexBuildOptionTests(unittest.TestCase):
 
         for extension in ['py', 'pyc']:
             try:
-                os.remove("opt4tab.{0}".format(extension))
+                os.remove("opt4tab.{}".format(extension))
             except OSError:
                 pass
 

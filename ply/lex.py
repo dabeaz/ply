@@ -177,7 +177,7 @@ class Lexer:
         basetabmodule = lextab.split('.')[-1]
         filename = os.path.join(outputdir, basetabmodule) + '.py'
         with open(filename, 'w') as tf:
-            tf.write('# %s.py. This file automatically created by PLY (version %s). Don\'t edit!\n' % (basetabmodule, __version__))
+            tf.write('# {}.py. This file automatically created by PLY (version {}). Don\'t edit!\n'.format(basetabmodule, __version__))
             tf.write('_tabversion   = %s\n' % repr(__tabversion__))
             tf.write('_lextokens    = set(%s)\n' % repr(tuple(sorted(self.lextokens))))
             tf.write('_lexreflags   = %s\n' % repr(int(self.lexreflags)))
@@ -757,7 +757,7 @@ class LexerReflect(object):
                     continue
 
                 try:
-                    c = re.compile('(?P<%s>%s)' % (fname, _get_regex(f)), self.reflags)
+                    c = re.compile('(?P<{}>{})'.format(fname, _get_regex(f)), self.reflags)
                     if c.match(''):
                         self.log.error("%s:%d: Regular expression for rule '%s' matches empty string", file, line, f.__name__)
                         self.error = True
@@ -781,7 +781,7 @@ class LexerReflect(object):
                     continue
 
                 try:
-                    c = re.compile('(?P<%s>%s)' % (name, r), self.reflags)
+                    c = re.compile('(?P<{}>{})'.format(name, r), self.reflags)
                     if (c.match('')):
                         self.log.error("Regular expression for rule '%s' matches empty string", name)
                         self.error = True
@@ -948,13 +948,13 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
 
         # Add rules defined by functions first
         for fname, f in linfo.funcsym[state]:
-            regex_list.append('(?P<%s>%s)' % (fname, _get_regex(f)))
+            regex_list.append('(?P<{}>{})'.format(fname, _get_regex(f)))
             if debug:
                 debuglog.info("lex: Adding rule %s -> '%s' (state '%s')", fname, _get_regex(f), state)
 
         # Now add all of the simple rules
         for name, r in linfo.strsym[state]:
-            regex_list.append('(?P<%s>%s)' % (name, r))
+            regex_list.append('(?P<{}>{})'.format(name, r))
             if debug:
                 debuglog.info("lex: Adding rule %s -> '%s' (state '%s')", name, r, state)
 
@@ -1041,7 +1041,7 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
             if lextab in sys.modules:
                 del sys.modules[lextab]
         except IOError as e:
-            errorlog.warning("Couldn't write lextab module %r. %s" % (lextab, e))
+            errorlog.warning("Couldn't write lextab module {!r}. {}".format(lextab, e))
 
     return lexobj
 

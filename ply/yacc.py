@@ -141,7 +141,7 @@ def format_result(r):
         repr_str = repr(repr_str)
     if len(repr_str) > resultlimit:
         repr_str = repr_str[:resultlimit] + ' ...'
-    result = '<%s @ 0x%x> (%s)' % (type(r).__name__, id(r), repr_str)
+    result = '<{} @ 0x{:x}> ({})'.format(type(r).__name__, id(r), repr_str)
     return result
 
 # Format stack entries when the parser is running in debug mode
@@ -152,7 +152,7 @@ def format_stack_entry(r):
     if len(repr_str) < 16:
         return repr_str
     else:
-        return '<%s @ 0x%x>' % (type(r).__name__, id(r))
+        return '<{} @ 0x{:x}>'.format(type(r).__name__, id(r))
 
 # Panic mode error recovery support.   This feature is being reworked--much of the
 # code here is to offer a deprecation/backwards compatible transition
@@ -432,7 +432,7 @@ class LRParser:
 
             #--! DEBUG
             debug.debug('Stack  : %s',
-                        ('%s . %s' % (' '.join([xx.type for xx in symstack][1:]), str(lookahead))).lstrip())
+                        ('{} . {}'.format(' '.join([xx.type for xx in symstack][1:]), str(lookahead))).lstrip())
             #--! DEBUG
 
             if t is not None:
@@ -577,7 +577,7 @@ class LRParser:
 
                 #--! DEBUG
                 debug.error('Error  : %s',
-                            ('%s . %s' % (' '.join([xx.type for xx in symstack][1:]), str(lookahead))).lstrip())
+                            ('{} . {}'.format(' '.join([xx.type for xx in symstack][1:]), str(lookahead))).lstrip())
                 #--! DEBUG
 
                 # We have some kind of parsing error here.  To handle
@@ -1336,7 +1336,7 @@ class Production(object):
 
         # Create a string representation
         if self.prod:
-            self.str = '%s -> %s' % (self.name, ' '.join(self.prod))
+            self.str = '{} -> {}'.format(self.name, ' '.join(self.prod))
         else:
             self.str = '%s -> <empty>' % self.name
 
@@ -1440,7 +1440,7 @@ class LRItem(object):
 
     def __str__(self):
         if self.prod:
-            s = '%s -> %s' % (self.name, ' '.join(self.prod))
+            s = '{} -> {}'.format(self.name, ' '.join(self.prod))
         else:
             s = '%s -> <empty>' % self.name
         return s
@@ -1594,7 +1594,7 @@ class Grammar(object):
             prodprec = self.Precedence.get(precname, ('right', 0))
 
         # See if the rule is already in the rulemap
-        map = '%s -> %s' % (prodname, syms)
+        map = '{} -> {}'.format(prodname, syms)
         if map in self.Prodmap:
             m = self.Prodmap[map]
             raise GrammarError('%s:%d: Duplicate rule %s. ' % (file, line, m) +
@@ -2784,7 +2784,7 @@ del _lr_action_items
             else:
                 f.write('\n_lr_action = { ')
                 for k, v in self.lr_action.items():
-                    f.write('(%r,%r):%r,' % (k[0], k[1], v))
+                    f.write('({!r},{!r}):{!r},'.format(k[0], k[1], v))
                 f.write('}\n')
 
             if smaller:
@@ -2823,7 +2823,7 @@ del _lr_goto_items
             else:
                 f.write('\n_lr_goto = { ')
                 for k, v in self.lr_goto.items():
-                    f.write('(%r,%r):%r,' % (k[0], k[1], v))
+                    f.write('({!r},{!r}):{!r},'.format(k[0], k[1], v))
                 f.write('}\n')
 
             # Write production table
@@ -3309,7 +3309,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
             try:
                 debuglog = PlyLogger(open(os.path.join(outputdir, debugfile), 'w'))
             except IOError as e:
-                errorlog.warning("Couldn't open %r. %s" % (debugfile, e))
+                errorlog.warning("Couldn't open {!r}. {}".format(debugfile, e))
                 debuglog = NullLogger()
         else:
             debuglog = NullLogger()
@@ -3485,14 +3485,14 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
             if tabmodule in sys.modules:
                 del sys.modules[tabmodule]
         except IOError as e:
-            errorlog.warning("Couldn't create %r. %s" % (tabmodule, e))
+            errorlog.warning("Couldn't create {!r}. {}".format(tabmodule, e))
 
     # Write a pickled version of the tables
     if picklefile:
         try:
             lr.pickle_table(picklefile, signature)
         except IOError as e:
-            errorlog.warning("Couldn't create %r. %s" % (picklefile, e))
+            errorlog.warning("Couldn't create {!r}. {}".format(picklefile, e))
 
     # Build the parser
     lr.bind_callables(pinfo.pdict)
