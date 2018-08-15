@@ -25,10 +25,6 @@ def make_pymodule_path(filename):
     if sys.hexversion >= 0x3040000:
         import importlib.util
         fullpath = importlib.util.cache_from_source(filename, ext=='.pyc')
-    elif sys.hexversion >= 0x3020000:
-        import imp
-        modname = mod+"."+imp.get_tag()+ext
-        fullpath = os.path.join(path,'__pycache__',modname)
     else:
         fullpath = filename
     return fullpath
@@ -87,7 +83,7 @@ class YaccErrorWarningTests(unittest.TestCase):
         except OSError:
             pass
         
-        if sys.hexversion >= 0x3020000:
+        if sys.hexversion >= 0x3040000:
             warnings.filterwarnings('ignore', category=ResourceWarning)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
 

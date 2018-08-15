@@ -43,10 +43,10 @@ import inspect
 
 # This tuple contains known string types
 try:
-    # Python 2.6
+    # Python 2
     StringTypes = (types.StringType, types.UnicodeType)
 except AttributeError:
-    # Python 3.0
+    # Python 3
     StringTypes = (str, bytes)
 
 # This regular expression is used to match valid token names

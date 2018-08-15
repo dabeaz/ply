@@ -32,10 +32,6 @@ def make_pymodule_path(filename, optimization=None):
         fullpath = cache_from_source(filename, optimization=optimization)
     elif sys.hexversion >= 0x3040000:
         fullpath = cache_from_source(filename, ext=='.pyc')
-    elif sys.hexversion >= 0x3020000:
-        import imp
-        modname = mod+"."+imp.get_tag()+ext
-        fullpath = os.path.join(path,'__pycache__',modname)
     else:
         fullpath = filename
     return fullpath
@@ -88,7 +84,7 @@ class LexErrorWarningTests(unittest.TestCase):
     def setUp(self):
         sys.stderr = StringIO.StringIO()
         sys.stdout = StringIO.StringIO()
-        if sys.hexversion >= 0x3020000:
+        if sys.hexversion >= 0x3040000:
             warnings.filterwarnings('ignore',category=ResourceWarning)
 
     def tearDown(self):

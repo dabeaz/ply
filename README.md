@@ -98,7 +98,7 @@ A simple example is found at the end of this document
 
 Requirements
 ============
-PLY requires the use of Python 2.6 or greater.  However, you should
+PLY requires Python 2.7, 3.4 or greater.  However, you should
 use the latest Python release if possible.  It should work on just
 about any platform.  PLY has been tested with both CPython and Jython.
 It also seems to work with IronPython.
@@ -136,7 +136,7 @@ and testing a revised LALR(1) implementation for PLY-2.0.
 Special Note for PLY-3.0
 ========================
 PLY-3.0 the first PLY release to support Python 3. However, backwards
-compatibility with Python 2.6 is still preserved. PLY provides dual
+compatibility with Python 2.7 is still preserved. PLY provides dual
 Python 2/3 compatibility by restricting its implementation to a common
 subset of basic language features. You should not convert PLY using
 2to3--it is not necessary and may in fact break the implementation.
