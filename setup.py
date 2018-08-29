@@ -26,7 +26,13 @@ It is compatible with both Python 2 and Python 3.
             packages = ['ply'],
             python_requires='>=2.6, !=3.0.*, !=3.1.*, !=3.2.*',
             classifiers = [
-              'Programming Language :: Python :: 3',
               'Programming Language :: Python :: 2',
+              'Programming Language :: Python :: 2.6',
+              'Programming Language :: Python :: 3',
+              'Programming Language :: Python :: 3.3',
+              'Programming Language :: Python :: 3.4',
+              'Programming Language :: Python :: 3.5',
+              'Programming Language :: Python :: 3.6',
+              'Programming Language :: Python :: 3.7',
               ]
             )
