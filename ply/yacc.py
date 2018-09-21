@@ -65,6 +65,7 @@ import sys
 import os.path
 import inspect
 import warnings
+import tempfile
 
 __version__    = '3.11'
 __tabversion__ = '3.10'
@@ -2731,7 +2732,7 @@ class LRGeneratedTable(LRTable):
         basemodulename = tabmodule.split('.')[-1]
         filename = os.path.join(outputdir, basemodulename) + '.py'
         try:
-            f = open(filename, 'w')
+            f = tempfile.NamedTemporaryFile('wt', delete=False)
 
             f.write('''
 # %s
@@ -2836,6 +2837,7 @@ del _lr_goto_items
                     f.write('  (%r,%r,%d,None,None,None),\n' % (str(p), p.name, p.len))
             f.write(']\n')
             f.close()
+            os.rename(f.name, filename)
 
         except IOError as e:
             raise
