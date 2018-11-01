@@ -65,8 +65,9 @@ h3 = re.compile(r".*?<H3>(<a.*a>)*[\d\.\s]*(.*?)</H3>", re.IGNORECASE)
 h4 = re.compile(r".*?<H4>(<a.*a>)*[\d\.\s]*(.*?)</H4>", re.IGNORECASE)
 h5 = re.compile(r".*?<H5>(<a.*a>)*[\d\.\s]*(.*?)</H5>", re.IGNORECASE)
 
-data = open(filename).read()            # Read data
-open(filename+".bak","w").write(data)   # Make backup
+# Make backup
+with open(filename) as src, open(filename+".bak","w") as dst:
+    dst.write(src.read())
 
 lines = data.splitlines()
 result = [ ] # This is the result of postprocessing the file
@@ -189,6 +190,5 @@ data = "\n".join(result)
 data = data.replace("@INDEX@",index) + "\n";
 
 # Write the file back out
-open(filename,"w").write(data)
-
-
+with open(filename,"w") as f:
+    f.write(data)

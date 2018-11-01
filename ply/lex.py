@@ -1055,9 +1055,8 @@ def runmain(lexer=None, data=None):
     if not data:
         try:
             filename = sys.argv[1]
-            f = open(filename)
-            data = f.read()
-            f.close()
+            with open(filename) as f:
+                data = f.read()
         except IndexError:
             sys.stdout.write('Reading from standard input (type EOF to end):\n')
             data = sys.stdin.read()
