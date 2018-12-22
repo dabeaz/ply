@@ -436,7 +436,7 @@ class Preprocessor(object):
     # representing the replacement macro tokens
     # ----------------------------------------------------------------------
 
-    def macro_expand_args(self,macro,args):
+    def macro_expand_args(self,macro,args,expanded):
         # Make a copy of the macro token sequence
         rep = [copy.copy(_x) for _x in macro.value]
 
@@ -460,16 +460,16 @@ class Preprocessor(object):
         # has been sorted in reverse order of patch location since replacements will cause the
         # size of the replacement sequence to expand from the patch point.
 
-        expanded = { }
+        expanded_args = { }
         for ptype, argnum, i in macro.patch:
             # Concatenation.   Argument is left unexpanded
             if ptype == 'c':
                 rep[i:i+1] = args[argnum]
             # Normal expansion.  Argument is macro expanded first
             elif ptype == 'e':
-                if argnum not in expanded:
-                    expanded[argnum] = self.expand_macros(args[argnum])
-                rep[i:i+1] = expanded[argnum]
+                if argnum not in expanded_args:
+                    expanded_args[argnum] = self.expand_macros(args[argnum],expanded)
+                rep[i:i+1] = expanded_args[argnum]
 
         # Get rid of removed comma if necessary
         if comma_patch:
@@ -530,7 +530,7 @@ class Preprocessor(object):
                                         del args[len(m.arglist):]
 
                                 # Get macro replacement text
-                                rep = self.macro_expand_args(m,args)
+                                rep = self.macro_expand_args(m,args,expanded)
                                 rep = self.expand_macros(rep,expanded)
                                 for r in rep:
                                     r.lineno = t.lineno
@@ -777,7 +777,8 @@ class Preprocessor(object):
         for p in path:
             iname = os.path.join(p,filename)
             try:
-                data = open(iname,"r").read()
+                with open(iname) as f:
+                    data = f.read()
                 dname = os.path.dirname(iname)
                 if dname:
                     self.temp_path.insert(0,dname)
@@ -903,8 +904,8 @@ if __name__ == '__main__':
 
     # Run a preprocessor
     import sys
-    f = open(sys.argv[1])
-    input = f.read()
+    with open(sys.argv[1]) as f:
+        input = f.read()
 
     p = Preprocessor(lexer)
     p.parse(input,sys.argv[1])

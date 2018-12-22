@@ -45,6 +45,22 @@ class CPPTests(TestCase):
         else:
             self.assertMultiLineEqual(out, expected)
 
+    def test_infinite_argument_expansion(self):
+        # CPP does not drags set of currently expanded macros through macro
+        # arguments expansion. If there is a match between an argument value
+        # and name of an already expanded macro then CPP falls into infinite
+        # recursion.
+        self.__test_preprocessing("""\
+#define a(x) x
+#define b a(b)
+b
+"""         , """\
+
+
+b"""
+        )
+
+
     def test_concatenation(self):
         self.__test_preprocessing("""\
 #define a(x) x##_
