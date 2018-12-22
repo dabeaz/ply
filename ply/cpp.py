@@ -436,7 +436,7 @@ class Preprocessor(object):
     # representing the replacement macro tokens
     # ----------------------------------------------------------------------
 
-    def macro_expand_args(self,macro,args):
+    def macro_expand_args(self,macro,args,expanded):
         # Make a copy of the macro token sequence
         rep = [copy.copy(_x) for _x in macro.value]
 
@@ -460,16 +460,16 @@ class Preprocessor(object):
         # has been sorted in reverse order of patch location since replacements will cause the
         # size of the replacement sequence to expand from the patch point.
 
-        expanded = { }
+        expanded_args = { }
         for ptype, argnum, i in macro.patch:
             # Concatenation.   Argument is left unexpanded
             if ptype == 'c':
                 rep[i:i+1] = args[argnum]
             # Normal expansion.  Argument is macro expanded first
             elif ptype == 'e':
-                if argnum not in expanded:
-                    expanded[argnum] = self.expand_macros(args[argnum])
-                rep[i:i+1] = expanded[argnum]
+                if argnum not in expanded_args:
+                    expanded_args[argnum] = self.expand_macros(args[argnum],expanded)
+                rep[i:i+1] = expanded_args[argnum]
 
         # Get rid of removed comma if necessary
         if comma_patch:
@@ -530,7 +530,7 @@ class Preprocessor(object):
                                         del args[len(m.arglist):]
 
                                 # Get macro replacement text
-                                rep = self.macro_expand_args(m,args)
+                                rep = self.macro_expand_args(m,args,expanded)
                                 rep = self.expand_macros(rep,expanded)
                                 for r in rep:
                                     r.lineno = t.lineno
