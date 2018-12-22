@@ -1,8 +1,8 @@
-# PLY (Python Lex-Yacc)                   Version 3.11
+# PLY (Python Lex-Yacc)
 
 [![Build Status](https://travis-ci.org/dabeaz/ply.svg?branch=master)](https://travis-ci.org/dabeaz/ply)
 
-Copyright (C) 2001-2018
+Copyright (C) 2001-2019
 David M. Beazley (Dabeaz LLC)
 All rights reserved.
 
@@ -118,7 +118,7 @@ The GitHub page for PLY can be found at:
 
      https://github.com/dabeaz/ply
 
-An old and relatively inactive discussion group for PLY is found at:
+An old and inactive discussion group for PLY is found at:
 
      http://groups.google.com/group/ply-hack
 
