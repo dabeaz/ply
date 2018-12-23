@@ -86,8 +86,6 @@ individually and use them as modules.  For example:
      import lex
      import yacc
 
-The file setup.py can be used to install ply using distutils.
-
 The file doc/ply.html contains complete documentation on how to use
 the system.
 
