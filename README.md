@@ -77,14 +77,16 @@ within the 'ply' directory which may also be used as a Python package.
 To use PLY, simply copy the 'ply' directory to your project and import
 lex and yacc from the associated 'ply' package.  For example:
 
-     import ply.lex as lex
-     import ply.yacc as yacc
+     from .ply import lex
+     from .ply import yacc
 
 Alternatively, you can copy just the files lex.py and yacc.py
-individually and use them as modules.  For example:
+individually and use them as modules however you see fit.  For example:
 
      import lex
      import yacc
+
+PLY has no third-party dependencies. 
 
 The file doc/ply.html contains complete documentation on how to use
 the system.
