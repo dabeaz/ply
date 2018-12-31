@@ -4,6 +4,7 @@ from multiprocessing import Process, Queue
 from six.moves.queue import Empty
 
 import sys
+import locale
 
 if ".." not in sys.path:
     sys.path.insert(0, "..")
@@ -129,6 +130,23 @@ b;
 
 a;
 
+"""
+        )
+
+    def test_include_nonascii(self):
+        # Issue #196: #included files are read using the current locale's
+        # getdefaultencoding. if a #included file contains non-ascii characters,
+        # while default encoding is e.g. US_ASCII, this causes an error
+        locale.setlocale(locale.LC_ALL, 'C')
+        self.__test_preprocessing("""\
+#include "test_cpp_nonascii.c"
+x;
+
+"""
+            , """\
+
+ 
+1;
 """
         )
 

@@ -824,8 +824,7 @@ class Preprocessor(object):
         for p in path:
             iname = os.path.join(p,filename)
             try:
-                with open(iname) as f:
-                    data = f.read()
+                data = self.read_include_file(iname)
                 dname = os.path.dirname(iname)
                 if dname:
                     self.temp_path.insert(0,dname)
@@ -838,6 +837,19 @@ class Preprocessor(object):
                 pass
         else:
             print("Couldn't find '%s'" % filename)
+
+    # ----------------------------------------------------------------------
+    # read_include_file()
+    #
+    # Reads a source file for inclusion using #include
+    # Could be overridden to e.g. customize encoding, limit access to
+    # certain paths on the filesystem, or provide the contents of system
+    # include files
+    # ----------------------------------------------------------------------
+
+    def read_include_file(self, filepath):
+        with open(filepath, 'r', encoding='utf-8', errors='surrogateescape') as file:
+            return file.read()
 
     # ----------------------------------------------------------------------
     # define()
