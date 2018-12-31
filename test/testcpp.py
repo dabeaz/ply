@@ -114,4 +114,22 @@ a"""
 a"""
         )
 
+    def test_evalexpr(self):
+        # #if 1 != 2 is not processed correctly; undefined values are converted
+        # to 0L instead of 0 (issue #195)
+        #
+        self.__test_preprocessing("""\
+#if (1!=0) && (!x || (!(1==2)))
+a;
+#else
+b;
+#endif
+"""
+            , """\
+
+a;
+
+"""
+        )
+
 main()
