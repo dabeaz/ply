@@ -718,6 +718,16 @@ class LexerReflect(object):
                 self.log.error('%s not defined as a function or string', f)
                 self.error = True
 
+        # For inclusive states, we need to add the rules from the INITIAL state
+        for state, stype in self.stateinfo.items():
+            if state != 'INITIAL' and stype == 'inclusive':
+                for rule in self.funcsym['INITIAL']:
+                    if not rule in self.funcsym[state]:
+                        self.funcsym[state].append(rule)
+                for rule in self.strsym['INITIAL']:
+                    if not rule in self.strsym[state]:
+                        self.strsym[state].append(rule)
+
         # Sort the functions by line number
         for f in self.funcsym.values():
             f.sort(key=lambda x: x[1].__code__.co_firstlineno)
@@ -975,13 +985,6 @@ def lex(module=None, object=None, debug=False, optimize=False, lextab='lextab',
         if debug:
             for i, text in enumerate(re_text):
                 debuglog.info("lex: state '%s' : regex[%d] = '%s'", state, i, text)
-
-    # For inclusive states, we need to add the regular expressions from the INITIAL state
-    for state, stype in stateinfo.items():
-        if state != 'INITIAL' and stype == 'inclusive':
-            lexobj.lexstatere[state].extend(lexobj.lexstatere['INITIAL'])
-            lexobj.lexstateretext[state].extend(lexobj.lexstateretext['INITIAL'])
-            lexobj.lexstaterenames[state].extend(lexobj.lexstaterenames['INITIAL'])
 
     lexobj.lexstateinfo = stateinfo
     lexobj.lexre = lexobj.lexstatere['INITIAL']
