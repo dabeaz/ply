@@ -1,6 +1,6 @@
 # PLY (Python Lex-Yacc)
 
-Copyright (C) 2001-2019
+Copyright (C) 2001-2020
 David M. Beazley (Dabeaz LLC)
 All rights reserved.
 
@@ -88,6 +88,9 @@ import lex
 import yacc
 ```
 
+If you wish, you can use the install.py script to install PLY into
+virtual environment.
+
 PLY has no third-party dependencies. 
 
 The file doc/ply.html contains complete documentation on how to use
@@ -100,10 +103,9 @@ A simple example is found at the end of this document
 
 Requirements
 ============
-PLY requires the use of Python 2.6 or greater.  However, you should
+PLY requires the use of Python 3.6 or greater.  However, you should
 use the latest Python release if possible.  It should work on just
-about any platform.  PLY has been tested with both CPython and Jython.
-It also seems to work with IronPython.
+about any platform.  
 
 Resources
 =========
@@ -120,10 +122,6 @@ The GitHub page for PLY can be found at:
 
 * https://github.com/dabeaz/ply
 
-An old and inactive discussion group for PLY is found at:
-
-* http://groups.google.com/group/ply-hack
-
 Acknowledgments
 ===============
 A special thanks is in order for all of the students in CS326 who
@@ -134,14 +132,6 @@ The CHANGES file acknowledges those who have contributed patches.
 Elias Ioup did the first implementation of LALR(1) parsing in PLY-1.x. 
 Andrew Waters and Markus Schoepflin were instrumental in reporting bugs
 and testing a revised LALR(1) implementation for PLY-2.0.
-
-Special Note for PLY-3.0
-========================
-PLY-3.0 the first PLY release to support Python 3. However, backwards
-compatibility with Python 2.6 is still preserved. PLY provides dual
-Python 2/3 compatibility by restricting its implementation to a common
-subset of basic language features. You should not convert PLY using
-2to3--it is not necessary and may in fact break the implementation.
 
 Example
 =======

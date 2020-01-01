@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # ply: yacc.py
 #
-# Copyright (C) 2001-2019
+# Copyright (C) 2001-2020
 # David M. Beazley (Dabeaz LLC)
 # All rights reserved.
 #
@@ -68,7 +68,7 @@ import os.path
 import inspect
 import warnings
 
-__version__    = '3.11'
+__version__    = '4.0'
 __tabversion__ = '3.10'
 
 #-----------------------------------------------------------------------------
@@ -92,12 +92,6 @@ yaccdevel   = False            # Set to True if developing yacc.  This turns off
 resultlimit = 40               # Size limit of results when running in debug mode.
 
 pickle_protocol = 0            # Protocol to use when writing pickle files
-
-# String type-checking compatibility
-if sys.version_info[0] < 3:
-    string_types = basestring
-else:
-    string_types = str
 
 MAXINT = sys.maxsize
 
@@ -3029,7 +3023,7 @@ class ParserReflect(object):
     # Validate the start symbol
     def validate_start(self):
         if self.start is not None:
-            if not isinstance(self.start, string_types):
+            if not isinstance(self.start, str):
                 self.log.error("'start' must be a string")
 
     # Look for error handler
@@ -3115,12 +3109,12 @@ class ParserReflect(object):
                     self.error = True
                     return
                 assoc = p[0]
-                if not isinstance(assoc, string_types):
+                if not isinstance(assoc, str):
                     self.log.error('precedence associativity must be a string')
                     self.error = True
                     return
                 for term in p[1:]:
-                    if not isinstance(term, string_types):
+                    if not isinstance(term, str):
                         self.log.error('precedence items must be strings')
                         self.error = True
                         return

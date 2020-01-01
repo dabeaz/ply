@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # ply: lex.py
 #
-# Copyright (C) 2001-2019
+# Copyright (C) 2001-2020
 # David M. Beazley (Dabeaz LLC)
 # All rights reserved.
 #
@@ -33,7 +33,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # -----------------------------------------------------------------------------
 
-__version__    = '3.11'
+__version__    = '4.0'
 __tabversion__ = '3.10'
 
 import re
@@ -43,13 +43,8 @@ import copy
 import os
 import inspect
 
-# This tuple contains known string types
-try:
-    # Python 2.6
-    StringTypes = (types.StringType, types.UnicodeType)
-except AttributeError:
-    # Python 3.0
-    StringTypes = (str, bytes)
+# This tuple contains acceptable string types
+StringTypes = (str, bytes)
 
 # This regular expression is used to match valid token names
 _is_identifier = re.compile(r'^[a-zA-Z0-9_]+$')

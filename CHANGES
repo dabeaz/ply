@@ -8,6 +8,12 @@ maintained as a mature library.  No new features are planned, but
 issues and pull requests for bugs are still welcome. Any changes to the 
 software will be noted here.
 
+01/01/20  Added an install.py script to make it easy to install PLY into
+          virtual environment if you just want to play with it.
+
+01/01/20  Some project reorganization. Moved the preprocessor and ctokens
+          file to the examples directory.  Bumped the version number.
+
 01/19/19  Some improvements to the preprocessor module contributed by
           Rob Reilink.  Issue #195 fixes the evaluation of expressions
           such as #if a != b.   Issue #196 fixes some some issues
