@@ -155,6 +155,9 @@ with variables.
 #
 # A simple calculator with variables.
 # -----------------------------------------------------------------------------
+import sys
+if sys.version_info[:2] <= (2, 7):
+    input = raw_input
 
 tokens = (
     'NAME','NUMBER',
@@ -249,7 +252,7 @@ yacc.yacc()
 
 while True:
     try:
-        s = raw_input('calc > ')   # use input() on Python 3
+        s = input('calc > ')   # use input() on Python 3
     except EOFError:
         break
     yacc.parse(s)
