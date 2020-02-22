@@ -12,9 +12,6 @@
 import sys
 sys.path.insert(0, "../..")
 
-if sys.version_info[0] >= 3:
-    raw_input = input
-
 import ply.lex as lex
 import ply.yacc as yacc
 import os
@@ -36,20 +33,18 @@ class Parser:
         except:
             modname = "parser" + "_" + self.__class__.__name__
         self.debugfile = modname + ".dbg"
-        self.tabmodule = modname + "_" + "parsetab"
-        # print self.debugfile, self.tabmodule
+        # print self.debugfile
 
         # Build the lexer and parser
         lex.lex(module=self, debug=self.debug)
         yacc.yacc(module=self,
                   debug=self.debug,
-                  debugfile=self.debugfile,
-                  tabmodule=self.tabmodule)
+                  debugfile=self.debugfile)
 
     def run(self):
-        while 1:
+        while True:
             try:
-                s = raw_input('calc > ')
+                s = input('calc > ')
             except EOFError:
                 break
             if not s:

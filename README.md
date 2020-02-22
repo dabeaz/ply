@@ -93,7 +93,7 @@ virtual environment.
 
 PLY has no third-party dependencies. 
 
-The file doc/ply.html contains complete documentation on how to use
+The docs/ directory contains complete documentation on how to use
 the system.
 
 The example directory contains several different examples including a
@@ -176,7 +176,7 @@ def t_newline(t):
     t.lexer.lineno += t.value.count("\n")
 
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
+    print(f"Illegal character {t.value[0]!r}")
     t.lexer.skip(1)
 
 # Build the lexer
@@ -228,18 +228,18 @@ def p_expression_name(p):
     try:
         p[0] = names[p[1]]
     except LookupError:
-        print("Undefined name '%s'" % p[1])
+        print(f"Undefined name {p[1]!r}")
         p[0] = 0
 
 def p_error(p):
-    print("Syntax error at '%s'" % p.value)
+    print(f"Syntax error at {p.value!r}")
 
 import ply.yacc as yacc
 yacc.yacc()
 
 while True:
     try:
-        s = raw_input('calc > ')   # use input() on Python 3
+        s = input('calc > ')
     except EOFError:
         break
     yacc.parse(s)

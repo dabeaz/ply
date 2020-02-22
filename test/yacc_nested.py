@@ -26,7 +26,7 @@ def p_nest(t):
    '''nest : B'''
    print(t[-1])
 
-the_parser = yacc.yacc(debug = False, write_tables = False)
+the_parser = yacc.yacc(debug = False)
 
 the_parser.parse('ABC', the_lexer)
 the_parser.parse('ABC', the_lexer, tracking=True)

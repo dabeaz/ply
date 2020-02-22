@@ -4,9 +4,6 @@
 import sys
 sys.path.insert(0, "../..")
 
-if sys.version_info[0] >= 3:
-    raw_input = input
-
 import basiclex
 import basparse
 import basinterp
@@ -36,9 +33,9 @@ else:
 # Specifying a line number with no code deletes that line from
 # the program.
 
-while 1:
+while True:
     try:
-        line = raw_input("[BASIC] ")
+        line = input("[BASIC] ")
     except EOFError:
         raise SystemExit
     if not line:

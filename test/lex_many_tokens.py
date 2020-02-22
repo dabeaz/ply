@@ -21,7 +21,7 @@ t_ignore = " \t"
 def t_error(t):
     pass
 
-lex.lex(optimize=1,lextab="manytab")
+lex.lex()
 lex.runmain(data="TOK34: TOK143: TOK269: TOK372: TOK452: TOK561: TOK999:")
 
 

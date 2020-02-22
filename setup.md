@@ -34,17 +34,3 @@ literally no reason to ever upgrade it. Keep using the version of code
 that you copied.  If you think you've found a bug, check back with the
 repository to see if it's been fixed. Or submit it as an issue so that
 it can be looked at.
-
-
-
-
-
-
-
-
-
-
-
-
-
-

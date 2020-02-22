@@ -8,9 +8,6 @@
 import sys
 sys.path.insert(0, "../..")
 
-if sys.version_info[0] >= 3:
-    raw_input = input
-
 tokens = (
     'NAME', 'NUMBER',
 )
@@ -36,7 +33,7 @@ def t_newline(t):
 
 
 def t_eof(t):
-    more = raw_input('... ')
+    more = input('... ')
     if more:
         t.lexer.input(more + '\n')
         return t.lexer.token()
@@ -122,9 +119,9 @@ def p_error(p):
 import ply.yacc as yacc
 yacc.yacc()
 
-while 1:
+while True:
     try:
-        s = raw_input('calc > ')
+        s = input('calc > ')
     except EOFError:
         break
     if not s:

@@ -8,9 +8,6 @@
 import sys
 sys.path.insert(0, "../..")
 
-if sys.version_info[0] >= 3:
-    raw_input = input
-
 tokens = (
     'NAME', 'NUMBER',
 )
@@ -119,9 +116,9 @@ logging.basicConfig(
     filename="parselog.txt"
 )
 
-while 1:
+while True:
     try:
-        s = raw_input('calc > ')
+        s = input('calc > ')
     except EOFError:
         break
     if not s:

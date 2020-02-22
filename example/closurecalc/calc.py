@@ -9,9 +9,6 @@
 import sys
 sys.path.insert(0, "../..")
 
-if sys.version_info[0] >= 3:
-    raw_input = input
-
 # Make a calculator function
 
 
@@ -124,7 +121,7 @@ calc = make_calculator()
 
 while True:
     try:
-        s = raw_input("calc > ")
+        s = input("calc > ")
     except EOFError:
         break
     r = calc(s)

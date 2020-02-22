@@ -8,9 +8,6 @@
 import sys
 sys.path.insert(0, "../..")
 
-if sys.version_info[0] >= 3:
-    raw_input = input
-
 tokens = (
     'NAME', 'NUMBER',
 )
@@ -29,11 +26,9 @@ def t_NUMBER(t):
 
 t_ignore = " \t"
 
-
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += t.value.count("\n")
-
 
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
@@ -41,7 +36,7 @@ def t_error(t):
 
 # Build the lexer
 import ply.lex as lex
-lex.lex()
+lexer = lex.lex()
 
 # Parsing rules
 
@@ -53,7 +48,6 @@ precedence = (
 
 # dictionary of names
 names = {}
-
 
 def p_statement_assign(p):
     'statement : NAME "=" expression'
@@ -111,11 +105,11 @@ def p_error(p):
         print("Syntax error at EOF")
 
 import ply.yacc as yacc
-yacc.yacc()
+parser = yacc.yacc()
 
-while 1:
+while True:
     try:
-        s = raw_input('calc > ')
+        s = input('calc > ')
     except EOFError:
         break
     if not s:

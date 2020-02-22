@@ -56,11 +56,11 @@ def p_error(p):
         print("Line %d: Syntax error at '%s'" % (p.lineno, p.value))
     # Scan ahead looking for a name token
     while True:
-        tok = yacc.token()
+        tok = parser.token()
         if not tok or tok.type == 'RPAREN':
             break
     if tok:
-        yacc.restart()
+        parser.restart()
     return None
 
 parser = yacc.yacc()

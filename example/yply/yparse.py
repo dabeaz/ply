@@ -233,7 +233,7 @@ def p_empty(p):
 def p_error(p):
     pass
 
-yacc.yacc(debug=0)
+yacc.yacc(debug=False)
 
 
 def print_code(code, indent):

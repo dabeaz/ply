@@ -4,9 +4,41 @@ IMPORTANT NOTE (2018-12-22): PLY is no longer be released in any
 package-installable format. If you want to use the latest version, you
 need to COPY the contents of the ply/ directory into your own project
 and use it. Although PLY is no longer distributed as a package, it is
-maintained as a mature library.  No new features are planned, but 
-issues and pull requests for bugs are still welcome. Any changes to the 
+maintained as a mature library.  No new major features are planned, but 
+issues reported for bugs are still welcome. Any changes to the 
 software will be noted here.
+
+Version 4.0 (In progress)
+-------------------------
+Note: The 4.0 series of PLY represents a massive cleanup and modernization
+effort.  At a fundamental level, no new "features" are being added.  
+Instead, a lot of outdated, inconsistent, and problematic features are
+being eliminated.  Here is a short summary:
+
+   - PLY no longer writes table files or cached data.  If you want this,
+     it's your responsibility to serialize the parser tables.  Use pickle.
+
+   - Elimination of side-effects and global variables (generally).
+
+   - Elimination of numerous optional features in an effort to 
+     simplify the API.
+
+   - More use of modern Python features including iterators/generators,
+     keyword-only arguments, f-strings, etc.
+
+   - Dropped support for Python 2.x
+------------------------
+
+01/26/20  PLY no longer writes cached table files.  Honestly, the use of
+          the cached files made more sense when I was developing PLY on
+          my 200Mhz PC in 2001. It's not as much as an issue now. For small
+          to medium sized grammars, PLY should be almost instantaneous. 
+          If you're working with a large grammar, you can arrange
+          to pickle the associated grammar instance yourself if need be.
+          The removal of table files eliminated a large number of optional
+          arguments to yacc() concerning the names and packages of these files.
+
+01/26/20  PLY no longer supports Python 2.x.
 
 01/01/20  Added an install.py script to make it easy to install PLY into
           virtual environment if you just want to play with it.
