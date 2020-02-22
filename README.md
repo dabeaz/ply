@@ -94,7 +94,7 @@ virtual environment.
 PLY has no third-party dependencies. 
 
 The docs/ directory contains complete documentation on how to use
-the system.
+the system.  Documentation available at https://ply.readthedocs.io
 
 The example directory contains several different examples including a
 PLY specification for ANSI C as given in K&R 2nd Ed.   
@@ -109,6 +109,11 @@ about any platform.
 
 Resources
 =========
+
+Official Documentation is available at:
+
+* https://ply.readthedocs.io
+
 More information about PLY can be obtained on the PLY webpage at:
 
 * http://www.dabeaz.com/ply
@@ -254,6 +259,13 @@ patches to fix problems. At this time, PLY is mature software and new
 features are no longer being added.  If you think you have found a
 bug, please visit the PLY Github page at https://github.com/dabeaz/ply
 to report an issue.
+
+Take a Class!
+=============
+
+If you'd like to learn more about compiler principles and have a go at
+implementing a compiler, come take a course.
+https://www.dabeaz.com/compiler.html.
  
 -- Dave
 
