@@ -71,9 +71,9 @@ How to Use
 ==========
 
 PLY consists of two files : lex.py and yacc.py.  These are contained
-within the 'ply' directory which may also be used as a Python package.
-To use PLY, simply copy the 'ply' directory to your project and import
-lex and yacc from the associated 'ply' package.  For example:
+within the `ply` directory which may also be used as a Python package.
+To use PLY, simply copy the `ply` directory to your project and import
+lex and yacc from the associated `ply` package.  For example:
 
 ```python
 from .ply import lex
