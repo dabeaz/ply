@@ -52,7 +52,3 @@ calc = CalcLexer()
 # Build the lexer
 lex.lex(object=calc)
 lex.runmain(data="3+4")
-
-
-
-

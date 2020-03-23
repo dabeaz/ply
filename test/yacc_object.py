@@ -68,7 +68,3 @@ calc = CalcParser()
 
 # Build the parser
 yacc.yacc(module=calc)
-
-
-
-
