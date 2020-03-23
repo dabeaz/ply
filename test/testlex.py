@@ -337,9 +337,17 @@ class LexBuildOptionTests(unittest.TestCase):
                                     "(NUMBER,3,1,0)\n"
                                     "(PLUS,'+',1,1)\n"
                                     "(NUMBER,4,1,2)\n"))
-        
+
     def test_lex_object(self):
         run_import("lex_object")
+        result = sys.stdout.getvalue()
+        self.assert_(check_expected(result,
+                                    "(NUMBER,3,1,0)\n"
+                                    "(PLUS,'+',1,1)\n"
+                                    "(NUMBER,4,1,2)\n"))
+
+    def test_lex_decorator(self):
+        run_import("lex_decorator")
         result = sys.stdout.getvalue()
         self.assert_(check_expected(result,
                                     "(NUMBER,3,1,0)\n"

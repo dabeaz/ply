@@ -1247,6 +1247,15 @@ class Grammar(object):
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
+# _get_spec(func)
+#
+# Returns the rule specifiaction assigned to a function either as a doc string
+# or as a .spec attribute attached by the @SPEC decorator.
+# -----------------------------------------------------------------------------
+def _get_spec(func):
+    return getattr(func, 'spec', func.__doc__)
+
+# -----------------------------------------------------------------------------
 # digraph()
 # traverse()
 #
@@ -2189,7 +2198,7 @@ class ParserReflect(object):
             if isinstance(item, (types.FunctionType, types.MethodType)):
                 line = getattr(item, 'co_firstlineno', item.__code__.co_firstlineno)
                 module = inspect.getmodule(item)
-                p_functions.append((line, module, name, item.__doc__))
+                p_functions.append((line, module, name, _get_spec(item)))
 
         # Sort all of the actions by line number; make sure to stringify
         # modules to make them sortable, since `line` may not uniquely sort all
@@ -2223,7 +2232,7 @@ class ParserReflect(object):
             elif func.__code__.co_argcount < reqargs:
                 self.log.error('%s:%d: Rule %r requires an argument', file, line, func.__name__)
                 self.error = True
-            elif not func.__doc__:
+            elif not _get_spec(func):
                 self.log.warning('%s:%d: No documentation string specified in function %r (ignored)',
                                  file, line, func.__name__)
             else:
@@ -2251,9 +2260,9 @@ class ParserReflect(object):
                 self.log.warning('%r not defined as a function', n)
             if ((isinstance(v, types.FunctionType) and v.__code__.co_argcount == 1) or
                    (isinstance(v, types.MethodType) and v.__func__.__code__.co_argcount == 2)):
-                if v.__doc__:
+                if _get_spec(v):
                     try:
-                        doc = v.__doc__.split(' ')
+                        doc = _get_spec(v).split(' ')
                         if doc[1] == ':':
                             self.log.warning('%s:%d: Possible grammar rule %r defined without p_ prefix',
                                              v.__code__.co_filename, v.__code__.co_firstlineno, n)
@@ -2480,3 +2489,19 @@ def yacc(*, debug=yaccdebug, module=None, start=None,
 
     parse = parser.parse
     return parser
+
+# -----------------------------------------------------------------------------
+# @SPEC(specification)
+#
+# This decorator function can be used to set the rule specification on a function
+# when its docstring might need to be set in an alternative way.
+# -----------------------------------------------------------------------------
+
+def SPEC(s):
+    def set_specification(f):
+        if hasattr(s, '__call__'):
+            f.spec = _get_spec(s)
+        else:
+            f.spec = s
+        return f
+    return set_specification

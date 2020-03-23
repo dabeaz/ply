@@ -337,6 +337,20 @@ class YaccErrorWarningTests(unittest.TestCase):
                                     "Generating LALR tables\n"
                                     ))
 
+    def test_yacc_object(self):
+        run_import("yacc_object")
+        result = sys.stderr.getvalue()
+        self.assert_(check_expected(result,
+                                    "Generating LALR tables\n"
+                                    ))
+
+    def test_yacc_decorator(self):
+        run_import("yacc_decorator")
+        result = sys.stderr.getvalue()
+        self.assert_(check_expected(result,
+                                    "Generating LALR tables\n"
+                                    ))
+
     def test_yacc_sr(self):
         run_import("yacc_sr")
         result = sys.stderr.getvalue()
