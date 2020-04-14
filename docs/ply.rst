@@ -2640,6 +2640,25 @@ For very complicated problems, you should pass in a logging object that
 redirects to a file where you can more easily inspect the output after
 execution.
 
+Using Python -OO Mode
+---------------------
+Because of PLY's reliance on doc-strings, it is not compatible with
+`-OO` mode of the interpreter (which strings doc strings).  If you
+want to support this, you'll need to write a decorator or some other
+tool to attach doc strings to functions.  For example:
+
+    def _(doc):
+        def decorate(func):
+            func.__doc__ = doc
+            return func
+        return decorate
+    
+    @_("assignment : expr PLUS expr")
+    def p_assignment(p):
+        ...
+
+PLY does not provide such a decorator by default.
+
 Where to go from here?
 ----------------------
 

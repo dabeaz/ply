@@ -107,6 +107,10 @@ PLY requires the use of Python 3.6 or greater.  However, you should
 use the latest Python release if possible.  It should work on just
 about any platform.  
 
+Note: PLY does not support execution under `python -OO`.  It can be
+made to work in that mode, but you'll need to change the programming
+interface with a decorator.  See the documentation for details. 
+
 Resources
 =========
 
