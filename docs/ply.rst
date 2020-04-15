@@ -559,7 +559,7 @@ can use the ``@TOKEN`` decorator.  For example::
 
 This will attach ``identifier`` to the docstring for ``t_ID()``
 allowing ``lex.py`` to work normally.  Naturally, you could use ``@TOKEN`` 
-on all functions as an alternative to using doc-strings. 
+on all functions as an alternative to using docstrings. 
 
 Debugging
 ^^^^^^^^^
@@ -1416,7 +1416,7 @@ like this::
         elif p[2] == '-':
             p[0] = p[1] - p[3]
 
-In general, the doc string for any given function can contain multiple
+In general, the docstring for any given function can contain multiple
 grammar rules.  So, it would have also been legal (although possibly
 confusing) to write this::
 
