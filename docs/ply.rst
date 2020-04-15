@@ -2642,10 +2642,10 @@ execution.
 
 Using Python -OO Mode
 ---------------------
-Because of PLY's reliance on doc-strings, it is not compatible with
-`-OO` mode of the interpreter (which strings doc strings).  If you
+Because of PLY's reliance on docstrings, it is not compatible with
+`-OO` mode of the interpreter (which strips docstrings).  If you
 want to support this, you'll need to write a decorator or some other
-tool to attach doc strings to functions.  For example:
+tool to attach docstrings to functions.  For example:
 
     def _(doc):
         def decorate(func):
