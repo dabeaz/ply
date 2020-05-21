@@ -167,10 +167,10 @@ to ``token()`` produce tokens.  The following code shows how this
 works::
 
     # Test it out
-    data = '''
+    data = ''
     3 + 4 * 10
       + -20 *2
-    '''
+    ''
     
     # Give the lexer some input
     lexer.input(data)
