@@ -702,7 +702,7 @@ of a class.  For example::
         def build(self,**kwargs):
             self.lexer = lex.lex(module=self, **kwargs)
         
-        # Test it output
+        # Test its output
         def test(self,data):
             self.lexer.input(data)
             while True:
@@ -2490,7 +2490,7 @@ C code, you might write code like this::
         ...
 
 In this case, the embedded action ``new_scope`` executes
-immediately after a ``LBRACE`` (``{``) symbol is parsed.
+immediately after an ``LBRACE`` (``{``) symbol is parsed.
 This might adjust internal symbol tables and other aspects of the
 parser.  Upon completion of the rule ``statements_block``, code
 might undo the operations performed in the embedded action
@@ -2662,9 +2662,9 @@ PLY does not provide such a decorator by default.
 Where to go from here?
 ----------------------
 
-The ``examples`` directory of the PLY distribution contains several
+The ``example`` directory of the PLY distribution contains several
 simple examples.  Please consult a compilers textbook for the theory
-and underlying implementation details or LR parsing.
+and underlying implementation details of LR parsing.
 
 
 
