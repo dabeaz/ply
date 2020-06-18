@@ -501,7 +501,7 @@ it can continue to parse.  Here is an example of how this works::
     # EOF handling rule
     def t_eof(t):
         # Get more input (Example)
-        more = raw_input('... ')
+        more = input('... ')
         if more:
             self.lexer.input(more)
             return self.lexer.token()
@@ -1318,7 +1318,7 @@ as previously described.  Here is how you would do it with
     
     while True:
        try:
-           s = raw_input('calc > ')
+           s = input('calc > ')
        except EOFError:
            break
        if not s: continue
