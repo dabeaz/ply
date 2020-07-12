@@ -413,7 +413,7 @@ def p_file_input(p):
 # ignoring decorators
 def p_funcdef(p):
     "funcdef : DEF NAME parameters COLON suite"
-    p[0] = ast.Function(None, p[2], tuple(p[3]), (), 0, None, p[5])
+    p[0] = ast.FunctionDef(p[2], args=ast.arguments([ast.arg(x, None) for x in p[3]], None, [], [], None, []), body=p[5], decorator_list=[], returns=None)
 
 # parameters: '(' [varargslist] ')'
 
@@ -596,7 +596,7 @@ def p_power(p):
         p[0] = p[1]
     else:
         if p[2][0] == "CALL":
-            p[0] = ast.CallFunc(p[1], p[2][1], None, None)
+            p[0] = ast.Call(p[1], p[2][1], [])
         else:
             raise AssertionError("not implemented")
 
