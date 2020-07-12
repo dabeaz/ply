@@ -222,6 +222,7 @@ def _new_token(type, lineno):
     tok.type = type
     tok.value = None
     tok.lineno = lineno
+    tok.lexpos = 0
     return tok
 
 # Synthesize a DEDENT tag
@@ -334,9 +335,8 @@ def filter(lexer, add_endmarker=True):
 
 class IndentLexer(object):
 
-    def __init__(self, debug=0, optimize=0, lextab='lextab', reflags=0):
-        self.lexer = lex.lex(debug=debug, optimize=optimize,
-                             lextab=lextab, reflags=reflags)
+    def __init__(self, debug=0, reflags=0):
+        self.lexer = lex.lex(debug=debug, reflags=reflags)
         self.token_stream = None
 
     def input(self, s, add_endmarker=True):
