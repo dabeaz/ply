@@ -541,33 +541,20 @@ def p_stmts(p):
 # comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'|'is' 'not'
 
 
-def make_lt_compare(xxx_todo_changeme):
-    (left, right) = xxx_todo_changeme
-    return ast.Compare(left, [('<', right), ])
-
-
-def make_gt_compare(xxx_todo_changeme1):
-    (left, right) = xxx_todo_changeme1
-    return ast.Compare(left, [('>', right), ])
-
-
-def make_eq_compare(xxx_todo_changeme2):
-    (left, right) = xxx_todo_changeme2
-    return ast.Compare(left, [('==', right), ])
-
-
 binary_ops = {
     "+": ast.Add,
     "-": ast.Sub,
-    "*": ast.Mul,
+    "*": ast.Mult,
     "/": ast.Div,
-    "<": make_lt_compare,
-    ">": make_gt_compare,
-    "==": make_eq_compare,
+}
+compare_ops = {
+    "<": ast.Lt,
+    ">": ast.Gt,
+    "==": ast.Eq,
 }
 unary_ops = {
-    "+": ast.UnaryAdd,
-    "-": ast.UnarySub,
+    "+": ast.UAdd,
+    "-": ast.USub,
 }
 precedence = (
     ("left", "EQ", "GT", "LT"),
@@ -588,9 +575,12 @@ def p_comparison(p):
                   | MINUS comparison
                   | power"""
     if len(p) == 4:
-        p[0] = binary_ops[p[2]]((p[1], p[3]))
+        if p[2] in binary_ops:
+            p[0] = ast.BinOp(p[1], binary_ops[p[2]](), p[3])
+        else:
+            p[0] = ast.Compare(p[1], [compare_ops[p[2]]()], [p[3]])
     elif len(p) == 3:
-        p[0] = unary_ops[p[1]](p[2])
+        p[0] = ast.UnaryOp(unary_ops[p[1]](), p[2])
     else:
         p[0] = p[1]
 
