@@ -156,7 +156,7 @@ def t_RPAR(t):
 
 def t_error(t):
     raise SyntaxError("Unknown symbol %r" % (t.value[0],))
-    print "Skipping", repr(t.value[0])
+    print("Skipping", repr(t.value[0]))
     t.lexer.skip(1)
 
 # I implemented INDENT / DEDENT generation as a post-processing filter
@@ -342,11 +342,11 @@ class IndentLexer(object):
     def input(self, s, add_endmarker=True):
         self.lexer.paren_count = 0
         self.lexer.input(s)
-        self.token_stream = filter(self.lexer, add_endmarker)
+        self.token_stream = list(filter(self.lexer, add_endmarker))
 
     def token(self):
         try:
-            return self.token_stream.next()
+            return next(self.token_stream)
         except StopIteration:
             return None
 
@@ -393,7 +393,7 @@ def p_file_input(p):
                   | file_input stmt
                   | NEWLINE
                   | stmt"""
-    if isinstance(p[len(p) - 1], basestring):
+    if isinstance(p[len(p) - 1], str):
         if len(p) == 3:
             p[0] = p[1]
         else:
@@ -537,15 +537,18 @@ def p_stmts(p):
 # comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'|'is' 'not'
 
 
-def make_lt_compare((left, right)):
+def make_lt_compare(xxx_todo_changeme):
+    (left, right) = xxx_todo_changeme
     return ast.Compare(left, [('<', right), ])
 
 
-def make_gt_compare((left, right)):
+def make_gt_compare(xxx_todo_changeme1):
+    (left, right) = xxx_todo_changeme1
     return ast.Compare(left, [('>', right), ])
 
 
-def make_eq_compare((left, right)):
+def make_eq_compare(xxx_todo_changeme2):
+    (left, right) = xxx_todo_changeme2
     return ast.Compare(left, [('==', right), ])
 
 
@@ -767,11 +770,11 @@ print('BIG DECIMAL', 1.234567891234567e12345)
 
 
 def print_(*args):
-    print "-->", " ".join(map(str, args))
+    print("-->", " ".join(map(str, args)))
 
 globals()["print"] = print_
 
 compiled_code = compile(code)
 
-exec compiled_code in globals()
-print "Done"
+exec(compiled_code, globals())
+print("Done")
