@@ -31,9 +31,13 @@
 #
 #          Andrew Dalke / Dalke Scientific Software, LLC
 #             30 August 2006 / Cape Town, South Africa
+#
+#          Lolbot Iichan / Moonworks
+#             12 July 2020 / Moscow, Russia
 
 # Changelog:
 #  30 August - added link to CC license; removed the "swapcase" encoding
+#  12 July   - ported to Python 3; fixed whitespace in some regex
 
 # Modifications for inclusion in PLY distribution
 import sys
