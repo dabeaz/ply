@@ -76,7 +76,7 @@ tokens = (
 
 
 def t_NUMBER(t):
-    r"""(\d+(\.\d*)?|\.\d+)([eE][-+]? \d+)?"""
+    r"""(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?"""
     t.value = decimal.Decimal(t.value)
     if t.value == int(t.value):
         t.value = int(t.value)
@@ -128,7 +128,7 @@ def t_comment(t):
 
 # Whitespace
 def t_WS(t):
-    r' [ ]+ '
+    r'[ ]+'
     if t.lexer.at_line_start and t.lexer.paren_count == 0:
         return t
 
