@@ -369,16 +369,16 @@ def Assign(left, right):
     names = []
     if isinstance(left, ast.Name):
         # Single assignment on left
-        return ast.Assign([ast.AssName(left.name, 'OP_ASSIGN')], right)
+        return ast.Assign([ast.Name(left.id, ctx=ast.Store())], right)
     elif isinstance(left, ast.Tuple):
         # List of things - make sure they are Name nodes
         names = []
-        for child in left.getChildren():
+        for child in left.elts:
             if not isinstance(child, ast.Name):
                 raise SyntaxError("that assignment not supported")
-            names.append(child.name)
-        ass_list = [ast.AssName(name, 'OP_ASSIGN') for name in names]
-        return ast.Assign([ast.AssTuple(ass_list)], right)
+            names.append(child.id)
+        ass_list = [ast.Name(name, ctx=ast.Store()) for name in names]
+        return ast.Assign([ast.Tuple(ass_list, ctx=ast.Store())], right)
     else:
         raise SyntaxError("Can't do that yet")
 
@@ -603,7 +603,7 @@ def p_power(p):
 
 def p_atom_name(p):
     """atom : NAME"""
-    p[0] = ast.Name(p[1])
+    p[0] = ast.Name(p[1],ctx=ast.Load())
 
 
 def p_atom_number(p):
@@ -642,7 +642,7 @@ def p_testlist(p):
             p[0] = [p[1]]
     # Convert into a tuple?
     if isinstance(p[0], list):
-        p[0] = ast.Tuple(p[0])
+        p[0] = ast.Tuple(p[0], ctx=ast.Load())
 
 
 def p_testlist_multi(p):
@@ -761,6 +761,9 @@ print('this is decimal', 1/5)
 print('BIG DECIMAL', 1.234567891234567e12345)
 print('LITTE DECIMAL', 1.234567891234567e-12345)
 
+print(t,a)
+a,t = t,a
+print(t,a)
 """
 
 # Set up the GardenSnake run-time environment
