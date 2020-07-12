@@ -83,7 +83,7 @@ def t_NUMBER(t):
 
 def t_STRING(t):
     r"'([^\\']+|\\'|\\\\)*'"  # I think this is right ...
-    t.value = t.value[1:-1].decode("string-escape")  # .swapcase() # for fun
+    t.value = t.value[1:-1].encode().decode("unicode_escape")  # .swapcase() # for fun
     return t
 
 t_COLON = r':'
@@ -342,7 +342,7 @@ class IndentLexer(object):
     def input(self, s, add_endmarker=True):
         self.lexer.paren_count = 0
         self.lexer.input(s)
-        self.token_stream = list(filter(self.lexer, add_endmarker))
+        self.token_stream = filter(self.lexer, add_endmarker)
 
     def token(self):
         try:
@@ -356,7 +356,7 @@ class IndentLexer(object):
 #import yacc
 
 # I use the Python AST
-from compiler import ast
+import ast
 
 # Helper function
 
@@ -768,11 +768,6 @@ print('BIG DECIMAL', 1.234567891234567e12345)
 
 # Set up the GardenSnake run-time environment
 
-
-def print_(*args):
-    print("-->", " ".join(map(str, args)))
-
-globals()["print"] = print_
 
 compiled_code = compile(code)
 
