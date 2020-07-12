@@ -385,7 +385,7 @@ def Assign(left, right):
 # file_input: (NEWLINE | stmt)* ENDMARKER
 def p_file_input_end(p):
     """file_input_end : file_input ENDMARKER"""
-    p[0] = ast.Stmt(p[1])
+    p[0] = p[1]
 
 
 def p_file_input(p):
@@ -483,7 +483,7 @@ def p_expr_stmt(p):
                  | testlist """
     if len(p) == 2:
         # a list of expressions
-        p[0] = ast.Discard(p[1])
+        p[0] = ast.Expr(p[1])
     else:
         p[0] = Assign(p[1], p[3])
 
@@ -508,16 +508,16 @@ def p_compound_stmt(p):
 
 def p_if_stmt(p):
     'if_stmt : IF test COLON suite'
-    p[0] = ast.If([(p[2], p[4])], None)
+    p[0] = ast.If(p[2], p[4], [])
 
 
 def p_suite(p):
     """suite : simple_stmt
              | NEWLINE INDENT stmts DEDENT"""
     if len(p) == 2:
-        p[0] = ast.Stmt(p[1])
+        p[0] = p[1]
     else:
-        p[0] = ast.Stmt(p[3])
+        p[0] = p[3]
 
 
 def p_stmts(p):
@@ -704,7 +704,7 @@ class GardenSnakeParser(object):
     def parse(self, code):
         self.lexer.input(code)
         result = self.parser.parse(lexer=self.lexer)
-        return ast.Module(None, result)
+        return ast.Module(result)
 
 
 ###### Code generation ######
