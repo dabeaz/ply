@@ -78,6 +78,10 @@ tokens = (
 def t_NUMBER(t):
     r"""(\d+(\.\d*)?|\.\d+)([eE][-+]? \d+)?"""
     t.value = decimal.Decimal(t.value)
+    if t.value == int(t.value):
+        t.value = int(t.value)
+    else:
+        t.value = float(t.value)
     return t
 
 
@@ -613,10 +617,12 @@ def p_atom_name(p):
 
 
 def p_atom_number(p):
-    """atom : NUMBER
-            | STRING"""
-    p[0] = ast.Const(p[1])
+    """atom : NUMBER"""
+    p[0] = ast.Num(p[1])
 
+def p_atom_string(p):
+    """atom : STRING"""
+    p[0] = ast.Str(p[1])
 
 def p_atom_tuple(p):
     """atom : LPAR testlist RPAR"""
@@ -763,6 +769,7 @@ print(x(2))
 print(x(8),'3')
 print('this is decimal', 1/5)
 print('BIG DECIMAL', 1.234567891234567e12345)
+print('LITTE DECIMAL', 1.234567891234567e-12345)
 
 """
 
