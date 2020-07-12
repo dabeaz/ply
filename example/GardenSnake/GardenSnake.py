@@ -705,26 +705,20 @@ class GardenSnakeParser(object):
 
 ###### Code generation ######
 
-from compiler import misc, syntax, pycodegen
-
-
 class GardenSnakeCompiler(object):
 
     def __init__(self):
         self.parser = GardenSnakeParser()
 
-    def compile(self, code, filename="<string>"):
+    def do_compile(self, code, filename="<string>"):
         tree = self.parser.parse(code)
-        # print  tree
-        misc.set_filename(filename, tree)
-        syntax.check(tree)
-        gen = pycodegen.ModuleCodeGenerator(tree)
-        code = gen.getCode()
-        return code
+        tree = ast.fix_missing_locations(tree)
+        # print(ast.dump(tree))
+        return compile(tree, filename, "exec")
 
 ####### Test code #######
 
-compile = GardenSnakeCompiler().compile
+do_compile = GardenSnakeCompiler().do_compile
 
 code = r"""
 
@@ -769,7 +763,7 @@ print(t,a)
 # Set up the GardenSnake run-time environment
 
 
-compiled_code = compile(code)
+compiled_code = do_compile(code)
 
 exec(compiled_code, globals())
 print("Done")
