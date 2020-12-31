@@ -144,6 +144,10 @@ class Lexer:
             for key, ef in self.lexstateerrorf.items():
                 c.lexstateerrorf[key] = getattr(object, ef.__name__)
             c.lexmodule = object
+
+            # bind the lexing state with items from the new object
+            c.begin(self.lexstate)
+
         return c
 
     # ------------------------------------------------------------
