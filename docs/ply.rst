@@ -101,7 +101,7 @@ values.  For example::
     ('ID','x'), ('EQUALS','='), ('NUMBER','3'), 
     ('PLUS','+'), ('NUMBER','42), ('TIMES','*'),
     ('LPAREN','('), ('ID','s'), ('MINUS','-'),
-    ('ID','t'), ('RPAREN',')'
+    ('ID','t'), ('RPAREN',')')
 
 The specification of tokens is done by writing a series of
 regular expression rules.  The next section shows how this is done
