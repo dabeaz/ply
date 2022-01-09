@@ -188,7 +188,7 @@ The [doc/](doc/) directory has more extensive documentation on PLY.
 
 ## Examples
 
-The [examples/](examples/) directory has various examples of using PLY.
+The [example/](example/) directory has various examples of using PLY.
 
 ## Test Suite
 
