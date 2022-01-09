@@ -20,7 +20,7 @@ protocol decoders, or even a more advanced parsing framework.
 
 ## Download
 
-* [Current Release (ply-2022_01_02)](https://github.com/dabeaz/ply/raw/main/ply-2022_01_02.tar.gz)
+* [Current Release (ply-2022_01_02)](https://github.com/dabeaz/ply/raw/master/ply-2022_01_02.tar.gz)
 * [Historial Releases](https://github.com/dabeaz/archive/tree/main/ply)
 
 The current release of PLY requires the use of Python 3.6 or
@@ -194,7 +194,7 @@ The [examples/](examples/) directory has various examples of using PLY.
 
 PLY is not shipped with a test-suite.  However, it is extensively
 tested before releases are made.  The file
-[ply-tests.tar.gz](https://github.com/dabeaz/ply/raw/main/ply-tests.tar.gz)
+[ply-tests.tar.gz](https://github.com/dabeaz/ply/raw/master/ply-tests.tar.gz)
 contains a current version of the tests should you want to run them on
 your own.
 
