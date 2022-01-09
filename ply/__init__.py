@@ -1,6 +1,5 @@
 # PLY package
 # Author: David Beazley (dave@dabeaz.com)
-# https://dabeaz.com/ply/index.html
+# https://github.com/dabeaz/ply
 
-__version__ = '4.0'
-__all__ = ['lex','yacc']
+__version__ = '2022_01_02'

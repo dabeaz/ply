@@ -1,5 +1,3 @@
-Current Version
----------------
 IMPORTANT NOTE (2018-12-22): PLY is no longer be released in any
 package-installable format. If you want to use the latest version, you
 need to COPY the contents of the ply/ directory into your own project
@@ -8,26 +6,25 @@ maintained as a mature library.  No new major features are planned, but
 issues reported for bugs are still welcome. Any changes to the 
 software will be noted here.
 
-Version 4.0 (In progress)
--------------------------
-Note: The 4.0 series of PLY represents a massive cleanup and modernization
-effort.  At a fundamental level, no new "features" are being added.  
-Instead, a lot of outdated, inconsistent, and problematic features are
-being eliminated.  Here is a short summary:
+Version 2022_01_02
+------------------
+12/12/21  PLY is no longer being developed in public.  Instead
+          periodic versions will be posted.   In general, there has
+	  been an effort at cleanup and modernization. 
+          Here is a short summary of major changes:
 
-   - PLY no longer writes table files or cached data.  If you want this,
-     it's your responsibility to serialize the parser tables.  Use pickle.
+           - PLY no longer writes table files or cached data.  If you want this,
+             it's your responsibility to serialize the parser tables.  Use pickle.
 
-   - Elimination of side-effects and global variables (generally).
+           - Elimination of side-effects and global variables (generally).
 
-   - Elimination of numerous optional features in an effort to 
-     simplify the API.
+           - Elimination of numerous optional features in an effort to 
+             simplify the API.
 
-   - More use of modern Python features including iterators/generators,
-     keyword-only arguments, f-strings, etc.
+           - More use of modern Python features including iterators/generators,
+             keyword-only arguments, f-strings, etc.
 
-   - Dropped support for Python 2.x
-------------------------
+           - Dropped support for Python 2.x
 
 01/26/20  PLY no longer writes cached table files.  Honestly, the use of
           the cached files made more sense when I was developing PLY on

@@ -1,140 +1,255 @@
-# PLY (Python Lex-Yacc)
+# PLY - Python Lex-Yacc
 
-Copyright (C) 2001-2020
-David M. Beazley (Dabeaz LLC)
-All rights reserved.
+Author: David Beazley (https://www.dabeaz.com)
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
+## Introduction
 
-* Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.  
-* Redistributions in binary form must reproduce the above copyright notice, 
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.  
-* Neither the name of the David Beazley or Dabeaz LLC may be used to
-  endorse or promote products derived from this software without
-  specific prior written permission. 
+PLY is a zero-dependency Python implementation of the traditional
+parsing tools lex and yacc. It uses the same LALR(1) parsing algorithm
+as yacc and has most of its core features. It is compatible with all
+modern versions of Python.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+PLY was originally created in 2001 to support an Introduction to
+Compilers course at the University of Chicago.  As such, it has almost
+no features other than the core LALR(1) parsing algorithm.  This is by
+design--students should be made to suffer. Well, at least a little
+bit.  However, from a more practical point of view, there is a lot
+flexibility in terms of how you decide to use it.  You can use PLY to
+build Abstract Syntax Trees (ASTs), simple one-pass compilers,
+protocol decoders, or even a more advanced parsing framework.
 
-Introduction
-============
+## Download
 
-PLY is a 100% Python implementation of the common parsing tools lex
-and yacc. Here are a few highlights:
+* [Current Release (ply-2022_01_02)](https://github.com/dabeaz/ply/raw/main/ply-2022_01_02.tar.gz)
+* [Historial Releases](https://github.com/dabeaz/archive/tree/main/ply)
 
- -  PLY is very closely modeled after traditional lex/yacc.
-    If you know how to use these tools in C, you will find PLY
-    to be similar.
+The current release of PLY requires the use of Python 3.6 or
+greater. If you need to support an older version, download one of the
+historical releases.
 
- -  PLY provides *very* extensive error reporting and diagnostic 
-    information to assist in parser construction.  The original
-    implementation was developed for instructional purposes.  As
-    a result, the system tries to identify the most common types
-    of errors made by novice users.  
+## How to Install and Use 
 
- -  PLY provides full support for empty productions, error recovery,
-    precedence specifiers, and moderately ambiguous grammars.
-
- -  Parsing is based on LR-parsing which is fast, memory efficient, 
-    better suited to large grammars, and which has a number of nice
-    properties when dealing with syntax errors and other parsing problems.
-    Currently, PLY builds its parsing tables using the LALR(1)
-    algorithm used in yacc.
-
- -  PLY uses Python introspection features to build lexers and parsers.  
-    This greatly simplifies the task of parser construction since it reduces 
-    the number of files and eliminates the need to run a separate lex/yacc 
-    tool before running your program.
-
- -  PLY can be used to build parsers for "real" programming languages.
-    Although it is not ultra-fast due to its Python implementation,
-    PLY can be used to parse grammars consisting of several hundred
-    rules (as might be found for a language like C).  The lexer and LR 
-    parser are also reasonably efficient when parsing typically
-    sized programs.  People have used PLY to build parsers for
-    C, C++, ADA, and other real programming languages.
-
-How to Use
-==========
-
-PLY consists of two files : lex.py and yacc.py.  These are contained
-within the `ply` directory which may also be used as a Python package.
-To use PLY, simply copy the `ply` directory to your project and import
-lex and yacc from the associated `ply` package.  For example:
+Although PLY is open-source, it is not distributed or installed by
+package manager.  There are only two files: `lex.py` and `yacc.py`,
+both of which are contained in a `ply` package directory. To use PLY,
+copy the `ply` directory into your project and import `lex` and `yacc`
+from the associated `ply` subpackage. 
 
 ```python
 from .ply import lex
 from .ply import yacc
 ```
 
-Alternatively, you can copy just the files lex.py and yacc.py
-individually and use them as modules however you see fit.  For example:
+PLY has no third-party dependencies and can be freely renamed or moved
+around within your project as you see fit.  It rarely changes. 
+
+## Example
+
+The primary use for PLY is writing parsers for programming languages. Here an
+example that parses simple expressions into an abstract syntax tree (AST):
 
 ```python
-import lex
-import yacc
+# -----------------------------------------------------------------------------
+# example.py
+#
+# Example of using PLY To parse the following simple grammar.
+#
+#   expression : term PLUS term
+#              | term MINUS term
+#              | term
+#
+#   term       : factor TIMES factor
+#              | factor DIVIDE factor
+#              | factor
+#
+#   factor     : NUMBER
+#              | NAME
+#              | PLUS factor
+#              | MINUS factor
+#              | LPAREN expression RPAREN
+#
+# -----------------------------------------------------------------------------
+
+from ply.lex import lex
+from ply.yacc import yacc
+
+# --- Tokenizer
+
+# All tokens must be named in advance.
+tokens = ( 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'LPAREN', 'RPAREN',
+           'NAME', 'NUMBER' )
+
+# Ignored characters
+t_ignore = ' \t'
+
+# Token matching rules are written as regexs
+t_PLUS = r'\+'
+t_MINUS = r'-'
+t_TIMES = r'\*'
+t_DIVIDE = r'/'
+t_LPAREN = r'\('
+t_RPAREN = r'\)'
+t_NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
+
+# A function can be used if there is an associated action.
+# Write the matching regex in the docstring.
+def t_NUMBER(t):
+    r'\d+'
+    t.value = int(t.value)
+    return t
+
+# Ignored token with an action associated with it
+def t_ignore_newline(t):
+    r'\n+'
+    t.lexer.lineno += t.value.count('\n')
+
+# Error handler for illegal characters
+def t_error(t):
+    print(f'Illegal character {t.value[0]!r}')
+    t.lexer.skip(1)
+
+# Build the lexer object
+lexer = lex()
+    
+# --- Parser
+
+# Write functions for each grammar rule which is
+# specified in the docstring.
+def p_expression(p):
+    '''
+    expression : term PLUS term
+               | term MINUS term
+    '''
+    # p is a sequence that represents rule contents.
+    #
+    # expression : term PLUS term
+    #   p[0]     : p[1] p[2] p[3]
+    # 
+    p[0] = ('binop', p[2], p[1], p[3])
+
+def p_expression_term(p):
+    '''
+    expression : term
+    '''
+    p[0] = p[1]
+
+def p_term(p):
+    '''
+    term : factor TIMES factor
+         | factor DIVIDE factor
+    '''
+    p[0] = ('binop', p[2], p[1], p[3])
+
+def p_term_factor(p):
+    '''
+    term : factor
+    '''
+    p[0] = p[1]
+
+def p_factor_number(p):
+    '''
+    factor : NUMBER
+    '''
+    p[0] = ('number', p[1])
+
+def p_factor_name(p):
+    '''
+    factor : NAME
+    '''
+    p[0] = ('name', p[1])
+
+def p_factor_unary(p):
+    '''
+    factor : PLUS factor
+           | MINUS factor
+    '''
+    p[0] = ('unary', p[1], p[2])
+
+def p_factor_grouped(p):
+    '''
+    factor : LPAREN expression RPAREN
+    '''
+    p[0] = ('grouped', p[2])
+
+def p_error(p):
+    print(f'Syntax error at {p.value!r}')
+
+# Build the parser
+parser = yacc()
+
+# Parse an expression
+ast = parser.parse('2 * 3 + 4 * (5 - x)')
+print(ast)
 ```
 
-If you wish, you can use the install.py script to install PLY into
-virtual environment.
+## Documentation
 
-PLY has no third-party dependencies. 
+The [doc/](doc/) directory has more extensive documentation on PLY.
 
-The docs/ directory contains complete documentation on how to use
-the system.  Documentation available at https://ply.readthedocs.io
+## Examples
 
-The example directory contains several different examples including a
-PLY specification for ANSI C as given in K&R 2nd Ed.   
+The [examples/](examples/) directory has various examples of using PLY.
 
-A simple example is found at the end of this document
+## Test Suite
 
-Requirements
-============
-PLY requires the use of Python 3.6 or greater.  However, you should
-use the latest Python release if possible.  It should work on just
-about any platform.  
+PLY is not shipped with a test-suite.  However, it is extensively
+tested before releases are made.  The file
+[ply-tests.tar.gz](https://github.com/dabeaz/ply/raw/main/ply-tests.tar.gz)
+contains a current version of the tests should you want to run them on
+your own.
 
-Note: PLY does not support execution under `python -OO`.  It can be
-made to work in that mode, but you'll need to change the programming
-interface with a decorator.  See the documentation for details. 
+## Bug Reports
 
-Resources
-=========
+PLY is mature software and new features are rarely added.  If you think you have
+found a bug, please report an issue.
 
-Official Documentation is available at:
+## Questions and Answers
 
-* https://ply.readthedocs.io
+*Q: Why does PLY have such a weird API?*
 
-More information about PLY can be obtained on the PLY webpage at:
+Aside from simply being over 20 years old and predating many advanced
+Python features, PLY takes inspiration from two primary sources: the
+Unix `yacc` utility and John Aycock's Spark toolkit. `yacc` uses a
+convention of referencing grammar symbols by `$1`, `$2`, and so
+forth. PLY mirrors this using `p[1]`, `p[2]`, etc.  Spark was a
+parsing toolkit that utilized introspection and Python docstrings for
+specifying a grammar. PLY borrowed that because it was clever.
+A modern API can be found in the related [SLY](https://github.com/dabeaz/sly)
+project.
 
-* http://www.dabeaz.com/ply
+*Q: Why isn't PLY distributed as a package?*
 
-For a detailed overview of parsing theory, consult the excellent
-book "Compilers : Principles, Techniques, and Tools" by Aho, Sethi, and
-Ullman.  The topics found in "Lex & Yacc" by Levine, Mason, and Brown
-may also be useful.
+PLY is highly specialized software that is really only of interest to
+people creating parsers for programming languages. In such a project,
+I think you should take responsibility for library dependencies.  PLY
+is very small and rarely changes--if it works for your project, there
+is no reason to ever update it.  At the same time, as it's author, I
+reserve the creative right to make occasional updates to the project,
+including those that might introduce breaking changes.  The bottom
+line is that I'm not a link in your software supply chain.  If you
+use PLY, you should copy it into your project.
 
-The GitHub page for PLY can be found at:
+*Q: Do you accept pull requests and user contributions?*
 
-* https://github.com/dabeaz/ply
+No. New features are not being added to PLY at this time.  However, I
+am interested in bug reports should you find a problem with PLY.  Feel
+free to use the issue-tracker for feature ideas--just because PLY
+is not in active development doesn't mean that good ideas will be
+ignored.
 
-Acknowledgments
-===============
+*Q: Can I use PLY to make my own parsing tool?*
+
+Absolutely! It's free software that you are free to copy and modify in
+any way that makes sense. This includes remixing it into something
+that's more powerful.   I'd just ask that you keep the original
+copyright notice in files based on the original PLY source code so
+that others know where it came from.
+
+
+## Acknowledgements
+
 A special thanks is in order for all of the students in CS326 who
-suffered through about 25 different versions of these tools :-).
+suffered through about 25 different versions of this.
 
 The CHANGES file acknowledges those who have contributed patches.
 
@@ -142,141 +257,10 @@ Elias Ioup did the first implementation of LALR(1) parsing in PLY-1.x.
 Andrew Waters and Markus Schoepflin were instrumental in reporting bugs
 and testing a revised LALR(1) implementation for PLY-2.0.
 
-Example
-=======
+## Take a Class!
 
-Here is a simple example showing a PLY implementation of a calculator
-with variables.
-
-```python
-# -----------------------------------------------------------------------------
-# calc.py
-#
-# A simple calculator with variables.
-# -----------------------------------------------------------------------------
-
-tokens = (
-    'NAME','NUMBER',
-    'PLUS','MINUS','TIMES','DIVIDE','EQUALS',
-    'LPAREN','RPAREN',
-    )
-
-# Tokens
-
-t_PLUS    = r'\+'
-t_MINUS   = r'-'
-t_TIMES   = r'\*'
-t_DIVIDE  = r'/'
-t_EQUALS  = r'='
-t_LPAREN  = r'\('
-t_RPAREN  = r'\)'
-t_NAME    = r'[a-zA-Z_][a-zA-Z0-9_]*'
-
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
-    return t
-
-# Ignored characters
-t_ignore = " \t"
-
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += t.value.count("\n")
-
-def t_error(t):
-    print(f"Illegal character {t.value[0]!r}")
-    t.lexer.skip(1)
-
-# Build the lexer
-import ply.lex as lex
-lex.lex()
-
-# Precedence rules for the arithmetic operators
-precedence = (
-    ('left','PLUS','MINUS'),
-    ('left','TIMES','DIVIDE'),
-    ('right','UMINUS'),
-    )
-
-# dictionary of names (for storing variables)
-names = { }
-
-def p_statement_assign(p):
-    'statement : NAME EQUALS expression'
-    names[p[1]] = p[3]
-
-def p_statement_expr(p):
-    'statement : expression'
-    print(p[1])
-
-def p_expression_binop(p):
-    '''expression : expression PLUS expression
-                  | expression MINUS expression
-                  | expression TIMES expression
-                  | expression DIVIDE expression'''
-    if p[2] == '+'  : p[0] = p[1] + p[3]
-    elif p[2] == '-': p[0] = p[1] - p[3]
-    elif p[2] == '*': p[0] = p[1] * p[3]
-    elif p[2] == '/': p[0] = p[1] / p[3]
-
-def p_expression_uminus(p):
-    'expression : MINUS expression %prec UMINUS'
-    p[0] = -p[2]
-
-def p_expression_group(p):
-    'expression : LPAREN expression RPAREN'
-    p[0] = p[2]
-
-def p_expression_number(p):
-    'expression : NUMBER'
-    p[0] = p[1]
-
-def p_expression_name(p):
-    'expression : NAME'
-    try:
-        p[0] = names[p[1]]
-    except LookupError:
-        print(f"Undefined name {p[1]!r}")
-        p[0] = 0
-
-def p_error(p):
-    print(f"Syntax error at {p.value!r}")
-
-import ply.yacc as yacc
-yacc.yacc()
-
-while True:
-    try:
-        s = input('calc > ')
-    except EOFError:
-        break
-    yacc.parse(s)
-```
-
-Bug Reports and Patches
-=======================
-My goal with PLY is to simply have a decent lex/yacc implementation
-for Python.  As a general rule, I don't spend huge amounts of time
-working on it unless I receive very specific bug reports and/or
-patches to fix problems. At this time, PLY is mature software and new
-features are no longer being added.  If you think you have found a
-bug, please visit the PLY Github page at https://github.com/dabeaz/ply
-to report an issue.
-
-Take a Class!
-=============
-
-If you'd like to learn more about compiler principles and have a go at
-implementing a compiler, come take a course.
-https://www.dabeaz.com/compiler.html.
- 
--- Dave
-
-
-
-
-
+If you'd like to learn more about compiler principles or have a go at implementing
+a compiler from scratch, come take a course. https://www.dabeaz.com/compiler.html.
 
 
 
