@@ -93,7 +93,7 @@ More specifically, the input is broken into pairs of token types and
 values. For example:
 
     ('ID','x'), ('EQUALS','='), ('NUMBER','3'), 
-    ('PLUS','+'), ('NUMBER','42), ('TIMES','*'),
+    ('PLUS','+'), ('NUMBER','42'), ('TIMES','*'),
     ('LPAREN','('), ('ID','s'), ('MINUS','-'),
     ('ID','t'), ('RPAREN',')'
 
