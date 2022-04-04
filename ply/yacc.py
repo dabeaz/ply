@@ -661,22 +661,6 @@ class Production(object):
     def __getitem__(self, index):
         return self.prod[index]
 
-    # Return the nth lr_item from the production (or None if at the end)
-    def lr_item(self, n):
-        if n > len(self.prod):
-            return None
-        p = LRItem(self, n)
-        # Precompute the list of productions immediately following.
-        try:
-            p.lr_after = self.Prodnames[p.prod[n+1]]
-        except (IndexError, KeyError):
-            p.lr_after = []
-        try:
-            p.lr_before = p.prod[n-1]
-        except IndexError:
-            p.lr_before = None
-        return p
-
     # Bind the production function name to a callable
     def bind(self, pdict):
         if self.func:
