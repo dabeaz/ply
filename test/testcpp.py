@@ -10,7 +10,7 @@ if ".." not in sys.path:
     sys.path.insert(0, "..")
 
 from ply.lex import lex
-from ply.cpp import *
+from example.cpp.cpp import *
 
 
 def preprocessing(in_, out_queue):
