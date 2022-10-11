@@ -18,6 +18,14 @@ flexibility in terms of how you decide to use it.  You can use PLY to
 build Abstract Syntax Trees (ASTs), simple one-pass compilers,
 protocol decoders, or even a more advanced parsing framework.
 
+## Important Notice - October 11, 2022
+
+I'm officially retiring the PLY project.  There will be no further
+releases.  Should you choose to still use it, the GitHub repo will
+remain alive--feel free to vendor the code and report bugs as you see
+fit.  I'd like to thank everyone who contributed to the
+project over the last twenty-one years. -- Dave
+
 ## Download
 
 * [Current Release (ply-2022_01_02)](https://github.com/dabeaz/ply/raw/master/ply-2022_01_02.tar.gz)
