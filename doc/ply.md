@@ -477,8 +477,8 @@ parse. Here is an example of how this works:
         # Get more input (Example)
         more = input('... ')
         if more:
-            self.lexer.input(more)
-            return self.lexer.token()
+            t.lexer.input(more)
+            return t.lexer.token()
         return None
 
 The EOF function should return the next available token (by calling
