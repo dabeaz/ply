@@ -6,6 +6,13 @@ maintained as a mature library.  No new major features are planned, but
 issues reported for bugs are still welcome. Any changes to the 
 software will be noted here.
 
+Version 2022.10.27
+------------------
+10/27/22  Reoganization/modernization of the build process. PLY continues
+          to make no package-installable releases.  However, you can now
+	  use the Makefile to build artifacts installable via pip.
+	  Use `make test` to test and `make build` to build.
+	  
 Version 2022_01_02
 ------------------
 12/12/21  PLY is no longer being developed in public.  Instead
