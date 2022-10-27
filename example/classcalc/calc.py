@@ -9,9 +9,6 @@
 # Class-based example contributed to PLY by David McNab
 # -----------------------------------------------------------------------------
 
-import sys
-sys.path.insert(0, "../..")
-
 import ply.lex as lex
 import ply.yacc as yacc
 import os

@@ -4,9 +4,6 @@
 # A lexer for ANSI C.
 # ----------------------------------------------------------------------
 
-import sys
-sys.path.insert(0, "../..")
-
 import ply.lex as lex
 
 # Reserved words

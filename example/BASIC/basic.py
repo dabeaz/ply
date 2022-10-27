@@ -1,9 +1,6 @@
 # An implementation of Dartmouth BASIC (1964)
 #
 
-import sys
-sys.path.insert(0, "../..")
-
 import basiclex
 import basparse
 import basinterp

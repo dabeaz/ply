@@ -6,9 +6,6 @@
 # lexing rules, parsing rules, and internal state are held inside the function.
 # -----------------------------------------------------------------------------
 
-import sys
-sys.path.insert(0, "../..")
-
 # Make a calculator function
 
 

@@ -21,7 +21,6 @@
 #
 
 import sys
-sys.path.insert(0, "../..")
 
 import ylex
 import yparse

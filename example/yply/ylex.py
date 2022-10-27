@@ -3,9 +3,6 @@
 # Author: David Beazley (dave@dabeaz.com)
 # Date  : October 2, 2006
 
-import sys
-sys.path.append("../..")
-
 from ply import *
 
 tokens = (

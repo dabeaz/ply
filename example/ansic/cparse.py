@@ -4,7 +4,6 @@
 # Simple parser for ANSI C.  Based on the grammar in K&R, 2nd Ed.
 # -----------------------------------------------------------------------------
 
-import sys
 import clex
 import ply.yacc as yacc
 

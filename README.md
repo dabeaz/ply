@@ -36,7 +36,8 @@ Although PLY is open-source, it is not distributed or installed by
 package manager.  There are only two files: `lex.py` and `yacc.py`,
 both of which are contained in a `ply` package directory. To use PLY,
 copy the `ply` directory into your project and import `lex` and `yacc`
-from the associated `ply` subpackage. 
+from the associated `ply` subpackage.  Alternatively, you can install
+these files into your working python using `make install`.
 
 ```python
 from .ply import lex

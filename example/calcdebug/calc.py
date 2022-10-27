@@ -5,9 +5,6 @@
 # with output routed to a logging object.
 # -----------------------------------------------------------------------------
 
-import sys
-sys.path.insert(0, "../..")
-
 tokens = (
     'NAME', 'NUMBER',
 )

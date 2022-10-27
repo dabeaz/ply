@@ -5,9 +5,6 @@
 # demonstrates the use of the t_eof() rule.
 # -----------------------------------------------------------------------------
 
-import sys
-sys.path.insert(0, "../..")
-
 tokens = (
     'NAME', 'NUMBER',
 )
