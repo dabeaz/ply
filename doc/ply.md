@@ -93,7 +93,7 @@ More specifically, the input is broken into pairs of token types and
 values. For example:
 
     ('ID','x'), ('EQUALS','='), ('NUMBER','3'), 
-    ('PLUS','+'), ('NUMBER','42), ('TIMES','*'),
+    ('PLUS','+'), ('NUMBER','42'), ('TIMES','*'),
     ('LPAREN','('), ('ID','s'), ('MINUS','-'),
     ('ID','t'), ('RPAREN',')'
 
@@ -497,7 +497,7 @@ To build the lexer, the function `lex.lex()` is used. For example:
 This function uses Python reflection (or introspection) to read the
 regular expression rules out of the calling context and build the lexer.
 Once the lexer has been built, two methods can be used to control the
-lexer.
+lexer:
 
 `lexer.input(data)`. Reset the lexer and store a new input string.
 
@@ -766,13 +766,13 @@ where you created the lexer. For example:
         return t
 
 If you don\'t like the use of a global variable, another place to store
-information is inside the Lexer object created by `lex()`. To this, you
+information is inside the Lexer object created by `lex()`. To do this, you
 can use the `lexer` attribute of tokens passed to the various rules. For
 example:
 
     def t_NUMBER(t):
         r'\d+'
-        t.lexer.num_count += 1     # Note use of lexer attribute
+        t.lexer.num_count += 1     # Note the use of lexer attribute
         t.value = int(t.value)    
         return t
 
@@ -785,7 +785,7 @@ exist in the same application. However, this might also feel like a
 gross violation of encapsulation to OO purists. Just to put your mind at
 some ease, all internal attributes of the lexer (with the exception of
 `lineno`) have names that are prefixed by `lex` (e.g.,
-`lexdata`,`lexpos`, etc.). Thus, it is perfectly safe to store
+`lexdata`, `lexpos`, etc.). Thus, it is perfectly safe to store
 attributes in the lexer that don\'t have names starting with that prefix
 or a name that conflicts with one of the predefined methods (e.g.,
 `input()`, `token()`, etc.).
@@ -860,13 +860,13 @@ class and did this:
 Then both `a` and `b` are going to be bound to the same object `m` and
 any changes to `m` will be reflected in both lexers. It\'s important to
 emphasize that `clone()` is only meant to create a new lexer that reuses
-the regular expressions and environment of another lexer. If you need to
+the regular expressions and the environment of another lexer. If you need to
 make a totally new copy of a lexer, then call `lex()` again.
 
 ### Internal lexer state
 
 A Lexer object `lexer` has a number of internal attributes that may be
-useful in certain situations.
+useful in certain situations:
 
 `lexer.lexpos`
 
@@ -896,8 +896,8 @@ useful in certain situations.
 :   This is the raw `Match` object returned by the Python `re.match()`
     function (used internally by PLY) for the current token. If you have
     written a regular expression that contains named groups, you can use
-    this to retrieve those values. Note: This attribute is only updated
-    when tokens are defined and processed by functions.
+    this to retrieve those values.
+	Note: This attribute is only updated when tokens are defined and processed by functions.
 
 ### Conditional lexing and start conditions
 
@@ -908,7 +908,7 @@ supports a feature that allows the underlying lexer to be put into a
 series of different states. Each state can have its own tokens, lexing
 rules, and so forth. The implementation is based largely on the \"start
 condition\" feature of GNU flex. Details of this can be found at
-<http://flex.sourceforge.net/manual/Start-Conditions.html>
+<https://westes.github.io/flex/manual/Start-Conditions.html>
 
 To define a new lexing state, it must first be declared. This is done by
 including a \"states\" declaration in your lex file. For example:
@@ -919,12 +919,12 @@ including a \"states\" declaration in your lex file. For example:
     )
 
 This declaration declares two states, `'foo'` and `'bar'`. States may be
-of two types; `'exclusive'` and `'inclusive'`. An exclusive state
+of two types; `'exclusive'` and `'inclusive'`. An ``'exclusive'`` state
 completely overrides the default behavior of the lexer. That is, lex
 will only return tokens and apply rules defined specifically for that
-state. An inclusive state adds additional tokens and rules to the
+state. An ``'inclusive'`` state adds additional tokens and rules to the
 default set of rules. Thus, lex will return both the tokens defined by
-default in addition to those defined for the inclusive state.
+default in addition to those defined for the ``'inclusive'`` state.
 
 Once a state has been declared, tokens and rules are declared by
 including the state name in token/rule declaration. For example:
@@ -995,34 +995,36 @@ the previous state afterwards.
 
 An example might help clarify. Suppose you were writing a parser and you
 wanted to grab sections of arbitrary C code enclosed by curly braces.
-That is, whenever you encounter a starting brace `'{'`, you want to read
-all of the enclosed code up to the ending brace `'}'` and return it as a
+That is, whenever you encounter a starting brace ``{``, you want to read
+all of the enclosed code up to the ending brace ``}`` and return it as a
 string. Doing this with a normal regular expression rule is nearly (if
 not actually) impossible. This is because braces can be nested and can
 be included in comments and strings. Thus, matching up to the first
-matching `'}'` character isn\'t good enough. Here is how you might use
+matching ``}`` character isn\'t good enough. Here is how you might use
 lexer states to do this:
 
-    # Declare the state
+	import ply.lex as lex
+
+	# Declare the states
     states = (
       ('ccode','exclusive'),
     )
 
-    # Match the first {. Enter ccode state.
+    # Match the first '{' Enter ccode state.
     def t_ccode(t):
         r'\{'
         t.lexer.code_start = t.lexer.lexpos        # Record the starting position
         t.lexer.level = 1                          # Initial brace level
         t.lexer.begin('ccode')                     # Enter 'ccode' state
 
-    # Rules for the ccode state
+    # Rules for the 'ccode' state
     def t_ccode_lbrace(t):     
         r'\{'
-        t.lexer.level +=1                
+        t.lexer.level += 1                
 
     def t_ccode_rbrace(t):
         r'\}'
-        t.lexer.level -=1
+        t.lexer.level -= 1
 
         # If closing brace, return the code fragment
         if t.lexer.level == 0:
@@ -1055,8 +1057,19 @@ lexer states to do this:
     # For bad characters, we just skip over it
     def t_ccode_error(t):
         t.lexer.skip(1)
+	
+	lexer = lex.lex()
+    data = "{}"
 
-In this example, the occurrence of the first \'{\' causes the lexer to
+    lexer.input(data)
+    while True:
+        tok = lexer.token()
+        if not tok:
+            break
+        print(tok)
+
+
+In this example, the occurrence of the first ``{`` causes the lexer to
 record the starting position and enter a new state `'ccode'`. A
 collection of rules then match various parts of the input that follow
 (comments, strings, etc.). All of these rules merely discard the token
@@ -1076,11 +1089,11 @@ lexing state is restored back to its initial state.
     `re` module. You might be able to work around this by implementing
     an appropriate `def t_eof()` end-of-file handling rule. The main
     complication here is that you\'ll probably need to ensure that data
-    is fed to the lexer in a way so that it doesn\'t split in in the
+    is fed to the lexer in a way so that it doesn\'t split in the
     middle of a token.
 
--   If you need to supply optional flags to the re.compile() function,
-    use the reflags option to lex. For example:
+-   If you need to supply optional flags to the ``re.compile()`` function,
+    supply the ``reflags`` option to lex. For example:
 
         lex.lex(reflags=re.UNICODE | re.VERBOSE)
 
@@ -1280,6 +1293,8 @@ as previously described. Here is how you would do it with `yacc.py`:
        result = parser.parse(s)
        print(result)
 
+Note: ``calclex.py`` can be found at https://github.com/dabeaz/ply/blob/master/test/calclex.py
+
 In this example, each grammar rule is defined by a Python function where
 the docstring to that function contains the appropriate context-free
 grammar specification. The statements that make up the function body
@@ -1313,9 +1328,9 @@ The first rule defined in the yacc specification determines the starting
 grammar symbol (in this case, a rule for `expression` appears first).
 Whenever the starting rule is reduced by the parser and no more input is
 available, parsing stops and the final value is returned (this value
-will be whatever the top-most rule placed in `p[0]`). Note: an
-alternative starting symbol can be specified using the `start` keyword
-argument to `yacc()`.
+will be whatever the top-most rule placed in `p[0]`).
+Note: an alternative starting symbol can be specified using the ``start`` keyword
+argument to ``yacc()``.
 
 The `p_error(p)` rule is defined to catch syntax errors. See the error
 handling section below for more detail.
@@ -1391,7 +1406,7 @@ When combining grammar rules into a single function, it is usually a
 good idea for all of the rules to have a similar structure (e.g., the
 same number of terms). Otherwise, the corresponding action code may be
 more complicated than necessary. However, it is possible to handle
-simple cases using len(). For example:
+simple cases using ``len()``. For example:
 
     def p_expressions(p):
         '''expression : expression MINUS expression
@@ -1433,11 +1448,12 @@ addition, if literals are used, they must be declared in the
 corresponding `lex` file through the use of a special `literals`
 declaration:
 
-    # Literals.  Should be placed in module given to lex()
-    literals = ['+','-','*','/' ]
+    # Literals should be placed in module given to lex()
+    literals = ['+','-','*','/']
+Note: make sure that you don't have a duplicate token rule defined like `t_...` to make it work.
 
 Character literals are limited to a single character. Thus, it is not
-legal to specify literals such as `'<='` or `'=='`. For this, use the
+legal to specify literals such as ``<=`` or ``==``. For this, use the
 normal lexing rules (e.g., define a rule such as `t_EQ = r'=='`).
 
 ### Empty Productions
@@ -1448,7 +1464,7 @@ normal lexing rules (e.g., define a rule such as `t_EQ = r'=='`).
         'empty :'
         pass
 
-Now to use the empty production, use \'empty\' as a symbol. For example:
+Now to use the empty production, use ``empty`` as a symbol. For example:
 
     def p_optitem(p):
         'optitem : item'
@@ -1553,7 +1569,7 @@ specification).
 
 The precedence specification works by associating a numerical precedence
 level value and associativity direction to the listed tokens. For
-example, in the above example you get:
+example, in the above example you will get:
 
     PLUS      : level = 1,  assoc = 'left'
     MINUS     : level = 1,  assoc = 'left'
@@ -1575,6 +1591,8 @@ example:
 When shift/reduce conflicts are encountered, the parser generator
 resolves the conflict by looking at the precedence rules and
 associativity specifiers.
+
+Yacc precedence and associativity of tokens:
 
 1.  If the current token has higher precedence than the rule on the
     stack, it is shifted.
@@ -1948,10 +1966,10 @@ every possible sequence of valid input tokens allowed by the grammar.
 When receiving input tokens, the parser is building up a stack and
 looking for matching rules. Each state keeps track of the grammar rules
 that might be in the process of being matched at that point. Within each
-rule, the \".\" character indicates the current location of the parse
+rule, the ``.`` character indicates the current location of the parse
 within that rule. In addition, the actions for each valid input token
 are listed. When a shift/reduce or reduce/reduce conflict arises, rules
-*not* selected are prefixed with an !. For example:
+*not* selected are prefixed with an ``!``. For example:
 
     ! TIMES           [ reduce using rule 2 ]
     ! DIVIDE          [ reduce using rule 2 ]
@@ -1962,7 +1980,9 @@ By looking at these rules (and with a little practice), you can usually
 track down the source of most parsing conflicts. It should also be
 stressed that not all shift-reduce conflicts are bad. However, the only
 way to be sure that they are resolved correctly is to look at
-`parser.out`.
+``parser.out`` file generated by ``yacc.py`` by default, can be disabled by passing ``False`` to debug::
+
+	yacc.yacc(debug=False)
 
 ### Syntax Error Handling
 
@@ -2566,7 +2586,7 @@ execution.
 Because of PLY\'s reliance on docstrings, it is not compatible with
 [-OO]{.title-ref} mode of the interpreter (which strips docstrings). If
 you want to support this, you\'ll need to write a decorator or some
-other tool to attach docstrings to functions. For example:
+other tool to attach docstrings to functions. For example::
 
     def _(doc):
         def decorate(func):
