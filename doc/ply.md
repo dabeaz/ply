@@ -477,13 +477,13 @@ parse. Here is an example of how this works:
         # Get more input (Example)
         more = input('... ')
         if more:
-            self.lexer.input(more)
-            return self.lexer.token()
+            t.lexer.input(more)
+            return t.lexer.token()
         return None
 
 The EOF function should return the next available token (by calling
-`self.lexer.token())` or `None` to indicate no more data. Be aware that
-setting more input with the `self.lexer.input()` method does NOT reset
+`t.lexer.token())` or `None` to indicate no more data. Be aware that
+setting more input with the `t.lexer.input()` method does NOT reset
 the lexer state or the `lineno` attribute used for position tracking.
 The `lexpos` attribute is reset so be aware of that if you\'re using it
 in error reporting.
