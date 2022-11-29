@@ -95,7 +95,7 @@ values. For example:
     ('ID','x'), ('EQUALS','='), ('NUMBER','3'), 
     ('PLUS','+'), ('NUMBER','42'), ('TIMES','*'),
     ('LPAREN','('), ('ID','s'), ('MINUS','-'),
-    ('ID','t'), ('RPAREN',')'
+    ('ID','t'), ('RPAREN',')')
 
 The specification of tokens is done by writing a series of regular
 expression rules. The next section shows how this is done using
@@ -1369,7 +1369,7 @@ function. For example, consider the two rules in our earlier example:
         'expression : expression PLUS term'
         p[0] = p[1] + p[3]
 
-    def p_expression_minus(t):
+    def p_expression_minus(p):
         'expression : expression MINUS term'
         p[0] = p[1] - p[3]
 
