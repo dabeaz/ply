@@ -2159,7 +2159,11 @@ class ParserReflect(object):
                 return
             for level, p in enumerate(self.prec):
                 if not isinstance(p, (list, tuple)):
-                    self.log.error('Bad precedence table')
+                    self.log.error('Malformed precedence entry %d, got %s but expected list or tuple.',
+                                   level + 1, type(p))
+                    if isinstance(self.prec, tuple):
+                        self.log.error('Make sure you insert a comma after /each/ entry in tuple definition.')
+                        self.log.error('You may want to change definition %d to %s,', level + 1, self.prec)
                     self.error = True
                     return
 
