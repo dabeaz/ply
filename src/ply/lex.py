@@ -447,11 +447,6 @@ class LexerReflect(object):
             self.error = True
             return
 
-        if not tokens:
-            self.log.error('tokens is empty')
-            self.error = True
-            return
-
         self.tokens = tokens
 
     # Validate the tokens

@@ -2124,11 +2124,6 @@ class ParserReflect(object):
             self.error = True
             return
 
-        if not tokens:
-            self.log.error('tokens is empty')
-            self.error = True
-            return
-
         self.tokens = sorted(tokens)
 
     # Validate the tokens
