@@ -371,8 +371,10 @@ def _form_master_re(relist, reflags, ldict, toknames):
                     lexindexfunc[i] = (None, toknames[f])
 
         return [(lexre, lexindexfunc)], [regex], [lexindexnames]
-    except Exception:
-        m = (len(relist) // 2) + 1
+    except (Exception, re.error):
+        if (len(relist) == 1):
+            raise RuntimeError("Failure to compile expression " + relist[0])
+        m = (len(relist) // 2)
         llist, lre, lnames = _form_master_re(relist[:m], reflags, ldict, toknames)
         rlist, rre, rnames = _form_master_re(relist[m:], reflags, ldict, toknames)
         return (llist+rlist), (lre+rre), (lnames+rnames)
@@ -612,13 +614,19 @@ class LexerReflect(object):
                     continue
 
                 try:
-                    c = re.compile('(?P<%s>%s)' % (fname, _get_regex(f)), self.reflags)
+                    fregex = _get_regex(f)
+                    pattern = '(?P<%s>%s)'
+                    while(flags := re.match("^\(\?[aiLmsux]+\)", fregex)):
+                        flags = flags.group(0)
+                        fregex = fregex[len(flags):]
+                        pattern = flags + pattern
+                    c = re.compile(pattern % (fname, fregex), self.reflags)
                     if c.match(''):
                         self.log.error("%s:%d: Regular expression for rule %r matches empty string", file, line, f.__name__)
                         self.error = True
                 except re.error as e:
                     self.log.error("%s:%d: Invalid regular expression for rule '%s'. %s", file, line, f.__name__, e)
-                    if '#' in _get_regex(f):
+                    if '#' in fregex:
                         self.log.error("%s:%d. Make sure '#' in rule %r is escaped with '\\#'", file, line, f.__name__)
                     self.error = True
 
@@ -780,7 +788,13 @@ def lex(*, module=None, object=None, debug=False,
 
         # Add rules defined by functions first
         for fname, f in linfo.funcsym[state]:
-            regex_list.append('(?P<%s>%s)' % (fname, _get_regex(f)))
+            fregex = _get_regex(f)
+            pattern = '(?P<%s>%s)'
+            while(flags := re.match("^\(\?[aiLmsux]+\)", fregex)):
+                flags = flags.group(0)
+                fregex = fregex[len(flags):]
+                pattern = flags + pattern
+            regex_list.append(pattern % (fname, fregex))
             if debug:
                 debuglog.info("lex: Adding rule %s -> '%s' (state '%s')", fname, _get_regex(f), state)
 
