@@ -1,3 +1,23 @@
+[project]
+name = "ply"
+version = "2022.10.27"
+description = "PLY - Sly Lex Yacc"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "David Beazley", email = "dave@dabeaz.com"}
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License"
+]
+
+[project.urls]
+Homepage = "https://github.com/dabeaz/ply"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["ply"]
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"

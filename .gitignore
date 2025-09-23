@@ -1,9 +1,18 @@
-*.pyc
-*.pyo
-__pycache__
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+src/*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+
+# Editor backups and temp files
 *.out
 *.dif
 *~
-/dist
-/build
-/*.egg-info
