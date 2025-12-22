@@ -21,7 +21,10 @@ def make_pymodule_path(filename):
     file = os.path.basename(filename)
     mod, ext = os.path.splitext(file)
 
-    if sys.hexversion >= 0x3040000:
+    if sys.hexversion >= 0x3050000:
+        import importlib.util
+        fullpath = importlib.util.cache_from_source(filename)
+    elif sys.hexversion >= 0x3040000:
         import importlib.util
         fullpath = importlib.util.cache_from_source(filename, ext=='.pyc')
     elif sys.hexversion >= 0x3020000:
