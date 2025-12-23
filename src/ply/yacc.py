@@ -102,6 +102,10 @@ class PlyLogger(object):
     def error(self, msg, *args, **kwargs):
         self.f.write('ERROR: ' + (msg % args) + '\n')
 
+    def __del__(self):
+        if self.f != sys.stderr:
+            self.f.close()
+
     critical = debug
 
 # Null logger is used when no output is generated. Does nothing.
