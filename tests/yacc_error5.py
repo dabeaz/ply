@@ -21,12 +21,6 @@ def p_statement_assign(t):
     'statement : NAME EQUALS expression'
     names[t[1]] = t[3]
 
-def p_statement_assign_error(t):
-    'statement : NAME EQUALS error'
-    line_start, line_end = t.linespan(3)
-    pos_start, pos_end = t.lexspan(3)
-    print("Assignment Error at %d:%d to %d:%d" % (line_start,pos_start,line_end,pos_end))
-
 def p_statement_expr(t):
     'statement : expression'
     print(t[1])

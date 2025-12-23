@@ -255,9 +255,17 @@ class LRParser:
     def set_defaulted_states(self):
         self.defaulted_states = {}
         for state, actions in self.action.items():
+            if not actions:
+                continue
             rules = list(actions.values())
-            if len(rules) == 1 and rules[0] < 0:
-                self.defaulted_states[state] = rules[0]
+            first_rule = rules[0]
+            if first_rule < 0:
+                if len(rules) == 1:
+                    self.defaulted_states[state] = first_rule
+                else:
+                    all_rules = set(rules)
+                    if len(all_rules) == 1:
+                        self.defaulted_states[state] = first_rule
 
     def disable_defaulted_states(self):
         self.defaulted_states = {}
@@ -324,7 +332,7 @@ class LRParser:
             if debug:
                 debug.debug('State  : %s', state)
 
-            if state not in defaulted_states:
+            if state not in defaulted_states or errorcount>0:
                 if not lookahead:
                     if not lookaheadstack:
                         lookahead = get_token()     # Get the next token
