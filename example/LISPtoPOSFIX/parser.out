@@ -1,0 +1,286 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> E
+Rule 1     E -> ABRE_PAREN MAIS E E FECHA_PAREN
+Rule 2     E -> ABRE_PAREN MENOS E E FECHA_PAREN
+Rule 3     E -> ABRE_PAREN VEZES E E FECHA_PAREN
+Rule 4     E -> ABRE_PAREN DIVIDIR E E FECHA_PAREN
+Rule 5     E -> ID
+Rule 6     E -> NUMERO
+
+Terminals, with rules where they appear
+
+ABRE_PAREN           : 1 2 3 4
+DIVIDIR              : 4
+FECHA_PAREN          : 1 2 3 4
+ID                   : 5
+MAIS                 : 1
+MENOS                : 2
+NUMERO               : 6
+VEZES                : 3
+error                : 
+
+Nonterminals, with rules where they appear
+
+E                    : 1 1 2 2 3 3 4 4 0
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . E
+    (1) E -> . ABRE_PAREN MAIS E E FECHA_PAREN
+    (2) E -> . ABRE_PAREN MENOS E E FECHA_PAREN
+    (3) E -> . ABRE_PAREN VEZES E E FECHA_PAREN
+    (4) E -> . ABRE_PAREN DIVIDIR E E FECHA_PAREN
+    (5) E -> . ID
+    (6) E -> . NUMERO
+
+    ABRE_PAREN      shift and go to state 2
+    ID              shift and go to state 3
+    NUMERO          shift and go to state 4
+
+    E                              shift and go to state 1
+
+state 1
+
+    (0) S' -> E .
+
+
+
+state 2
+
+    (1) E -> ABRE_PAREN . MAIS E E FECHA_PAREN
+    (2) E -> ABRE_PAREN . MENOS E E FECHA_PAREN
+    (3) E -> ABRE_PAREN . VEZES E E FECHA_PAREN
+    (4) E -> ABRE_PAREN . DIVIDIR E E FECHA_PAREN
+
+    MAIS            shift and go to state 5
+    MENOS           shift and go to state 6
+    VEZES           shift and go to state 7
+    DIVIDIR         shift and go to state 8
+
+
+state 3
+
+    (5) E -> ID .
+
+    $end            reduce using rule 5 (E -> ID .)
+    ABRE_PAREN      reduce using rule 5 (E -> ID .)
+    ID              reduce using rule 5 (E -> ID .)
+    NUMERO          reduce using rule 5 (E -> ID .)
+    FECHA_PAREN     reduce using rule 5 (E -> ID .)
+
+
+state 4
+
+    (6) E -> NUMERO .
+
+    $end            reduce using rule 6 (E -> NUMERO .)
+    ABRE_PAREN      reduce using rule 6 (E -> NUMERO .)
+    ID              reduce using rule 6 (E -> NUMERO .)
+    NUMERO          reduce using rule 6 (E -> NUMERO .)
+    FECHA_PAREN     reduce using rule 6 (E -> NUMERO .)
+
+
+state 5
+
+    (1) E -> ABRE_PAREN MAIS . E E FECHA_PAREN
+    (1) E -> . ABRE_PAREN MAIS E E FECHA_PAREN
+    (2) E -> . ABRE_PAREN MENOS E E FECHA_PAREN
+    (3) E -> . ABRE_PAREN VEZES E E FECHA_PAREN
+    (4) E -> . ABRE_PAREN DIVIDIR E E FECHA_PAREN
+    (5) E -> . ID
+    (6) E -> . NUMERO
+
+    ABRE_PAREN      shift and go to state 2
+    ID              shift and go to state 3
+    NUMERO          shift and go to state 4
+
+    E                              shift and go to state 9
+
+state 6
+
+    (2) E -> ABRE_PAREN MENOS . E E FECHA_PAREN
+    (1) E -> . ABRE_PAREN MAIS E E FECHA_PAREN
+    (2) E -> . ABRE_PAREN MENOS E E FECHA_PAREN
+    (3) E -> . ABRE_PAREN VEZES E E FECHA_PAREN
+    (4) E -> . ABRE_PAREN DIVIDIR E E FECHA_PAREN
+    (5) E -> . ID
+    (6) E -> . NUMERO
+
+    ABRE_PAREN      shift and go to state 2
+    ID              shift and go to state 3
+    NUMERO          shift and go to state 4
+
+    E                              shift and go to state 10
+
+state 7
+
+    (3) E -> ABRE_PAREN VEZES . E E FECHA_PAREN
+    (1) E -> . ABRE_PAREN MAIS E E FECHA_PAREN
+    (2) E -> . ABRE_PAREN MENOS E E FECHA_PAREN
+    (3) E -> . ABRE_PAREN VEZES E E FECHA_PAREN
+    (4) E -> . ABRE_PAREN DIVIDIR E E FECHA_PAREN
+    (5) E -> . ID
+    (6) E -> . NUMERO
+
+    ABRE_PAREN      shift and go to state 2
+    ID              shift and go to state 3
+    NUMERO          shift and go to state 4
+
+    E                              shift and go to state 11
+
+state 8
+
+    (4) E -> ABRE_PAREN DIVIDIR . E E FECHA_PAREN
+    (1) E -> . ABRE_PAREN MAIS E E FECHA_PAREN
+    (2) E -> . ABRE_PAREN MENOS E E FECHA_PAREN
+    (3) E -> . ABRE_PAREN VEZES E E FECHA_PAREN
+    (4) E -> . ABRE_PAREN DIVIDIR E E FECHA_PAREN
+    (5) E -> . ID
+    (6) E -> . NUMERO
+
+    ABRE_PAREN      shift and go to state 2
+    ID              shift and go to state 3
+    NUMERO          shift and go to state 4
+
+    E                              shift and go to state 12
+
+state 9
+
+    (1) E -> ABRE_PAREN MAIS E . E FECHA_PAREN
+    (1) E -> . ABRE_PAREN MAIS E E FECHA_PAREN
+    (2) E -> . ABRE_PAREN MENOS E E FECHA_PAREN
+    (3) E -> . ABRE_PAREN VEZES E E FECHA_PAREN
+    (4) E -> . ABRE_PAREN DIVIDIR E E FECHA_PAREN
+    (5) E -> . ID
+    (6) E -> . NUMERO
+
+    ABRE_PAREN      shift and go to state 2
+    ID              shift and go to state 3
+    NUMERO          shift and go to state 4
+
+    E                              shift and go to state 13
+
+state 10
+
+    (2) E -> ABRE_PAREN MENOS E . E FECHA_PAREN
+    (1) E -> . ABRE_PAREN MAIS E E FECHA_PAREN
+    (2) E -> . ABRE_PAREN MENOS E E FECHA_PAREN
+    (3) E -> . ABRE_PAREN VEZES E E FECHA_PAREN
+    (4) E -> . ABRE_PAREN DIVIDIR E E FECHA_PAREN
+    (5) E -> . ID
+    (6) E -> . NUMERO
+
+    ABRE_PAREN      shift and go to state 2
+    ID              shift and go to state 3
+    NUMERO          shift and go to state 4
+
+    E                              shift and go to state 14
+
+state 11
+
+    (3) E -> ABRE_PAREN VEZES E . E FECHA_PAREN
+    (1) E -> . ABRE_PAREN MAIS E E FECHA_PAREN
+    (2) E -> . ABRE_PAREN MENOS E E FECHA_PAREN
+    (3) E -> . ABRE_PAREN VEZES E E FECHA_PAREN
+    (4) E -> . ABRE_PAREN DIVIDIR E E FECHA_PAREN
+    (5) E -> . ID
+    (6) E -> . NUMERO
+
+    ABRE_PAREN      shift and go to state 2
+    ID              shift and go to state 3
+    NUMERO          shift and go to state 4
+
+    E                              shift and go to state 15
+
+state 12
+
+    (4) E -> ABRE_PAREN DIVIDIR E . E FECHA_PAREN
+    (1) E -> . ABRE_PAREN MAIS E E FECHA_PAREN
+    (2) E -> . ABRE_PAREN MENOS E E FECHA_PAREN
+    (3) E -> . ABRE_PAREN VEZES E E FECHA_PAREN
+    (4) E -> . ABRE_PAREN DIVIDIR E E FECHA_PAREN
+    (5) E -> . ID
+    (6) E -> . NUMERO
+
+    ABRE_PAREN      shift and go to state 2
+    ID              shift and go to state 3
+    NUMERO          shift and go to state 4
+
+    E                              shift and go to state 16
+
+state 13
+
+    (1) E -> ABRE_PAREN MAIS E E . FECHA_PAREN
+
+    FECHA_PAREN     shift and go to state 17
+
+
+state 14
+
+    (2) E -> ABRE_PAREN MENOS E E . FECHA_PAREN
+
+    FECHA_PAREN     shift and go to state 18
+
+
+state 15
+
+    (3) E -> ABRE_PAREN VEZES E E . FECHA_PAREN
+
+    FECHA_PAREN     shift and go to state 19
+
+
+state 16
+
+    (4) E -> ABRE_PAREN DIVIDIR E E . FECHA_PAREN
+
+    FECHA_PAREN     shift and go to state 20
+
+
+state 17
+
+    (1) E -> ABRE_PAREN MAIS E E FECHA_PAREN .
+
+    $end            reduce using rule 1 (E -> ABRE_PAREN MAIS E E FECHA_PAREN .)
+    ABRE_PAREN      reduce using rule 1 (E -> ABRE_PAREN MAIS E E FECHA_PAREN .)
+    ID              reduce using rule 1 (E -> ABRE_PAREN MAIS E E FECHA_PAREN .)
+    NUMERO          reduce using rule 1 (E -> ABRE_PAREN MAIS E E FECHA_PAREN .)
+    FECHA_PAREN     reduce using rule 1 (E -> ABRE_PAREN MAIS E E FECHA_PAREN .)
+
+
+state 18
+
+    (2) E -> ABRE_PAREN MENOS E E FECHA_PAREN .
+
+    $end            reduce using rule 2 (E -> ABRE_PAREN MENOS E E FECHA_PAREN .)
+    ABRE_PAREN      reduce using rule 2 (E -> ABRE_PAREN MENOS E E FECHA_PAREN .)
+    ID              reduce using rule 2 (E -> ABRE_PAREN MENOS E E FECHA_PAREN .)
+    NUMERO          reduce using rule 2 (E -> ABRE_PAREN MENOS E E FECHA_PAREN .)
+    FECHA_PAREN     reduce using rule 2 (E -> ABRE_PAREN MENOS E E FECHA_PAREN .)
+
+
+state 19
+
+    (3) E -> ABRE_PAREN VEZES E E FECHA_PAREN .
+
+    $end            reduce using rule 3 (E -> ABRE_PAREN VEZES E E FECHA_PAREN .)
+    ABRE_PAREN      reduce using rule 3 (E -> ABRE_PAREN VEZES E E FECHA_PAREN .)
+    ID              reduce using rule 3 (E -> ABRE_PAREN VEZES E E FECHA_PAREN .)
+    NUMERO          reduce using rule 3 (E -> ABRE_PAREN VEZES E E FECHA_PAREN .)
+    FECHA_PAREN     reduce using rule 3 (E -> ABRE_PAREN VEZES E E FECHA_PAREN .)
+
+
+state 20
+
+    (4) E -> ABRE_PAREN DIVIDIR E E FECHA_PAREN .
+
+    $end            reduce using rule 4 (E -> ABRE_PAREN DIVIDIR E E FECHA_PAREN .)
+    ABRE_PAREN      reduce using rule 4 (E -> ABRE_PAREN DIVIDIR E E FECHA_PAREN .)
+    ID              reduce using rule 4 (E -> ABRE_PAREN DIVIDIR E E FECHA_PAREN .)
+    NUMERO          reduce using rule 4 (E -> ABRE_PAREN DIVIDIR E E FECHA_PAREN .)
+    FECHA_PAREN     reduce using rule 4 (E -> ABRE_PAREN DIVIDIR E E FECHA_PAREN .)
+
