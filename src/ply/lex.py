@@ -714,7 +714,7 @@ class LexerReflect(object):
 #
 # Build all of the regular expression rules from definitions in the supplied module
 # -----------------------------------------------------------------------------
-def lex(*, module=None, object=None, debug=False, 
+def lex(*, module=None, object=None, debug=False,
         reflags=int(re.VERBOSE), debuglog=None, errorlog=None):
 
     global lexer
