@@ -51,7 +51,7 @@ language syntax that has been specified in the form of a context free
 grammar.
 
 The two tools are meant to work together. Specifically, `lex.py`
-provides an interface to produce tokens. `yacc.py` uses this retrieve
+provides an interface to produce tokens. `yacc.py` uses this to retrieve
 tokens and invoke grammar rules. The output of `yacc.py` is often an
 Abstract Syntax Tree (AST). However, this is entirely up to the user. If
 desired, `yacc.py` can also be used to implement simple one-pass
@@ -69,7 +69,7 @@ PLY relies on reflection (introspection) to build its lexers and
 parsers. Unlike traditional lex/yacc which require a special input file
 that is converted into a separate source file, the specifications given
 to PLY *are* valid Python programs. This means that there are no extra
-source files nor is there a special compiler construction step (e.g.,
+source files, nor is there a special compiler construction step (e.g.,
 running yacc to generate Python code for the compiler).
 
 ## Lex
