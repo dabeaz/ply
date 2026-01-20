@@ -400,4 +400,5 @@ class YaccErrorWarningTests(unittest.TestCase):
                                     "Precedence rule 'left' defined for unknown symbol '/'\n"
                                     ))
 
-unittest.main()
+if __name__ == "__main__":
+    unittest.main()
