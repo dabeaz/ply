@@ -190,7 +190,7 @@ class LexErrorWarningTests(unittest.TestCase):
                    "Make sure '#' in rule 't_POUND' is escaped with '\\#'\n")
         else:
             msg = ("Invalid regular expression for rule 't_POUND'. missing ), unterminated subpattern at position 0\n"
-                   "ERROR: Make sure '#' in rule 't_POUND' is escaped with '\#'")
+                   r"ERROR: Make sure '#' in rule 't_POUND' is escaped with '\#'")
         self.assertTrue(check_expected(result,
                                     msg,
                                     contains=True), result)
